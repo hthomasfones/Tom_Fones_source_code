@@ -1,0 +1,589 @@
+[  117.347767] madbus: loading out-of-tree module taints kernel.
+[  117.347822] madbus: module verification failed: signature and/or required key missing - tainting kernel
+[  117.348697] madbus.ko:madbus_init()... dev=x100000
+[  117.348822] madbus.ko:madbus_dev_setup_cdev... madbus_major=1 madbus_minor=0 devno=x100000
+[  117.348848] madbus.ko:madbus_dev_setup_cdev... madbus_major=1 madbus_minor=1 devno=x100001
+[  117.349011] madbus.ko:madbus_setup_device... dev#=1 order=9 pPage=0000000000000000 PA=x37A00000 kva=ffff888037a00000 #pages=512 size=2097152
+[  117.349235] madbus.ko:madbus_create_thread... dev#=1 pmadbusobj=ffff8881ffdf9a28 pThread=ffff8881b585a000
+[  117.349240] madbus.ko:madbus_init_module... rc=0 madbus_objects=ffff8881ffdf8000 #slots=1 #devices=1
+[  117.349311] madbus.ko:madbus_dev_thread... dev#=1 cpu=1 pmadbusobj=ffff8881ffdf9a28 pmaddevice=ffff888037a00000
+[  118.374835] maddevc.ko:maddev_init_module... mjr=0 mnr=0
+[  118.374844] maddevc.ko:maddev_init_module... allocated major number (239)
+[  118.374919] madbus.ko:pcisim_register_driver... client driver=maddevc.ko
+[  118.374923] maddevc.ko:maddev_setup_device... dev#=1 pmaddevobj=ffff8881f2ff3000 bHPL=0
+[  118.374926] madbus.ko:madbus_setup_pci_device... dev#=1 mbobj=ffff8881ffdf9a28 pcidevid=x1001 pcidev=ffff8881ffdfa7c0
+[  118.374929] madbus.ko:madbus_set_pci_config... dev#=1 bMSI=0 PciCnfgBase0_loc,val=ffff8881ffdf9a48,x0
+[  118.374932] madbus.ko:madbus_init_pcidev... dev#=1 mbobj=ffff8881ffdf9a28
+[  118.374934] madbus.ko:madbus_xchange_parms... dev#=1 pmbobj=ffff8881ffdf9a28 pCmpltSimIo=ffffffffa04f7660
+[  118.374937] maddevc.ko:maddev_xchange_sim_parms... dev#=1 pmbobj=ffff8881ffdf9a28
+[  118.374940] madbus.ko:pcisim_read_config_word... dev#=1 mbobj=ffff8881ffdf9a28 pcidev=ffff8881ffdfa7c0 offset=16
+[  118.374942] madbus.ko:pcisim_read_config_word... dev#=1 mbobj=ffff8881ffdf9a28 pcidev=ffff8881ffdfa7c0 offset=20
+[  118.374945] maddevc.ko:pci_read_config_dword... BaseAddr=x37A00000 PciCnfg_Hi:Lo,64=x0:37A00000 x37A00000
+[  118.374948] maddevc.ko:maddev_claim_pci_resrcs... dev#=1 PA=x37A00000 kva=ffff888037a00000
+[  118.374950] madbus.ko:pcisim_read_config_byte... dev#=1 mbobj=ffff8881ffdf9a28 pcidev=ffff8881ffdfa7c0
+[  118.374953] madbus.ko:pcisim_enable_device... dev#=1 mbobj=ffff8881ffdf9a28 pcidev=ffff8881ffdfa7c0
+[  118.374955] maddevc.ko:maddev_claim_pci_resrcs... dev#=1 rc=0
+[  118.375173] madbus.ko:sim_register_device... pDevice=ffff8881ffdfa870
+[  118.375177] maddevc.ko:maddev_setup_cdev... dev#=1 maddev_major=239 maddev_minor=1 cdev_no=xEF00001
+[  118.375185] maddevc.ko:maddev_setup_cdev... dev#=1 rc=0
+[  118.375188] maddevc.ko:maddev_setup_device... dev=1 pdevobj=ffff8881f2ff3000 devVA=ffff888037a00000 devPA=x37A00000 exit :)
+[  118.457901] madbus.ko:madbus_dev_open: dev#=1, mbobj=ffff8881ffdf9a28 inode=ffff8881cf81eb68 fp=ffff8881fd4df800
+[  118.457912] madbus.ko:madbus_dev_mmap... dev#=1 fp=ffff8881fd4df800 pfn=x37A00 PA=x37A00000 MapSize=65536n prot=x27
+[  118.457916] madbus.ko:madbus_vma_open... dev#=1 vma=ffff8881b345dc00
+[  118.457919] madbus.ko:madbus_dev_mmap:remap_pfn_range... dev#=1 start=00007fa5c5b61000 rc=0
+[  118.457936] madbus.ko:madbus_vma_close... dev#=1 vma=ffff8881b345dc00
+[  118.457942] madbus.ko:madbus_dev_release: dev#=1 inode=ffff8881cf81eb68 fp=ffff8881fd4df800
+[  118.459820] madbus.ko:madbus_dev_open: dev#=1, mbobj=ffff8881ffdf9a28 inode=ffff8881cf81eb68 fp=ffff88820d9a7200
+[  118.459830] madbus.ko:madbus_dev_mmap... dev#=1 fp=ffff88820d9a7200 pfn=x37A00 PA=x37A00000 MapSize=65536n prot=x27
+[  118.459834] madbus.ko:madbus_vma_open... dev#=1 vma=ffff8881d7bdbd80
+[  118.459837] madbus.ko:madbus_dev_mmap:remap_pfn_range... dev#=1 start=00007f2b9cf75000 rc=0
+[  118.459841] madbus.ko:madbusobj_ioctl: dev#=1 fp=ffff88820d9a7200 cmd=x80089B02 arg=x79B96440
+[  118.459843] madbus.ko:madbusobj_ioctl: MADBUS_IOC_GET_DEVICE
+[  118.460591] madbus.ko:madbus_vma_close... dev#=1 vma=ffff8881d7bdbd80
+[  118.460599] madbus.ko:madbus_dev_release: dev#=1 inode=ffff8881cf81eb68 fp=ffff88820d9a7200
+[  118.466931] maddevc.ko:maddev_open... dev#=1 maddev=00000000385304c5 inode=000000005ac0dd4b fp=00000000ed3c41c1
+[  118.466945] maddevc.ko:maddev_mmap... dev#=1 fp=ffff8881c7ca0000 pfn=0x37A00 PA=x37A00000 MapSize=65536
+[  118.466950] maddevc.ko:maddev_vma_open... dev#=1
+[  118.466953] maddevc.ko:maddev_mmap:remap_pfn_range... dev#=1 start=00007f4d968cd000 rc=0
+[  118.466958] maddevc.ko:maddev_ioctl... dev#=1 fp=00000000ed3c41c1 cmd=x9A01 arg=x0
+[  118.466960] maddevc.ko:maddev_ioctl MADDEVOBJ_IOC_RESET
+[  118.466981] maddevc.ko:maddev_vma_close... dev#=1
+[  118.466988] maddevc.ko:maddev_release...dev#=1 inode=000000005ac0dd4b fp=00000000ed3c41c1
+[  118.476641] maddevc.ko:maddev_open... dev#=1 maddev=00000000385304c5 inode=000000005ac0dd4b fp=00000000c24679b7
+[  118.476667] maddevc.ko:maddev_mmap... dev#=1 fp=ffff8881fc25fa00 pfn=0x37A00 PA=x37A00000 MapSize=65536
+[  118.476672] maddevc.ko:maddev_vma_open... dev#=1
+[  118.476674] maddevc.ko:maddev_mmap:remap_pfn_range... dev#=1 start=00007f198f10d000 rc=0
+[  118.476723] maddevc.ko:maddev_llseek... dev#=1 lseek=0
+[  118.476740] maddevc.ko:maddev_llseek... dev#=1 location=0 fpos=0
+[  121.476920] maddevc.ko:maddev_write... dev#=1 fp=00000000c24679b7 count=4100 offset_arg=0 fppos=0
+[  121.476926] maddevc.ko:maddev_direct_io... dev#=1 fp=ffff8881fc25fa00 count=4100 offset=0
+[  121.476932] maddevc.ko:maddev_need_sg... num_pgs=1 PA0=x1D92AF000 PAx=x1D92AF000
+[  121.476935] maddevc.ko:maddev_xfer_pages_direct... dev#=1 num_pgs=1 offset=0 wr=1
+[  121.476938] maddevc.ko:maddev_program_stream_io... dev#=1 PA=x1D92AF000 CntlReg=x7000 IntEnable=x8010 offset=x0 wr=1
+[  121.476941] maddevc.ko:maddev_program_stream_io... dev#=1 exit
+[  121.476943] madbus.ko:mbdthread1:mbdt_process_io... IoType=2 IntEnable=x8010 IntID=x0
+[  121.476946] madbus.ko:mbdt_process_bufrd_io... 
+               dev#=1 CountBits=x7 IoSzf=x0 UnitSz=512 IoCount=4096 RdIndx=0 WrIndx=0
+[  121.476948] maddevc.ko:maddevc_isr... dev#=1 irq=31
+[  121.476953] maddevc.ko:maddevc_isr... normal return dev#=1 IntID=x10 rc=1
+[  121.476958] maddevc.ko:maddevc_dpc... dev#=1 Control=x7008 Status=x0 IntID=x10
+[  121.476961] maddevc.ko:maddev_reset_io_registers... dev#=1 ok
+[  121.476993] madbus.ko:madsim_complete_simulated_io...
+                         dev#=1 IoType=2 IntID=x10 Control=x7008 HostPA=x1D92AF000 DevLoclAddr=x0 iocount=4096
+[  121.476996] maddevc.ko:maddev_get_io_status... dev#=1 iostat=x0
+[  121.476999] maddevc.ko:maddev_xfer_pages_direct... dev#=1 num_pgs=1 iocount=512
+[  121.477001] maddevc.ko:maddev_put_user_pages... num_pgs=1 pPages=ffffc90001937e08 pPS0=ffff88821ca4abc0 PA0=x21CA4ABC0
+[  121.477004] maddevc.ko:maddev_direct_io... dev#=1 iocount=512 offset=0
+[  121.477022] maddevc.ko:maddev_vma_close... dev#=1
+[  121.477033] maddevc.ko:maddev_release...dev#=1 inode=000000005ac0dd4b fp=00000000c24679b7
+[  121.479273] maddevc.ko:maddev_open... dev#=1 maddev=00000000385304c5 inode=000000005ac0dd4b fp=00000000e56cd76f
+[  121.479285] maddevc.ko:maddev_mmap... dev#=1 fp=ffff8881fd4ea600 pfn=0x37A00 PA=x37A00000 MapSize=65536
+[  121.479289] maddevc.ko:maddev_vma_open... dev#=1
+[  121.479292] maddevc.ko:maddev_mmap:remap_pfn_range... dev#=1 start=00007f0b74fa9000 rc=0
+[  121.479338] maddevc.ko:maddev_llseek... dev#=1 lseek=4096
+[  121.479355] maddevc.ko:maddev_llseek... dev#=1 location=4096 fpos=4096
+[  124.479503] maddevc.ko:maddev_write... dev#=1 fp=00000000e56cd76f count=4100 offset_arg=4096 fppos=4096
+[  124.479509] maddevc.ko:maddev_direct_io... dev#=1 fp=ffff8881fd4ea600 count=4100 offset=4096
+[  124.479515] maddevc.ko:maddev_need_sg... num_pgs=1 PA0=x1BF075000 PAx=x1BF075000
+[  124.479518] maddevc.ko:maddev_xfer_pages_direct... dev#=1 num_pgs=1 offset=4096 wr=1
+[  124.479521] maddevc.ko:maddev_program_stream_io... dev#=1 PA=x1BF075000 CntlReg=x7000 IntEnable=x8010 offset=x1000 wr=1
+[  124.479523] maddevc.ko:maddev_program_stream_io... dev#=1 exit
+[  124.479526] madbus.ko:mbdthread1:mbdt_process_io... IoType=2 IntEnable=x8010 IntID=x0
+[  124.479528] madbus.ko:mbdt_process_bufrd_io... 
+               dev#=1 CountBits=x7 IoSzf=x0 UnitSz=512 IoCount=4096 RdIndx=4096 WrIndx=4096
+[  124.479530] maddevc.ko:maddevc_isr... dev#=1 irq=31
+[  124.479536] maddevc.ko:maddevc_isr... normal return dev#=1 IntID=x10 rc=1
+[  124.479542] maddevc.ko:maddevc_dpc... dev#=1 Control=x7008 Status=x0 IntID=x10
+[  124.479544] maddevc.ko:maddev_reset_io_registers... dev#=1 ok
+[  124.479575] madbus.ko:madsim_complete_simulated_io...
+                         dev#=1 IoType=2 IntID=x10 Control=x7008 HostPA=x1BF075000 DevLoclAddr=x0 iocount=4096
+[  124.479578] maddevc.ko:maddev_get_io_status... dev#=1 iostat=x0
+[  124.479581] maddevc.ko:maddev_xfer_pages_direct... dev#=1 num_pgs=1 iocount=512
+[  124.479583] maddevc.ko:maddev_put_user_pages... num_pgs=1 pPages=ffffc90001ef3e08 pPS0=ffff88821c3c1d40 PA0=x21C3C1D40
+[  124.479586] maddevc.ko:maddev_direct_io... dev#=1 iocount=512 offset=4096
+[  124.479600] maddevc.ko:maddev_vma_close... dev#=1
+[  124.479611] maddevc.ko:maddev_release...dev#=1 inode=000000005ac0dd4b fp=00000000e56cd76f
+[  124.481396] maddevc.ko:maddev_open... dev#=1 maddev=00000000385304c5 inode=000000005ac0dd4b fp=000000008cb9d527
+[  124.481414] maddevc.ko:maddev_mmap... dev#=1 fp=ffff8881fd4df400 pfn=0x37A00 PA=x37A00000 MapSize=65536
+[  124.481417] maddevc.ko:maddev_vma_open... dev#=1
+[  124.481420] maddevc.ko:maddev_mmap:remap_pfn_range... dev#=1 start=00007f71461c2000 rc=0
+[  124.481458] maddevc.ko:maddev_llseek... dev#=1 lseek=8192
+[  124.481475] maddevc.ko:maddev_llseek... dev#=1 location=8192 fpos=8192
+[  127.481658] maddevc.ko:maddev_write... dev#=1 fp=000000008cb9d527 count=4100 offset_arg=8192 fppos=8192
+[  127.481664] maddevc.ko:maddev_direct_io... dev#=1 fp=ffff8881fd4df400 count=4100 offset=8192
+[  127.481672] maddevc.ko:maddev_need_sg... num_pgs=1 PA0=x195D78000 PAx=x195D78000
+[  127.481675] maddevc.ko:maddev_xfer_pages_direct... dev#=1 num_pgs=1 offset=8192 wr=1
+[  127.481678] maddevc.ko:maddev_program_stream_io... dev#=1 PA=x195D78000 CntlReg=x7000 IntEnable=x8010 offset=x2000 wr=1
+[  127.481680] maddevc.ko:maddev_program_stream_io... dev#=1 exit
+[  127.481683] madbus.ko:mbdthread1:mbdt_process_io... IoType=2 IntEnable=x8010 IntID=x0
+[  127.481685] madbus.ko:mbdt_process_bufrd_io... 
+               dev#=1 CountBits=x7 IoSzf=x0 UnitSz=512 IoCount=4096 RdIndx=8192 WrIndx=8192
+[  127.481687] maddevc.ko:maddevc_isr... dev#=1 irq=31
+[  127.481693] maddevc.ko:maddevc_isr... normal return dev#=1 IntID=x10 rc=1
+[  127.481699] maddevc.ko:maddevc_dpc... dev#=1 Control=x7008 Status=x0 IntID=x10
+[  127.481702] maddevc.ko:maddev_reset_io_registers... dev#=1 ok
+[  127.481731] madbus.ko:madsim_complete_simulated_io...
+                         dev#=1 IoType=2 IntID=x10 Control=x7008 HostPA=x195D78000 DevLoclAddr=x0 iocount=4096
+[  127.481734] maddevc.ko:maddev_get_io_status... dev#=1 iostat=x0
+[  127.481737] maddevc.ko:maddev_xfer_pages_direct... dev#=1 num_pgs=1 iocount=512
+[  127.481739] maddevc.ko:maddev_put_user_pages... num_pgs=1 pPages=ffffc900014cbe08 pPS0=ffff88821b975e00 PA0=x21B975E00
+[  127.481742] maddevc.ko:maddev_direct_io... dev#=1 iocount=512 offset=8192
+[  127.481756] maddevc.ko:maddev_vma_close... dev#=1
+[  127.481769] maddevc.ko:maddev_release...dev#=1 inode=000000005ac0dd4b fp=000000008cb9d527
+[  127.483758] maddevc.ko:maddev_open... dev#=1 maddev=00000000385304c5 inode=000000005ac0dd4b fp=000000005c942d89
+[  127.483769] maddevc.ko:maddev_mmap... dev#=1 fp=ffff8881c7ca0600 pfn=0x37A00 PA=x37A00000 MapSize=65536
+[  127.483773] maddevc.ko:maddev_vma_open... dev#=1
+[  127.483776] maddevc.ko:maddev_mmap:remap_pfn_range... dev#=1 start=00007f29fc14e000 rc=0
+[  127.483825] maddevc.ko:maddev_llseek... dev#=1 lseek=12288
+[  127.483829] maddevc.ko:maddev_llseek... dev#=1 location=12288 fpos=12288
+[  130.483990] maddevc.ko:maddev_write... dev#=1 fp=000000005c942d89 count=4100 offset_arg=12288 fppos=12288
+[  130.483996] maddevc.ko:maddev_direct_io... dev#=1 fp=ffff8881c7ca0600 count=4100 offset=12288
+[  130.484003] maddevc.ko:maddev_need_sg... num_pgs=1 PA0=x16353C000 PAx=x16353C000
+[  130.484006] maddevc.ko:maddev_xfer_pages_direct... dev#=1 num_pgs=1 offset=12288 wr=1
+[  130.484009] maddevc.ko:maddev_program_stream_io... dev#=1 PA=x16353C000 CntlReg=x7000 IntEnable=x8010 offset=x3000 wr=1
+[  130.484011] maddevc.ko:maddev_program_stream_io... dev#=1 exit
+[  130.484014] madbus.ko:mbdthread1:mbdt_process_io... IoType=2 IntEnable=x8010 IntID=x0
+[  130.484016] madbus.ko:mbdt_process_bufrd_io... 
+               dev#=1 CountBits=x7 IoSzf=x0 UnitSz=512 IoCount=4096 RdIndx=12288 WrIndx=12288
+[  130.484018] maddevc.ko:maddevc_isr... dev#=1 irq=31
+[  130.484023] maddevc.ko:maddevc_isr... normal return dev#=1 IntID=x10 rc=1
+[  130.484030] maddevc.ko:maddevc_dpc... dev#=1 Control=x7008 Status=x0 IntID=x10
+[  130.484033] maddevc.ko:maddev_reset_io_registers... dev#=1 ok
+[  130.484062] madbus.ko:madsim_complete_simulated_io...
+                         dev#=1 IoType=2 IntID=x10 Control=x7008 HostPA=x16353C000 DevLoclAddr=x0 iocount=4096
+[  130.484065] maddevc.ko:maddev_get_io_status... dev#=1 iostat=x0
+[  130.484067] maddevc.ko:maddev_xfer_pages_direct... dev#=1 num_pgs=1 iocount=512
+[  130.484070] maddevc.ko:maddev_put_user_pages... num_pgs=1 pPages=ffffc900014bbe08 pPS0=ffff88821acd4f00 PA0=x21ACD4F00
+[  130.484072] maddevc.ko:maddev_direct_io... dev#=1 iocount=512 offset=12288
+[  130.484087] maddevc.ko:maddev_vma_close... dev#=1
+[  130.484101] maddevc.ko:maddev_release...dev#=1 inode=000000005ac0dd4b fp=000000005c942d89
+[  130.485805] maddevc.ko:maddev_open... dev#=1 maddev=00000000385304c5 inode=000000005ac0dd4b fp=0000000078d73519
+[  130.485815] maddevc.ko:maddev_mmap... dev#=1 fp=ffff8881fd4df600 pfn=0x37A00 PA=x37A00000 MapSize=65536
+[  130.485819] maddevc.ko:maddev_vma_open... dev#=1
+[  130.485822] maddevc.ko:maddev_mmap:remap_pfn_range... dev#=1 start=00007f99c0bef000 rc=0
+[  130.485857] maddevc.ko:maddev_llseek... dev#=1 lseek=16384
+[  130.485860] maddevc.ko:maddev_llseek... dev#=1 location=16384 fpos=16384
+[  133.486018] maddevc.ko:maddev_write... dev#=1 fp=0000000078d73519 count=4100 offset_arg=16384 fppos=16384
+[  133.486025] maddevc.ko:maddev_direct_io... dev#=1 fp=ffff8881fd4df600 count=4100 offset=16384
+[  133.486032] maddevc.ko:maddev_need_sg... num_pgs=1 PA0=x1972FC000 PAx=x1972FC000
+[  133.486035] maddevc.ko:maddev_xfer_pages_direct... dev#=1 num_pgs=1 offset=16384 wr=1
+[  133.486038] maddevc.ko:maddev_program_stream_io... dev#=1 PA=x1972FC000 CntlReg=x7000 IntEnable=x8010 offset=x4000 wr=1
+[  133.486040] maddevc.ko:maddev_program_stream_io... dev#=1 exit
+[  133.486043] madbus.ko:mbdthread1:mbdt_process_io... IoType=2 IntEnable=x8010 IntID=x0
+[  133.486046] madbus.ko:mbdt_process_bufrd_io... 
+               dev#=1 CountBits=x7 IoSzf=x0 UnitSz=512 IoCount=4096 RdIndx=16384 WrIndx=16384
+[  133.486048] maddevc.ko:maddevc_isr... dev#=1 irq=31
+[  133.486053] maddevc.ko:maddevc_isr... normal return dev#=1 IntID=x10 rc=1
+[  133.486059] maddevc.ko:maddevc_dpc... dev#=1 Control=x7008 Status=x0 IntID=x10
+[  133.486061] maddevc.ko:maddev_reset_io_registers... dev#=1 ok
+[  133.486095] madbus.ko:madsim_complete_simulated_io...
+                         dev#=1 IoType=2 IntID=x10 Control=x7008 HostPA=x1972FC000 DevLoclAddr=x0 iocount=4096
+[  133.486097] maddevc.ko:maddev_get_io_status... dev#=1 iostat=x0
+[  133.486100] maddevc.ko:maddev_xfer_pages_direct... dev#=1 num_pgs=1 iocount=512
+[  133.486103] maddevc.ko:maddev_put_user_pages... num_pgs=1 pPages=ffffc900034dbe08 pPS0=ffff88821b9cbf00 PA0=x21B9CBF00
+[  133.486105] maddevc.ko:maddev_direct_io... dev#=1 iocount=512 offset=16384
+[  133.486121] maddevc.ko:maddev_vma_close... dev#=1
+[  133.486135] maddevc.ko:maddev_release...dev#=1 inode=000000005ac0dd4b fp=0000000078d73519
+[  133.487943] maddevc.ko:maddev_open... dev#=1 maddev=00000000385304c5 inode=000000005ac0dd4b fp=0000000096ebf2d9
+[  133.487953] maddevc.ko:maddev_mmap... dev#=1 fp=ffff8881fd4ea200 pfn=0x37A00 PA=x37A00000 MapSize=65536
+[  133.487957] maddevc.ko:maddev_vma_open... dev#=1
+[  133.487960] maddevc.ko:maddev_mmap:remap_pfn_range... dev#=1 start=00007f7122480000 rc=0
+[  133.488009] maddevc.ko:maddev_llseek... dev#=1 lseek=20480
+[  133.488012] maddevc.ko:maddev_llseek... dev#=1 location=20480 fpos=20480
+[  136.488189] maddevc.ko:maddev_write... dev#=1 fp=0000000096ebf2d9 count=4100 offset_arg=20480 fppos=20480
+[  136.488195] maddevc.ko:maddev_direct_io... dev#=1 fp=ffff8881fd4ea200 count=4100 offset=20480
+[  136.488202] maddevc.ko:maddev_need_sg... num_pgs=1 PA0=x1972FA000 PAx=x1972FA000
+[  136.488205] maddevc.ko:maddev_xfer_pages_direct... dev#=1 num_pgs=1 offset=20480 wr=1
+[  136.488208] maddevc.ko:maddev_program_stream_io... dev#=1 PA=x1972FA000 CntlReg=x7000 IntEnable=x8010 offset=x5000 wr=1
+[  136.488210] maddevc.ko:maddev_program_stream_io... dev#=1 exit
+[  136.488213] madbus.ko:mbdthread1:mbdt_process_io... IoType=2 IntEnable=x8010 IntID=x0
+[  136.488215] madbus.ko:mbdt_process_bufrd_io... 
+               dev#=1 CountBits=x7 IoSzf=x0 UnitSz=512 IoCount=4096 RdIndx=20480 WrIndx=20480
+[  136.488217] maddevc.ko:maddevc_isr... dev#=1 irq=31
+[  136.488222] maddevc.ko:maddevc_isr... normal return dev#=1 IntID=x10 rc=1
+[  136.488228] maddevc.ko:maddevc_dpc... dev#=1 Control=x7008 Status=x0 IntID=x10
+[  136.488231] maddevc.ko:maddev_reset_io_registers... dev#=1 ok
+[  136.488261] madbus.ko:madsim_complete_simulated_io...
+                         dev#=1 IoType=2 IntID=x10 Control=x7008 HostPA=x1972FA000 DevLoclAddr=x0 iocount=4096
+[  136.488264] maddevc.ko:maddev_get_io_status... dev#=1 iostat=x0
+[  136.488267] maddevc.ko:maddev_xfer_pages_direct... dev#=1 num_pgs=1 iocount=512
+[  136.488269] maddevc.ko:maddev_put_user_pages... num_pgs=1 pPages=ffffc90003553e08 pPS0=ffff88821b9cbe80 PA0=x21B9CBE80
+[  136.488272] maddevc.ko:maddev_direct_io... dev#=1 iocount=512 offset=20480
+[  136.488286] maddevc.ko:maddev_vma_close... dev#=1
+[  136.488300] maddevc.ko:maddev_release...dev#=1 inode=000000005ac0dd4b fp=0000000096ebf2d9
+[  136.489995] maddevc.ko:maddev_open... dev#=1 maddev=00000000385304c5 inode=000000005ac0dd4b fp=000000003518eb09
+[  136.490006] maddevc.ko:maddev_mmap... dev#=1 fp=ffff8881bace5800 pfn=0x37A00 PA=x37A00000 MapSize=65536
+[  136.490010] maddevc.ko:maddev_vma_open... dev#=1
+[  136.490012] maddevc.ko:maddev_mmap:remap_pfn_range... dev#=1 start=00007f43e2478000 rc=0
+[  136.490045] maddevc.ko:maddev_llseek... dev#=1 lseek=24576
+[  136.490048] maddevc.ko:maddev_llseek... dev#=1 location=24576 fpos=24576
+[  139.490211] maddevc.ko:maddev_write... dev#=1 fp=000000003518eb09 count=4100 offset_arg=24576 fppos=24576
+[  139.490218] maddevc.ko:maddev_direct_io... dev#=1 fp=ffff8881bace5800 count=4100 offset=24576
+[  139.490224] maddevc.ko:maddev_need_sg... num_pgs=1 PA0=x1BF078000 PAx=x1BF078000
+[  139.490227] maddevc.ko:maddev_xfer_pages_direct... dev#=1 num_pgs=1 offset=24576 wr=1
+[  139.490230] maddevc.ko:maddev_program_stream_io... dev#=1 PA=x1BF078000 CntlReg=x7000 IntEnable=x8010 offset=x6000 wr=1
+[  139.490233] maddevc.ko:maddev_program_stream_io... dev#=1 exit
+[  139.490236] madbus.ko:mbdthread1:mbdt_process_io... IoType=2 IntEnable=x8010 IntID=x0
+[  139.490238] madbus.ko:mbdt_process_bufrd_io... 
+               dev#=1 CountBits=x7 IoSzf=x0 UnitSz=512 IoCount=4096 RdIndx=24576 WrIndx=24576
+[  139.490240] maddevc.ko:maddevc_isr... dev#=1 irq=31
+[  139.490246] maddevc.ko:maddevc_isr... normal return dev#=1 IntID=x10 rc=1
+[  139.490251] maddevc.ko:maddevc_dpc... dev#=1 Control=x7008 Status=x0 IntID=x10
+[  139.490254] maddevc.ko:maddev_reset_io_registers... dev#=1 ok
+[  139.490284] madbus.ko:madsim_complete_simulated_io...
+                         dev#=1 IoType=2 IntID=x10 Control=x7008 HostPA=x1BF078000 DevLoclAddr=x0 iocount=4096
+[  139.490287] maddevc.ko:maddev_get_io_status... dev#=1 iostat=x0
+[  139.490289] maddevc.ko:maddev_xfer_pages_direct... dev#=1 num_pgs=1 iocount=512
+[  139.490292] maddevc.ko:maddev_put_user_pages... num_pgs=1 pPages=ffffc900034e3e08 pPS0=ffff88821c3c1e00 PA0=x21C3C1E00
+[  139.490294] maddevc.ko:maddev_direct_io... dev#=1 iocount=512 offset=24576
+[  139.490309] maddevc.ko:maddev_vma_close... dev#=1
+[  139.490322] maddevc.ko:maddev_release...dev#=1 inode=000000005ac0dd4b fp=000000003518eb09
+[  139.491999] maddevc.ko:maddev_open... dev#=1 maddev=00000000385304c5 inode=000000005ac0dd4b fp=0000000053d2245a
+[  139.492010] maddevc.ko:maddev_mmap... dev#=1 fp=ffff8881fd4eba00 pfn=0x37A00 PA=x37A00000 MapSize=65536
+[  139.492014] maddevc.ko:maddev_vma_open... dev#=1
+[  139.492016] maddevc.ko:maddev_mmap:remap_pfn_range... dev#=1 start=00007ff6bb3e3000 rc=0
+[  139.492056] maddevc.ko:maddev_llseek... dev#=1 lseek=28672
+[  139.492075] maddevc.ko:maddev_llseek... dev#=1 location=28672 fpos=28672
+[  142.492282] maddevc.ko:maddev_write... dev#=1 fp=0000000053d2245a count=16900 offset_arg=28672 fppos=28672
+[  142.492289] maddevc.ko:maddev_direct_io... dev#=1 fp=ffff8881fd4eba00 count=16900 offset=28672
+[  142.492317] maddevc.ko:maddev_xfer_sgdma_pages... dev#=1 num_pgs=4 wr=1
+[  142.492322] madbus.ko:mbdthread1:mbdt_process_io... IoType=8 IntEnable=x8020 IntID=x0
+[  142.492326] maddevc.ko:maddevc_isr... dev#=1 irq=31
+[  142.492332] maddevc.ko:maddevc_isr... normal return dev#=1 IntID=x20 rc=1
+[  142.492337] maddevc.ko:maddevc_dpc... dev#=1 Control=xC0 Status=x0 IntID=x20
+[  142.492340] maddevc.ko:maddev_reset_io_registers... dev#=1 ok
+[  142.492390] madbus.ko:madsim_complete_simulated_sgdma... dev#=1 num_elems=4 iocount=16384
+[  142.492393] maddevc.ko:maddev_get_io_status... dev#=1 iostat=x0
+[  142.492395] maddevc.ko:maddev_xfer_sgdma_pages... dev#=1 num_pgs=4 iostat=0 iocount=16384
+[  142.492398] maddevc.ko:maddev_put_user_pages... num_pgs=4 pPages=ffffc900037a3e08 pPS0=ffff88821bbdc700 PA0=x21BBDC700
+[  142.492401] maddevc.ko:maddev_direct_io... dev#=1 iocount=16384 offset=28672
+[  142.492418] maddevc.ko:maddev_vma_close... dev#=1
+[  142.492431] maddevc.ko:maddev_release...dev#=1 inode=000000005ac0dd4b fp=0000000053d2245a
+[  142.494073] maddevc.ko:maddev_open... dev#=1 maddev=00000000385304c5 inode=000000005ac0dd4b fp=0000000064ab2ca3
+[  142.494083] maddevc.ko:maddev_mmap... dev#=1 fp=ffff8881bace5600 pfn=0x37A00 PA=x37A00000 MapSize=65536
+[  142.494087] maddevc.ko:maddev_vma_open... dev#=1
+[  142.494089] maddevc.ko:maddev_mmap:remap_pfn_range... dev#=1 start=00007f497f10f000 rc=0
+[  142.494123] maddevc.ko:maddev_llseek... dev#=1 lseek=0
+[  142.494126] maddevc.ko:maddev_llseek... dev#=1 location=0 fpos=0
+[  145.494316] maddevc.ko:maddev_read... dev#=1 fp=0000000064ab2ca3 count=4100 offset_arg=0 fppos=0
+[  145.494322] maddevc.ko:maddev_direct_io... dev#=1 fp=ffff8881bace5600 count=4100 offset=0
+[  145.494335] maddevc.ko:maddev_need_sg... num_pgs=1 PA0=x195847000 PAx=x195847000
+[  145.494338] maddevc.ko:maddev_xfer_pages_direct... dev#=1 num_pgs=1 offset=0 wr=0
+[  145.494341] maddevc.ko:maddev_program_stream_io... dev#=1 PA=x195847000 CntlReg=x7000 IntEnable=x8001 offset=x0 wr=0
+[  145.494343] maddevc.ko:maddev_program_stream_io... dev#=1 exit
+[  145.494346] madbus.ko:mbdthread1:mbdt_process_io... IoType=1 IntEnable=x8001 IntID=x0
+[  145.494348] madbus.ko:mbdt_process_bufrd_io... 
+               dev#=1 CountBits=x7 IoSzf=x0 UnitSz=512 IoCount=4096 RdIndx=0 WrIndx=0
+[  145.494350] maddevc.ko:maddevc_isr... dev#=1 irq=31
+[  145.494355] maddevc.ko:maddevc_isr... normal return dev#=1 IntID=x1 rc=1
+[  145.494361] maddevc.ko:maddevc_dpc... dev#=1 Control=x7008 Status=x0 IntID=x1
+[  145.494364] maddevc.ko:maddev_reset_io_registers... dev#=1 ok
+[  145.494393] madbus.ko:madsim_complete_simulated_io...
+                         dev#=1 IoType=1 IntID=x1 Control=x7008 HostPA=x195847000 DevLoclAddr=x0 iocount=4096
+[  145.494396] maddevc.ko:maddev_get_io_status... dev#=1 iostat=x0
+[  145.494398] maddevc.ko:maddev_xfer_pages_direct... dev#=1 num_pgs=1 iocount=512
+[  145.494401] maddevc.ko:maddev_put_user_pages... num_pgs=1 pPages=ffffc9000385be00 pPS0=ffff88821b9611c0 PA0=x21B9611C0
+[  145.494403] maddevc.ko:maddev_direct_io... dev#=1 iocount=512 offset=0
+[  145.494443] maddevc.ko:maddev_vma_close... dev#=1
+[  145.494456] maddevc.ko:maddev_release...dev#=1 inode=000000005ac0dd4b fp=0000000064ab2ca3
+[  145.496156] maddevc.ko:maddev_open... dev#=1 maddev=00000000385304c5 inode=000000005ac0dd4b fp=00000000f0bc87d5
+[  145.496167] maddevc.ko:maddev_mmap... dev#=1 fp=ffff8881fd4ebe00 pfn=0x37A00 PA=x37A00000 MapSize=65536
+[  145.496171] maddevc.ko:maddev_vma_open... dev#=1
+[  145.496174] maddevc.ko:maddev_mmap:remap_pfn_range... dev#=1 start=00007ff4293f8000 rc=0
+[  145.496222] maddevc.ko:maddev_llseek... dev#=1 lseek=4096
+[  145.496225] maddevc.ko:maddev_llseek... dev#=1 location=4096 fpos=4096
+[  148.496402] maddevc.ko:maddev_read... dev#=1 fp=00000000f0bc87d5 count=4100 offset_arg=4096 fppos=4096
+[  148.496408] maddevc.ko:maddev_direct_io... dev#=1 fp=ffff8881fd4ebe00 count=4100 offset=4096
+[  148.496418] maddevc.ko:maddev_need_sg... num_pgs=1 PA0=x1BD320000 PAx=x1BD320000
+[  148.496421] maddevc.ko:maddev_xfer_pages_direct... dev#=1 num_pgs=1 offset=4096 wr=0
+[  148.496423] maddevc.ko:maddev_program_stream_io... dev#=1 PA=x1BD320000 CntlReg=x7000 IntEnable=x8001 offset=x1000 wr=0
+[  148.496426] maddevc.ko:maddev_program_stream_io... dev#=1 exit
+[  148.496429] madbus.ko:mbdthread1:mbdt_process_io... IoType=1 IntEnable=x8001 IntID=x0
+[  148.496431] madbus.ko:mbdt_process_bufrd_io... 
+               dev#=1 CountBits=x7 IoSzf=x0 UnitSz=512 IoCount=4096 RdIndx=4096 WrIndx=4096
+[  148.496433] maddevc.ko:maddevc_isr... dev#=1 irq=31
+[  148.496439] maddevc.ko:maddevc_isr... normal return dev#=1 IntID=x1 rc=1
+[  148.496444] maddevc.ko:maddevc_dpc... dev#=1 Control=x7008 Status=x0 IntID=x1
+[  148.496447] maddevc.ko:maddev_reset_io_registers... dev#=1 ok
+[  148.496611] madbus.ko:madsim_complete_simulated_io...
+                         dev#=1 IoType=1 IntID=x1 Control=x7008 HostPA=x1BD320000 DevLoclAddr=x0 iocount=4096
+[  148.496614] maddevc.ko:maddev_get_io_status... dev#=1 iostat=x0
+[  148.496631] maddevc.ko:maddev_xfer_pages_direct... dev#=1 num_pgs=1 iocount=512
+[  148.496633] maddevc.ko:maddev_put_user_pages... num_pgs=1 pPages=ffffc9000392be00 pPS0=ffff88821c34c800 PA0=x21C34C800
+[  148.496636] maddevc.ko:maddev_direct_io... dev#=1 iocount=512 offset=4096
+[  148.496686] maddevc.ko:maddev_vma_close... dev#=1
+[  148.496697] maddevc.ko:maddev_release...dev#=1 inode=000000005ac0dd4b fp=00000000f0bc87d5
+[  148.498317] maddevc.ko:maddev_open... dev#=1 maddev=00000000385304c5 inode=000000005ac0dd4b fp=00000000f8ddb6ac
+[  148.498328] maddevc.ko:maddev_mmap... dev#=1 fp=ffff8881fd4de400 pfn=0x37A00 PA=x37A00000 MapSize=65536
+[  148.498331] maddevc.ko:maddev_vma_open... dev#=1
+[  148.498334] maddevc.ko:maddev_mmap:remap_pfn_range... dev#=1 start=00007f8493ba6000 rc=0
+[  148.498367] maddevc.ko:maddev_llseek... dev#=1 lseek=8192
+[  148.498370] maddevc.ko:maddev_llseek... dev#=1 location=8192 fpos=8192
+[  151.498554] maddevc.ko:maddev_read... dev#=1 fp=00000000f8ddb6ac count=4100 offset_arg=8192 fppos=8192
+[  151.498560] maddevc.ko:maddev_direct_io... dev#=1 fp=ffff8881fd4de400 count=4100 offset=8192
+[  151.498573] maddevc.ko:maddev_need_sg... num_pgs=1 PA0=x195C74000 PAx=x195C74000
+[  151.498576] maddevc.ko:maddev_xfer_pages_direct... dev#=1 num_pgs=1 offset=8192 wr=0
+[  151.498579] maddevc.ko:maddev_program_stream_io... dev#=1 PA=x195C74000 CntlReg=x7000 IntEnable=x8001 offset=x2000 wr=0
+[  151.498581] maddevc.ko:maddev_program_stream_io... dev#=1 exit
+[  151.498584] madbus.ko:mbdthread1:mbdt_process_io... IoType=1 IntEnable=x8001 IntID=x0
+[  151.498586] madbus.ko:mbdt_process_bufrd_io... 
+               dev#=1 CountBits=x7 IoSzf=x0 UnitSz=512 IoCount=4096 RdIndx=8192 WrIndx=8192
+[  151.498588] maddevc.ko:maddevc_isr... dev#=1 irq=31
+[  151.498593] maddevc.ko:maddevc_isr... normal return dev#=1 IntID=x1 rc=1
+[  151.498599] maddevc.ko:maddevc_dpc... dev#=1 Control=x7008 Status=x0 IntID=x1
+[  151.498601] maddevc.ko:maddev_reset_io_registers... dev#=1 ok
+[  151.498631] madbus.ko:madsim_complete_simulated_io...
+                         dev#=1 IoType=1 IntID=x1 Control=x7008 HostPA=x195C74000 DevLoclAddr=x0 iocount=4096
+[  151.498634] maddevc.ko:maddev_get_io_status... dev#=1 iostat=x0
+[  151.498636] maddevc.ko:maddev_xfer_pages_direct... dev#=1 num_pgs=1 iocount=512
+[  151.498639] maddevc.ko:maddev_put_user_pages... num_pgs=1 pPages=ffffc900039b3e00 pPS0=ffff88821b971d00 PA0=x21B971D00
+[  151.498641] maddevc.ko:maddev_direct_io... dev#=1 iocount=512 offset=8192
+[  151.498751] maddevc.ko:maddev_vma_close... dev#=1
+[  151.498766] maddevc.ko:maddev_release...dev#=1 inode=000000005ac0dd4b fp=00000000f8ddb6ac
+[  151.500434] maddevc.ko:maddev_open... dev#=1 maddev=00000000385304c5 inode=000000005ac0dd4b fp=00000000f85365e3
+[  151.500445] maddevc.ko:maddev_mmap... dev#=1 fp=ffff8881bace4800 pfn=0x37A00 PA=x37A00000 MapSize=65536
+[  151.500449] maddevc.ko:maddev_vma_open... dev#=1
+[  151.500452] maddevc.ko:maddev_mmap:remap_pfn_range... dev#=1 start=00007f6c347bf000 rc=0
+[  151.500500] maddevc.ko:maddev_llseek... dev#=1 lseek=12288
+[  151.500504] maddevc.ko:maddev_llseek... dev#=1 location=12288 fpos=12288
+[  154.500686] maddevc.ko:maddev_read... dev#=1 fp=00000000f85365e3 count=4100 offset_arg=12288 fppos=12288
+[  154.500692] maddevc.ko:maddev_direct_io... dev#=1 fp=ffff8881bace4800 count=4100 offset=12288
+[  154.500707] maddevc.ko:maddev_need_sg... num_pgs=1 PA0=x195C44000 PAx=x195C44000
+[  154.500711] maddevc.ko:maddev_xfer_pages_direct... dev#=1 num_pgs=1 offset=12288 wr=0
+[  154.500713] maddevc.ko:maddev_program_stream_io... dev#=1 PA=x195C44000 CntlReg=x7000 IntEnable=x8001 offset=x3000 wr=0
+[  154.500716] maddevc.ko:maddev_program_stream_io... dev#=1 exit
+[  154.500719] madbus.ko:mbdthread1:mbdt_process_io... IoType=1 IntEnable=x8001 IntID=x0
+[  154.500722] madbus.ko:mbdt_process_bufrd_io... 
+               dev#=1 CountBits=x7 IoSzf=x0 UnitSz=512 IoCount=4096 RdIndx=12288 WrIndx=12288
+[  154.500723] maddevc.ko:maddevc_isr... dev#=1 irq=31
+[  154.500729] maddevc.ko:maddevc_isr... normal return dev#=1 IntID=x1 rc=1
+[  154.500736] maddevc.ko:maddevc_dpc... dev#=1 Control=x7008 Status=x0 IntID=x1
+[  154.500738] maddevc.ko:maddev_reset_io_registers... dev#=1 ok
+[  154.500767] madbus.ko:madsim_complete_simulated_io...
+                         dev#=1 IoType=1 IntID=x1 Control=x7008 HostPA=x195C44000 DevLoclAddr=x0 iocount=4096
+[  154.500770] maddevc.ko:maddev_get_io_status... dev#=1 iostat=x0
+[  154.500772] maddevc.ko:maddev_xfer_pages_direct... dev#=1 num_pgs=1 iocount=512
+[  154.500775] maddevc.ko:maddev_put_user_pages... num_pgs=1 pPages=ffffc90003a73e00 pPS0=ffff88821b971100 PA0=x21B971100
+[  154.500778] maddevc.ko:maddev_direct_io... dev#=1 iocount=512 offset=12288
+[  154.500816] maddevc.ko:maddev_vma_close... dev#=1
+[  154.500830] maddevc.ko:maddev_release...dev#=1 inode=000000005ac0dd4b fp=00000000f85365e3
+[  154.502489] maddevc.ko:maddev_open... dev#=1 maddev=00000000385304c5 inode=000000005ac0dd4b fp=00000000428a88b1
+[  154.502500] maddevc.ko:maddev_mmap... dev#=1 fp=ffff8881fd4df000 pfn=0x37A00 PA=x37A00000 MapSize=65536
+[  154.502504] maddevc.ko:maddev_vma_open... dev#=1
+[  154.502506] maddevc.ko:maddev_mmap:remap_pfn_range... dev#=1 start=00007fef573d3000 rc=0
+[  154.502542] maddevc.ko:maddev_llseek... dev#=1 lseek=16384
+[  154.502544] maddevc.ko:maddev_llseek... dev#=1 location=16384 fpos=16384
+[  157.502796] maddevc.ko:maddev_read... dev#=1 fp=00000000428a88b1 count=4100 offset_arg=16384 fppos=16384
+[  157.502802] maddevc.ko:maddev_direct_io... dev#=1 fp=ffff8881fd4df000 count=4100 offset=16384
+[  157.502816] maddevc.ko:maddev_need_sg... num_pgs=1 PA0=x195D78000 PAx=x195D78000
+[  157.502819] maddevc.ko:maddev_xfer_pages_direct... dev#=1 num_pgs=1 offset=16384 wr=0
+[  157.502822] maddevc.ko:maddev_program_stream_io... dev#=1 PA=x195D78000 CntlReg=x7000 IntEnable=x8001 offset=x4000 wr=0
+[  157.502825] maddevc.ko:maddev_program_stream_io... dev#=1 exit
+[  157.502827] madbus.ko:mbdthread1:mbdt_process_io... IoType=1 IntEnable=x8001 IntID=x0
+[  157.502830] madbus.ko:mbdt_process_bufrd_io... 
+               dev#=1 CountBits=x7 IoSzf=x0 UnitSz=512 IoCount=4096 RdIndx=16384 WrIndx=16384
+[  157.502832] maddevc.ko:maddevc_isr... dev#=1 irq=31
+[  157.502837] maddevc.ko:maddevc_isr... normal return dev#=1 IntID=x1 rc=1
+[  157.502843] maddevc.ko:maddevc_dpc... dev#=1 Control=x7008 Status=x0 IntID=x1
+[  157.502846] maddevc.ko:maddev_reset_io_registers... dev#=1 ok
+[  157.502876] madbus.ko:madsim_complete_simulated_io...
+                         dev#=1 IoType=1 IntID=x1 Control=x7008 HostPA=x195D78000 DevLoclAddr=x0 iocount=4096
+[  157.502879] maddevc.ko:maddev_get_io_status... dev#=1 iostat=x0
+[  157.502881] maddevc.ko:maddev_xfer_pages_direct... dev#=1 num_pgs=1 iocount=512
+[  157.502884] maddevc.ko:maddev_put_user_pages... num_pgs=1 pPages=ffffc90003b2be00 pPS0=ffff88821b975e00 PA0=x21B975E00
+[  157.502887] maddevc.ko:maddev_direct_io... dev#=1 iocount=512 offset=16384
+[  157.502926] maddevc.ko:maddev_vma_close... dev#=1
+[  157.502939] maddevc.ko:maddev_release...dev#=1 inode=000000005ac0dd4b fp=00000000428a88b1
+[  157.504746] maddevc.ko:maddev_open... dev#=1 maddev=00000000385304c5 inode=000000005ac0dd4b fp=000000003518eb09
+[  157.504757] maddevc.ko:maddev_mmap... dev#=1 fp=ffff8881bace5800 pfn=0x37A00 PA=x37A00000 MapSize=65536
+[  157.504760] maddevc.ko:maddev_vma_open... dev#=1
+[  157.504763] maddevc.ko:maddev_mmap:remap_pfn_range... dev#=1 start=00007f80aac8c000 rc=0
+[  157.504792] maddevc.ko:maddev_llseek... dev#=1 lseek=20480
+[  157.504795] maddevc.ko:maddev_llseek... dev#=1 location=20480 fpos=20480
+[  160.504968] maddevc.ko:maddev_read... dev#=1 fp=000000003518eb09 count=4100 offset_arg=20480 fppos=20480
+[  160.504975] maddevc.ko:maddev_direct_io... dev#=1 fp=ffff8881bace5800 count=4100 offset=20480
+[  160.504989] maddevc.ko:maddev_need_sg... num_pgs=1 PA0=x12FB93000 PAx=x12FB93000
+[  160.504992] maddevc.ko:maddev_xfer_pages_direct... dev#=1 num_pgs=1 offset=20480 wr=0
+[  160.504995] maddevc.ko:maddev_program_stream_io... dev#=1 PA=x12FB93000 CntlReg=x7000 IntEnable=x8001 offset=x5000 wr=0
+[  160.504997] maddevc.ko:maddev_program_stream_io... dev#=1 exit
+[  160.505000] madbus.ko:mbdthread1:mbdt_process_io... IoType=1 IntEnable=x8001 IntID=x0
+[  160.505002] madbus.ko:mbdt_process_bufrd_io... 
+               dev#=1 CountBits=x7 IoSzf=x0 UnitSz=512 IoCount=4096 RdIndx=20480 WrIndx=20480
+[  160.505004] maddevc.ko:maddevc_isr... dev#=1 irq=31
+[  160.505009] maddevc.ko:maddevc_isr... normal return dev#=1 IntID=x1 rc=1
+[  160.505015] maddevc.ko:maddevc_dpc... dev#=1 Control=x7008 Status=x0 IntID=x1
+[  160.505018] maddevc.ko:maddev_reset_io_registers... dev#=1 ok
+[  160.505048] madbus.ko:madsim_complete_simulated_io...
+                         dev#=1 IoType=1 IntID=x1 Control=x7008 HostPA=x12FB93000 DevLoclAddr=x0 iocount=4096
+[  160.505051] maddevc.ko:maddev_get_io_status... dev#=1 iostat=x0
+[  160.505053] maddevc.ko:maddev_xfer_pages_direct... dev#=1 num_pgs=1 iocount=512
+[  160.505056] maddevc.ko:maddev_put_user_pages... num_pgs=1 pPages=ffffc900037b3e00 pPS0=ffff888219fee4c0 PA0=x219FEE4C0
+[  160.505058] maddevc.ko:maddev_direct_io... dev#=1 iocount=512 offset=20480
+[  160.505098] maddevc.ko:maddev_vma_close... dev#=1
+[  160.505112] maddevc.ko:maddev_release...dev#=1 inode=000000005ac0dd4b fp=000000003518eb09
+[  160.506870] maddevc.ko:maddev_open... dev#=1 maddev=00000000385304c5 inode=000000005ac0dd4b fp=000000005d0a18a0
+[  160.506880] maddevc.ko:maddev_mmap... dev#=1 fp=ffff8881fd4df800 pfn=0x37A00 PA=x37A00000 MapSize=65536
+[  160.506884] maddevc.ko:maddev_vma_open... dev#=1
+[  160.506887] maddevc.ko:maddev_mmap:remap_pfn_range... dev#=1 start=00007f2a9cc9c000 rc=0
+[  160.506917] maddevc.ko:maddev_llseek... dev#=1 lseek=24576
+[  160.506934] maddevc.ko:maddev_llseek... dev#=1 location=24576 fpos=24576
+[  163.507107] maddevc.ko:maddev_read... dev#=1 fp=000000005d0a18a0 count=4100 offset_arg=24576 fppos=24576
+[  163.507113] maddevc.ko:maddev_direct_io... dev#=1 fp=ffff8881fd4df800 count=4100 offset=24576
+[  163.507127] maddevc.ko:maddev_need_sg... num_pgs=1 PA0=x125CCF000 PAx=x125CCF000
+[  163.507130] maddevc.ko:maddev_xfer_pages_direct... dev#=1 num_pgs=1 offset=24576 wr=0
+[  163.507132] maddevc.ko:maddev_program_stream_io... dev#=1 PA=x125CCF000 CntlReg=x7000 IntEnable=x8001 offset=x6000 wr=0
+[  163.507135] maddevc.ko:maddev_program_stream_io... dev#=1 exit
+[  163.507138] madbus.ko:mbdthread1:mbdt_process_io... IoType=1 IntEnable=x8001 IntID=x0
+[  163.507140] madbus.ko:mbdt_process_bufrd_io... 
+               dev#=1 CountBits=x7 IoSzf=x0 UnitSz=512 IoCount=4096 RdIndx=24576 WrIndx=24576
+[  163.507142] maddevc.ko:maddevc_isr... dev#=1 irq=31
+[  163.507147] maddevc.ko:maddevc_isr... normal return dev#=1 IntID=x1 rc=1
+[  163.507153] maddevc.ko:maddevc_dpc... dev#=1 Control=x7008 Status=x0 IntID=x1
+[  163.507156] maddevc.ko:maddev_reset_io_registers... dev#=1 ok
+[  163.507185] madbus.ko:madsim_complete_simulated_io...
+                         dev#=1 IoType=1 IntID=x1 Control=x7008 HostPA=x125CCF000 DevLoclAddr=x0 iocount=4096
+[  163.507188] maddevc.ko:maddev_get_io_status... dev#=1 iostat=x0
+[  163.507191] maddevc.ko:maddev_xfer_pages_direct... dev#=1 num_pgs=1 iocount=512
+[  163.507194] maddevc.ko:maddev_put_user_pages... num_pgs=1 pPages=ffffc90003b2be00 pPS0=ffff888219d733c0 PA0=x219D733C0
+[  163.507196] maddevc.ko:maddev_direct_io... dev#=1 iocount=512 offset=24576
+[  163.507235] maddevc.ko:maddev_vma_close... dev#=1
+[  163.507248] maddevc.ko:maddev_release...dev#=1 inode=000000005ac0dd4b fp=000000005d0a18a0
+[  163.509002] maddevc.ko:maddev_open... dev#=1 maddev=00000000385304c5 inode=000000005ac0dd4b fp=0000000096ebf2d9
+[  163.509013] maddevc.ko:maddev_mmap... dev#=1 fp=ffff8881fd4ea200 pfn=0x37A00 PA=x37A00000 MapSize=65536
+[  163.509017] maddevc.ko:maddev_vma_open... dev#=1
+[  163.509020] maddevc.ko:maddev_mmap:remap_pfn_range... dev#=1 start=00007fc99dd5b000 rc=0
+[  163.509053] maddevc.ko:maddev_llseek... dev#=1 lseek=28672
+[  163.509056] maddevc.ko:maddev_llseek... dev#=1 location=28672 fpos=28672
+[  166.509230] maddevc.ko:maddev_read... dev#=1 fp=0000000096ebf2d9 count=16900 offset_arg=28672 fppos=28672
+[  166.509236] maddevc.ko:maddev_direct_io... dev#=1 fp=ffff8881fd4ea200 count=16900 offset=28672
+[  166.509254] maddevc.ko:maddev_xfer_sgdma_pages... dev#=1 num_pgs=4 wr=0
+[  166.509259] madbus.ko:mbdthread1:mbdt_process_io... IoType=7 IntEnable=x8002 IntID=x0
+[  166.509263] maddevc.ko:maddevc_isr... dev#=1 irq=31
+[  166.509269] maddevc.ko:maddevc_isr... normal return dev#=1 IntID=x2 rc=1
+[  166.509274] maddevc.ko:maddevc_dpc... dev#=1 Control=xC0 Status=x0 IntID=x2
+[  166.509277] maddevc.ko:maddev_reset_io_registers... dev#=1 ok
+[  166.509319] madbus.ko:madsim_complete_simulated_sgdma... dev#=1 num_elems=4 iocount=16384
+[  166.509321] maddevc.ko:maddev_get_io_status... dev#=1 iostat=x0
+[  166.509324] maddevc.ko:maddev_xfer_sgdma_pages... dev#=1 num_pgs=4 iostat=0 iocount=16384
+[  166.509327] maddevc.ko:maddev_put_user_pages... num_pgs=4 pPages=ffffc90003e1be00 pPS0=ffff888219d74a80 PA0=x219D74A80
+[  166.509332] maddevc.ko:maddev_direct_io... dev#=1 iocount=16384 offset=28672
+[  166.509371] maddevc.ko:maddev_vma_close... dev#=1
+[  166.509385] maddevc.ko:maddev_release...dev#=1 inode=000000005ac0dd4b fp=0000000096ebf2d9
+[  167.520831] madbus.ko:madbus_dev_open: dev#=1, mbobj=ffff8881ffdf9a28 inode=ffff8881cf81eb68 fp=ffff8881c7c9de00
+[  167.520842] madbus.ko:madbus_dev_mmap... dev#=1 fp=ffff8881c7c9de00 pfn=x37A00 PA=x37A00000 MapSize=65536n prot=x27
+[  167.520846] madbus.ko:madbus_vma_open... dev#=1 vma=ffff8881c72f1840
+[  167.520849] madbus.ko:madbus_dev_mmap:remap_pfn_range... dev#=1 start=00007f742c439000 rc=0
+[  167.521011] madbus.ko:madbus_vma_close... dev#=1 vma=ffff8881c72f1840
+[  167.521018] madbus.ko:madbus_dev_release: dev#=1 inode=ffff8881cf81eb68 fp=ffff8881c7c9de00
+[  168.803150] BUG: Bad page state in process khugepaged  pfn:19f71f
+[  168.803157] page:ffff88821bbdc7c0 refcount:-1 mapcount:0 mapping:0000000000000000 index:0x1
+[  168.803159] flags: 0x6700000000000()
+[  168.803162] raw: 0006700000000000 dead000000000100 dead000000000122 0000000000000000
+[  168.803164] raw: 0000000000000001 0000000000000000 ffffffffffffffff 0000000000000000
+[  168.803166] page dumped because: nonzero _refcount
+[  168.803167] Modules linked in: maddevc(OE) madbus(OE) nls_iso8859_1 snd_intel8x0 snd_ac97_codec ac97_bus intel_rapl_msr snd_pcm intel_rapl_common crct10dif_pclmul ghash_clmulni_intel snd_seq_midi aesni_intel snd_seq_midi_event crypto_simd cryptd glue_helper snd_rawmidi rapl snd_seq snd_seq_device snd_timer input_leds joydev sch_fq_codel serio_raw snd vmwgfx soundcore mac_hid ttm drm_kms_helper cec drm fb_sys_fops syscopyarea sysfillrect sysimgblt msr parport_pc ppdev lp parport ip_tables x_tables autofs4 hid_generic usbhid hid crc32_pclmul psmouse ahci pata_acpi libahci i2c_piix4 video
+[  168.803190] CPU: 2 PID: 42 Comm: khugepaged Kdump: loaded Tainted: G           OE     5.7.19krnl_050719 #16
+[  168.803192] Hardware name: innotek GmbH VirtualBox/VirtualBox, BIOS VirtualBox 12/01/2006
+[  168.803193] Call Trace:
+[  168.803201]  dump_stack+0x7a/0xaa
+[  168.803205]  bad_page.cold+0x9d/0xee
+[  168.803208]  free_pages_check_bad+0x5f/0x70
+[  168.803210]  free_pcppages_bulk+0x301/0x440
+[  168.803214]  free_unref_page_commit+0xf0/0x120
+[  168.803217]  free_unref_page_list+0x15c/0x2a0
+[  168.803221]  release_pages+0x33c/0x3a0
+[  168.803225]  pagevec_lru_move_fn+0xbd/0xe0
+[  168.803228]  ? put_pages_list+0x90/0x90
+[  168.803231]  __lru_cache_add+0x5a/0x70
+[  168.803233]  lru_cache_add+0xe/0x10
+[  168.803236]  putback_lru_page+0x13/0x40
+[  168.803239]  release_pte_page+0x46/0x50
+[  168.803241]  khugepaged+0x1c2f/0x2690
+[  168.803249]  kthread+0x106/0x140
+[  168.803251]  ? collapse_pte_mapped_thp+0x3d0/0x3d0
+[  168.803253]  ? kthread_unpark+0x70/0x70
+[  168.803257]  ret_from_fork+0x3a/0x50
+[  168.803303] BUG: Bad page state in process khugepaged  pfn:125d2b
+[  168.803307] page:ffff888219d74ac0 refcount:-1 mapcount:0 mapping:0000000000000000 index:0x1
+[  168.803308] flags: 0x4900000000000()
+[  168.803311] raw: 0004900000000000 dead000000000100 dead000000000122 0000000000000000
+[  168.803313] raw: 0000000000000001 0000000000000000 ffffffffffffffff 0000000000000000
+[  168.803314] page dumped because: nonzero _refcount
+[  168.803316] Modules linked in: maddevc(OE) madbus(OE) nls_iso8859_1 snd_intel8x0 snd_ac97_codec ac97_bus intel_rapl_msr snd_pcm intel_rapl_common crct10dif_pclmul ghash_clmulni_intel snd_seq_midi aesni_intel snd_seq_midi_event crypto_simd cryptd glue_helper snd_rawmidi rapl snd_seq snd_seq_device snd_timer input_leds joydev sch_fq_codel serio_raw snd vmwgfx soundcore mac_hid ttm drm_kms_helper cec drm fb_sys_fops syscopyarea sysfillrect sysimgblt msr parport_pc ppdev lp parport ip_tables x_tables autofs4 hid_generic usbhid hid crc32_pclmul psmouse ahci pata_acpi libahci i2c_piix4 video
+[  168.803330] CPU: 2 PID: 42 Comm: khugepaged Kdump: loaded Tainted: G    B      OE     5.7.19krnl_050719 #16
+[  168.803331] Hardware name: innotek GmbH VirtualBox/VirtualBox, BIOS VirtualBox 12/01/2006
+[  168.803333] Call Trace:
+[  168.803336]  dump_stack+0x7a/0xaa
+[  168.803339]  bad_page.cold+0x9d/0xee
+[  168.803342]  free_pages_check_bad+0x5f/0x70
+[  168.803344]  free_pcppages_bulk+0x301/0x440
+[  168.803348]  free_unref_page_commit+0xf0/0x120
+[  168.803351]  free_unref_page_list+0x15c/0x2a0
+[  168.803355]  release_pages+0x33c/0x3a0
+[  168.803359]  pagevec_lru_move_fn+0xbd/0xe0
+[  168.803361]  ? put_pages_list+0x90/0x90
+[  168.803364]  __lru_cache_add+0x5a/0x70
+[  168.803367]  lru_cache_add+0xe/0x10
+[  168.803369]  putback_lru_page+0x13/0x40
+[  168.803371]  release_pte_page+0x46/0x50
+[  168.803374]  khugepaged+0x1c2f/0x2690
+[  168.803381]  kthread+0x106/0x140
+[  168.803383]  ? collapse_pte_mapped_thp+0x3d0/0x3d0
+[  168.803386]  ? kthread_unpark+0x70/0x70
+[  168.803389]  ret_from_fork+0x3a/0x50
+[  168.803433] BUG: Bad page state in process khugepaged  pfn:125d2c
+[  168.803436] page:ffff888219d74b00 refcount:0 mapcount:1 mapping:0000000000000000 index:0x1
+[  168.803437] flags: 0x4900000000000()
+[  168.803440] raw: 0004900000000000 dead000000000100 dead000000000122 0000000000000000
+[  168.803442] raw: 0000000000000001 0000000000000000 0000000000000000 0000000000000000
+[  168.803443] page dumped because: nonzero mapcount
+[  168.803445] Modules linked in: maddevc(OE) madbus(OE) nls_iso8859_1 snd_intel8x0 snd_ac97_codec ac97_bus intel_rapl_msr snd_pcm intel_rapl_common crct10dif_pclmul ghash_clmulni_intel snd_seq_midi aesni_intel snd_seq_midi_event crypto_simd cryptd glue_helper snd_rawmidi rapl snd_seq snd_seq_device snd_timer input_leds joydev sch_fq_codel serio_raw snd vmwgfx soundcore mac_hid ttm drm_kms_helper cec drm fb_sys_fops syscopyarea sysfillrect sysimgblt msr parport_pc ppdev lp parport ip_tables x_tables autofs4 hid_generic usbhid hid crc32_pclmul psmouse ahci pata_acpi libahci i2c_piix4 video
+[  168.803457] CPU: 2 PID: 42 Comm: khugepaged Kdump: loaded Tainted: G    B      OE     5.7.19krnl_050719 #16
+[  168.803459] Hardware name: innotek GmbH VirtualBox/VirtualBox, BIOS VirtualBox 12/01/2006
+[  168.803460] Call Trace:
+[  168.803463]  dump_stack+0x7a/0xaa
+[  168.803466]  bad_page.cold+0x9d/0xee
+[  168.803469]  free_pages_check_bad+0x5f/0x70
+[  168.803471]  free_pcppages_bulk+0x301/0x440
+[  168.803475]  free_unref_page_commit+0xf0/0x120
+[  168.803478]  free_unref_page_list+0x15c/0x2a0
+[  168.803482]  release_pages+0x33c/0x3a0
+[  168.803486]  pagevec_lru_move_fn+0xbd/0xe0
+[  168.803488]  ? put_pages_list+0x90/0x90
+[  168.803491]  __lru_cache_add+0x5a/0x70
+[  168.803493]  lru_cache_add+0xe/0x10
+[  168.803496]  putback_lru_page+0x13/0x40
+[  168.803498]  release_pte_page+0x46/0x50
+[  168.803500]  khugepaged+0x1c2f/0x2690
+[  168.803508]  kthread+0x106/0x140
+[  168.803510]  ? collapse_pte_mapped_thp+0x3d0/0x3d0
+[  168.803512]  ? kthread_unpark+0x70/0x70
+[  168.803515]  ret_from_fork+0x3a/0x50
+[  168.803519] BUG: Bad page state in process khugepaged  pfn:125d2d
+[  168.803522] page:ffff888219d74b40 refcount:0 mapcount:1 mapping:0000000000000000 index:0x1
+[  168.803524] flags: 0x4900000000000()
+[  168.803526] raw: 0004900000000000 dead000000000100 dead000000000122 0000000000000000
+[  168.803528] raw: 0000000000000001 0000000000000000 0000000000000000 0000000000000000
+[  168.803529] page dumped because: nonzero mapcount
+[  168.803531] Modules linked in: maddevc(OE) madbus(OE) nls_iso8859_1 snd_intel8x0 snd_ac97_codec ac97_bus intel_rapl_msr snd_pcm intel_rapl_common crct10dif_pclmul ghash_clmulni_intel snd_seq_midi aesni_intel snd_seq_midi_event crypto_simd cryptd glue_helper snd_rawmidi rapl snd_seq snd_seq_device snd_timer input_leds joydev sch_fq_codel serio_raw snd vmwgfx soundcore mac_hid ttm drm_kms_helper cec drm fb_sys_fops syscopyarea sysfillrect sysimgblt msr parport_pc ppdev lp parport ip_tables x_tables autofs4 hid_generic usbhid hid crc32_pclmul psmouse ahci pata_acpi libahci i2c_piix4 video
+[  168.803542] CPU: 2 PID: 42 Comm: khugepaged Kdump: loaded Tainted: G    B      OE     5.7.19krnl_050719 #16
+[  168.803544] Hardware name: innotek GmbH VirtualBox/VirtualBox, BIOS VirtualBox 12/01/2006
+[  168.803545] Call Trace:
+[  168.803548]  dump_stack+0x7a/0xaa
+[  168.803551]  bad_page.cold+0x9d/0xee
+[  168.803553]  free_pages_check_bad+0x5f/0x70
+[  168.803556]  free_pcppages_bulk+0x301/0x440
+[  168.803560]  free_unref_page_commit+0xf0/0x120
+[  168.803563]  free_unref_page_list+0x15c/0x2a0
+[  168.803566]  release_pages+0x33c/0x3a0
+[  168.803570]  pagevec_lru_move_fn+0xbd/0xe0
+[  168.803572]  ? put_pages_list+0x90/0x90
+[  168.803576]  __lru_cache_add+0x5a/0x70
+[  168.803578]  lru_cache_add+0xe/0x10
+[  168.803581]  putback_lru_page+0x13/0x40
+[  168.803583]  release_pte_page+0x46/0x50
+[  168.803585]  khugepaged+0x1c2f/0x2690
+[  168.803592]  kthread+0x106/0x140
+[  168.803595]  ? collapse_pte_mapped_thp+0x3d0/0x3d0
+[  168.803597]  ? kthread_unpark+0x70/0x70
+[  168.803600]  ret_from_fork+0x3a/0x50

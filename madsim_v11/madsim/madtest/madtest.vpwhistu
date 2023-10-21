@@ -1,0 +1,174 @@
+[Global]
+CurrentProject=madtest.vpj
+[ProjectDates]
+madtest.vpj=20171016212313806
+[ActiveConfig]
+madtest.vpj=Release
+[TreeExpansion2]
+-@ madtest.vpj
+  - Source Files
+  - Header Files
+  + Resource Files
+  + Bitmaps
+  + Other Files
+scroll:0
+[State]
+SCREEN: 1857 938 133 14 1721 870 0 0 N 0 0 0 0 1356 612 0
+CWD: 
+BUFFER: BN="../../Documents/Link+Workspace/include/madioctls.h"""""
+BI: MA=1 74 1  TABS= WWS=9 IWT= ST=8 IN=2 BW=0 US=32000 RO=0 SE=1 SN=0 BIN=0 MN=C/C++	HM=0 MF=35651584 TL=0 MLL=0 ASE=0 LNL=1 LCF=4 CAPS=0 E=70 ESBU2=-1 CL="" SC="" SCE= SCU= ALM=0 FWRM=0 HMRE=0 HMRBW=0 SPCWT= SWF=2
+VIEW: LN=.0 CL=1 LE=0 CX=0 CY=0 WI=5 BI=1 HT=0 HN=0 HF=0 HC=4
+BUFFER: BN="../../Documents/Link+Workspace/include/madkonsts.h"""""
+BI: MA=1 74 1  TABS= WWS=9 IWT= ST=8 IN=2 BW=0 US=32000 RO=0 SE=1 SN=0 BIN=0 MN=C/C++	HM=0 MF=35651584 TL=0 MLL=0 ASE=0 LNL=1 LCF=4 CAPS=0 E=70 ESBU2=-1 CL="" SC="" SCE= SCU= ALM=0 FWRM=0 HMRE=0 HMRBW=0 SPCWT= SWF=2
+VIEW: LN=.0 CL=1 LE=0 CX=0 CY=0 WI=5 BI=2 HT=0 HN=0 HF=0 HC=4
+BUFFER: BN="madtest.cpp"""""
+BI: MA=1 74 1  TABS= WWS=9 IWT= ST=8 IN=2 BW=0 US=32000 RO=0 SE=1 SN=0 BIN=0 MN=C/C++	HM=0 MF=35651584 TL=0 MLL=0 ASE=0 LNL=1 LCF=4 CAPS=0 E=70 ESBU2=-1 CL="" SC="" SCE= SCU= ALM=0 FWRM=0 HMRE=0 HMRBW=0 SPCWT= SWF=2
+VIEW: LN=.510 CL=12 LE=0 CX=11 CY=23 WI=5 BI=4 HT=0 HN=0 HF=0 HC=4
+BUFFER: BN="madtest.h"""""
+BI: MA=1 74 1  TABS= WWS=9 IWT= ST=8 IN=2 BW=0 US=32000 RO=0 SE=1 SN=0 BIN=0 MN=C/C++	HM=0 MF=35651584 TL=0 MLL=0 ASE=0 LNL=1 LCF=4 CAPS=0 E=70 ESBU2=-1 CL="" SC="" SCE= SCU= ALM=0 FWRM=0 HMRE=0 HMRBW=0 SPCWT= SWF=2
+VIEW: LN=.0 CL=1 LE=0 CX=0 CY=0 WI=5 BI=3 HT=0 HN=0 HF=0 HC=4
+BUFFER: BN="../../Documents/Link+Workspace/include/maddefs.h"""""
+BI: MA=1 74 1  TABS= WWS=9 IWT= ST=8 IN=2 BW=0 US=32000 RO=0 SE=1 SN=0 BIN=0 MN=C/C++	HM=0 MF=35717664 TL=0 MLL=0 ASE=0 LNL=1 LCF=4 CAPS=0 E=70 ESBU2=-1 CL="" SC="" SCE= SCU= ALM=0 FWRM=0 HMRE=0 HMRBW=0 SPCWT= SWF=2
+VIEW: LN=.0 CL=1 LE=0 CX=0 CY=0 WI=5 BI=5 HT=0 HN=0 HF=0 HC=4
+WINDOW: 0 0 640 480 0 0 N  WF=0 WT=5 "Courier 10 Pitch,11,0,1" DID=0
+BUFFER: BN="../../Documents/Link+Workspace/include/madioctls.h"""""
+VIEW: LN=.0 CL=1 LE=0 CX=5 CY=0 WI=160 BI=1 HT=0 HN=0 HF=0 HC=4
+WINDOW: 1 22 1680 563 0 0 N  WF=0 WT=6 "Courier 10 Pitch,11,0,1" DID=0
+BUFFER: BN="../../Documents/Link+Workspace/include/madkonsts.h"""""
+VIEW: LN=.0 CL=1 LE=0 CX=5 CY=0 WI=43 BI=2 HT=0 HN=0 HF=0 HC=4
+WINDOW: 1 22 1680 563 0 0 N  WF=0 WT=2 "Courier 10 Pitch,11,0,1" DID=0
+BUFFER: BN="madtest.cpp"""""
+VIEW: LN=.510 CL=12 LE=0 CX=17 CY=23 WI=163 BI=4 HT=0 HN=0 HF=0 HC=4
+WINDOW: 1 22 1680 563 0 0 N  WF=0 WT=3 "Courier 10 Pitch,11,0,1" DID=0
+BUFFER: BN="madtest.h"""""
+VIEW: LN=.0 CL=1 LE=0 CX=5 CY=0 WI=47 BI=3 HT=0 HN=0 HF=0 HC=4
+WINDOW: 1 22 1354 589 0 0 N  WF=0 WT=4 "Courier 10 Pitch,11,0,1" DID=0
+BUFFER: BN="../../Documents/Link+Workspace/include/maddefs.h"""""
+VIEW: LN=.0 CL=1 LE=0 CX=6 CY=0 WI=106 BI=5 HT=0 HN=0 HF=0 HC=4
+MDISTATE: 1
+AAAAAwAAAAIAAAAB2gAAAAIAMAAAAAAAAAAgAAAGuAAAA0wAAABBAAAAGAAAB0AAAAOpAAAAAuoAAAKyAAAAAvsAAAAFAAAABQAAAAAAAAAEAAAAAwAAAAIAAAAB+wAAAAUAAAAFAAAAAgAAAAEAAAAAAAAABAAAAAP8AAAAgwAAAAB2ADQAOgA6ADoALwBoAG8AbQBlAC8AdQBiAHUAbgB0AHUALwBEAG8AYwB1AG0AZQBuAHQAcwAvAEwAaQBuAGsAKwBXAG8AcgBrAHMAcABhAGMAZQAvAGkAbgBjAGwAdQBkAGUALwBtAGEAZABkAGUAZgBzAC4AaAEA/////wAA/AAAAIcAAAAAegA1ADoAOgA6AC8AaABvAG0AZQAvAHUAYgB1AG4AdAB1AC8ARABvAGMAdQBtAGUAbgB0AHMALwBMAGkAbgBrACsAVwBvAHIAawBzAHAAYQBjAGUALwBpAG4AYwBsAHUAZABlAC8AbQBhAGQAaQBvAGMAdABsAHMALgBoAAD/////AAD8AAAAhwAAAAB6ADYAOgA6ADoALwBoAG8AbQBlAC8AdQBiAHUAbgB0AHUALwBEAG8AYwB1AG0AZQBuAHQAcwAvAEwAaQBuAGsAKwBXAG8AcgBrAHMAcABhAGMAZQAvAGkAbgBjAGwAdQBkAGUALwBtAGEAZABrAG8AbgBzAHQAcwAuAGgAAP////8AAPwAAABnAAAAAFoAMgA6ADoAOgAvAGgAbwBtAGUALwB1AGIAdQBuAHQAdQAvAE0AYQBkAFcAawBTAHAAYwAvAG0AYQBkAHQAZQBzAHQALwBtAGEAZAB0AGUAcwB0AC4AYwBwAHAAAP////8AAPwAAABjAAAAAFYAMwA6ADoAOgAvAGgAbwBtAGUALwB1AGIAdQBuAHQAdQAvAE0AYQBkAFcAawBTAHAAYwAvAG0AYQBkAHQAZQBzAHQALwBtAGEAZAB0AGUAcwB0AC4AaAAA/////wAAAAAAAA==
+FILEHIST: 9
+../../Documents/Link+Workspace/maddevc/maddevcmain.c
+../../Documents/Link+Workspace/maddevc/maddevc.h
+../../Documents/Link+Workspace/maddevc/maddevcio.c
+madtest.cpp
+madtest.h
+../../Documents/Link+Workspace/include/maddefs.h
+../../Documents/Link+Workspace/include/madioctls.h
+../../Documents/Link+Workspace/include/madkonsts.h
+../../Documents/Link+Workspace/include/madregs.h
+ALLFILEHIST: 9
+madtest.h
+madtest.cpp
+../../Documents/Link+Workspace/include/madregs.h
+../../Documents/Link+Workspace/include/madkonsts.h
+../../Documents/Link+Workspace/include/madioctls.h
+../../Documents/Link+Workspace/maddevc/maddevcmain.c
+../../Documents/Link+Workspace/maddevc/maddevcio.c
+../../Documents/Link+Workspace/maddevc/maddevc.h
+../../Documents/Link+Workspace/include/maddefs.h
+TBCLASS: 0 0
+STANDARD_LAYOUT: 51 1 41 5 4 N 0
+_tbopen_form F=40
+_tbdebug_threads_form F=64
+_tbdebug_classes_form F=64
+_tbbaseclasses_form F=40
+_tbderivedclasses_form F=40
+_tbclass_form F=8
+_tbregex_form F=40
+_tbslickc_stack_form F=8
+_tbtagwin_form F=8
+_tbtagrefs_form F=8
+_tboutputwin_form F=8
+_tbdebug_exceptions_form F=384
+_tbdeltasave_form F=0
+_tbfind_form F=36
+_tbbookmarks_form F=8
+_tbsearch_form F=8
+_tbsymbol_props_form F=8
+_tbfind_symbol_form F=32
+_tbsymbolcalls_form F=40
+_tbunittest_form F=0
+_tbclipboard_form F=44
+_tbdebug_regs_form F=64
+_tbdebug_stack_form F=64
+_tbshell_form F=8
+_tbdebug_memory_form F=64
+_tbdebug_members_form F=64
+_tbbufftabs_form F=11
+_tbmessages_browser_form F=8
+_tbfilelist_form F=44
+_tbFTPOpen_form F=0
+_tbnotification_form F=36
+_tbdebug_watches_form F=64
+_tbFTPClient_form F=0
+_tbannotations_browser_form F=0
+_tbsymbol_args_form F=8
+_tbdebug_breakpoints_form F=384
+_tbdebug_autovars_form F=64
+_tbdebug_locals_form F=64
+_tbprojects_form F=8
+_tbproctree_form F=8
+_tbcbrowser_form F=8
+_tboutputwin_form T=0
+_tbproctree_form T=0
+_tbprojects_form T=0
+_tbsearch_form T=0
+_tbopen_form T=0
+AAAAAwAAAAEAAAAB2gAAAAIAMAAAAAAAAAAgAAAGuAAAA0wAAABBAAAAGAAAB0AAAAOpAAAAAesAAAK2AAAAAPsAAAACAAAAAgAAAAAAAAAB+wAAAAIAAAACAAAAAAAAAAH9AAABEwAAAAAaADoAOgA6AC8AdgBEAG8AYwBrAEEAcgBlAGEBAAAAAWcAAQAAAAL7AAAAAwAAAAMAAAAAAAAAAgAAAAH7AAAAAwAAAAMAAAAAAAAAAQAAAAL8AAAAPQAAAAAoADAAOgA6ADoAXwB0AGIAcAByAG8AagBlAGMAdABzAF8AZgBvAHIAbQEA/////wAB///////////8AAAAPQAAAAAoADAAOgA6ADoAXwB0AGIAcAByAG8AYwB0AHIAZQBlAF8AZgBvAHIAbQAA/////wAA///////////8AAAANQAAAAAgADAAOgA6ADoAXwB0AGIAbwBwAGUAbgBfAGYAbwByAG0AAP////8AAP///////////QAAAU8AAAAAGgA6ADoAOgAvAHYARABvAGMAawBBAHIAZQBhAQAAAAVMAAAAAAAB+wAAAAIAAAACAAAAAAAAAAH7AAAAAgAAAAIAAAABAAAAAPwAAAApAAAAABwAOgA6ADoATQBEAEkAQQBSAEUAQQBUAEkATABFAQAAAAJkAAD9AAAAzwAAAAAaADoAOgA6AC8AdgBEAG8AYwBrAEEAcgBlAGEBAAAAAMMAAAAAAAL7AAAAAgAAAAIAAAABAAAAAPsAAAACAAAAAgAAAAAAAAAB/AAAADkAAAAAJAAwADoAOgA6AF8AdABiAHMAZQBhAHIAYwBoAF8AZgBvAHIAbQAA/////wAA///////////8AAAAPwAAAAAqADAAOgA6ADoAXwB0AGIAbwB1AHQAcAB1AHQAdwBpAG4AXwBmAG8AcgBtAQD/////AAD//////////wAAAADbAAAAAAAAAALbAAAAAAAAAAHbAAAAAAAAAAPbAAAAAAAAAAA=
+QTOOLBAR 2 0
+AAAA/wAAAAD9AAAAAAAABrkAAAMtAAAABAAAAAQAAAAIAAAACPwAAAABAAAAAgAAAAIAAAAQAFMAdABhAG4AZABhAHIAZAEAAAAA/////wAAAAAAAAAAAAAAHgBDAHUAcgByAGUAbgB0ACAAQwBvAG4AdABlAHgAdAEAAAJw/////wAAAAAAAAAA
+_tbstandard_form 1
+_tbcontext_form 1
+APP_LAYOUT: 51 1 41 5 4 N 0
+_tbopen_form F=40
+_tbdebug_threads_form F=64
+_tbdebug_classes_form F=64
+_tbbaseclasses_form F=40
+_tbderivedclasses_form F=40
+_tbclass_form F=8
+_tbregex_form F=40
+_tbslickc_stack_form F=8
+_tbtagwin_form F=8
+_tbtagrefs_form F=8
+_tboutputwin_form F=8
+_tbdebug_exceptions_form F=384
+_tbdeltasave_form F=0
+_tbfind_form F=36
+_tbbookmarks_form F=8
+_tbsearch_form F=8
+_tbsymbol_props_form F=8
+_tbfind_symbol_form F=32
+_tbsymbolcalls_form F=40
+_tbunittest_form F=0
+_tbclipboard_form F=44
+_tbdebug_regs_form F=64
+_tbdebug_stack_form F=64
+_tbshell_form F=8
+_tbdebug_memory_form F=64
+_tbdebug_members_form F=64
+_tbbufftabs_form F=11
+_tbmessages_browser_form F=8
+_tbfilelist_form F=44
+_tbFTPOpen_form F=0
+_tbnotification_form F=36
+_tbdebug_watches_form F=64
+_tbFTPClient_form F=0
+_tbannotations_browser_form F=0
+_tbsymbol_args_form F=8
+_tbdebug_breakpoints_form F=384
+_tbdebug_autovars_form F=64
+_tbdebug_locals_form F=64
+_tbprojects_form F=8
+_tbproctree_form F=8
+_tbcbrowser_form F=8
+_tboutputwin_form T=0
+_tbproctree_form T=0
+_tbprojects_form T=0
+_tbsearch_form T=0
+_tbopen_form T=0
+AAAAAwAAAAEAAAAB2gAAAAIAMAAAAAAAAAAgAAAGuAAAA0wAAABBAAAAGAAAB0AAAAOpAAAAAesAAAK2AAAAAPsAAAACAAAAAgAAAAAAAAAB+wAAAAIAAAACAAAAAAAAAAH9AAABEwAAAAAaADoAOgA6AC8AdgBEAG8AYwBrAEEAcgBlAGEBAAAAAWcAAQAAAAL7AAAAAwAAAAMAAAAAAAAAAgAAAAH7AAAAAwAAAAMAAAAAAAAAAQAAAAL8AAAAPQAAAAAoADAAOgA6ADoAXwB0AGIAcAByAG8AagBlAGMAdABzAF8AZgBvAHIAbQEA/////wAB///////////8AAAAPQAAAAAoADAAOgA6ADoAXwB0AGIAcAByAG8AYwB0AHIAZQBlAF8AZgBvAHIAbQAA/////wAA///////////8AAAANQAAAAAgADAAOgA6ADoAXwB0AGIAbwBwAGUAbgBfAGYAbwByAG0AAP////8AAP///////////QAAAU8AAAAAGgA6ADoAOgAvAHYARABvAGMAawBBAHIAZQBhAQAAAAVMAAAAAAAB+wAAAAIAAAACAAAAAAAAAAH7AAAAAgAAAAIAAAABAAAAAPwAAAApAAAAABwAOgA6ADoATQBEAEkAQQBSAEUAQQBUAEkATABFAQAAAAJkAAD9AAAAzwAAAAAaADoAOgA6AC8AdgBEAG8AYwBrAEEAcgBlAGEBAAAAAMMAAAAAAAL7AAAAAgAAAAIAAAABAAAAAPsAAAACAAAAAgAAAAAAAAAB/AAAADkAAAAAJAAwADoAOgA6AF8AdABiAHMAZQBhAHIAYwBoAF8AZgBvAHIAbQAA/////wAA///////////8AAAAPwAAAAAqADAAOgA6ADoAXwB0AGIAbwB1AHQAcAB1AHQAdwBpAG4AXwBmAG8AcgBtAQD/////AAD//////////wAAAADbAAAAAAAAAALbAAAAAAAAAAHbAAAAAAAAAAPbAAAAAAAAAAA=
+QTOOLBAR 2 0
+AAAA/wAAAAD9AAAAAAAABrkAAAMtAAAABAAAAAQAAAAIAAAACPwAAAABAAAAAgAAAAIAAAAQAFMAdABhAG4AZABhAHIAZAEAAAAA/////wAAAAAAAAAAAAAAHgBDAHUAcgByAGUAbgB0ACAAQwBvAG4AdABlAHgAdAEAAAJw/////wAAAAAAAAAA
+_tbstandard_form 1
+_tbcontext_form 1

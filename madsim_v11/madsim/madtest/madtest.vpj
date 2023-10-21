@@ -1,0 +1,82 @@
+<!DOCTYPE Project SYSTEM "http://www.slickedit.com/dtd/vse/10.0/vpj.dtd">
+<Project
+    Version="10.0"
+    VendorName="SlickEdit"
+    TemplateName="(Other)"
+    WorkingDir=".">
+    <Config
+        Name="Release"
+        OutputFile=""
+        CompilerConfigName="">
+        <Menu>
+            <Target
+                Name="Compile"
+                MenuCaption="&amp;Compile"
+                CaptureOutputWith="ProcessBuffer"
+                SaveOption="SaveCurrent"
+                RunFromDir="%rw">
+                <Exec/>
+            </Target>
+            <Target
+                Name="Build"
+                MenuCaption="&amp;Build"
+                CaptureOutputWith="ProcessBuffer"
+                SaveOption="SaveWorkspaceFiles"
+                RunFromDir="%rw">
+                <Exec/>
+            </Target>
+            <Target
+                Name="Rebuild"
+                MenuCaption="&amp;Rebuild"
+                CaptureOutputWith="ProcessBuffer"
+                SaveOption="SaveWorkspaceFiles"
+                RunFromDir="%rw">
+                <Exec/>
+            </Target>
+            <Target
+                Name="Debug"
+                MenuCaption="&amp;Debug"
+                SaveOption="SaveNone"
+                RunFromDir="%rw">
+                <Exec/>
+            </Target>
+            <Target
+                Name="Execute"
+                MenuCaption="E&amp;xecute"
+                SaveOption="SaveNone"
+                RunFromDir="%rw">
+                <Exec CmdLine='".exe"'/>
+            </Target>
+        </Menu>
+    </Config>
+    <Files>
+        <Folder
+            Name="Source Files"
+            Filters="*.c;*.C;*.cc;*.cpp;*.cp;*.cxx;*.c++;*.prg;*.pas;*.dpr;*.asm;*.s;*.bas;*.java;*.cs;*.sc;*.scala;*.e;*.cob;*.html;*.rc;*.tcl;*.py;*.pl;*.d;*.m;*.mm;*.go;*.groovy;*.gsh"
+            GUID="{38D4B3D1-D9EC-4725-95FB-C4FDB3C07C15}">
+            <F N="madtest.cpp"/>
+        </Folder>
+        <Folder
+            Name="Header Files"
+            Filters="*.h;*.H;*.hh;*.hpp;*.hxx;*.h++;*.inc;*.sh;*.cpy;*.if"
+            GUID="{4D08C789-F504-4962-B97A-BE541E32DA5D}">
+            <F N="../../Documents/Link+Workspace/include/madapplib.h"/>
+            <F N="../../Documents/Link+Workspace/include/maddefs.h"/>
+            <F N="../../Documents/Link+Workspace/include/madioctls.h"/>
+            <F N="../../Documents/Link+Workspace/include/madkonsts.h"/>
+            <F N="madtest.h"/>
+        </Folder>
+        <Folder
+            Name="Resource Files"
+            Filters="*.ico;*.cur;*.dlg"
+            GUID="{C9DDFC3C-F91F-4DC2-99D3-CBC63C4AD26A}"/>
+        <Folder
+            Name="Bitmaps"
+            Filters="*.bmp"
+            GUID="{15168FAA-4FA5-4C40-B98B-B691F5D7B728}"/>
+        <Folder
+            Name="Other Files"
+            Filters=""
+            GUID="{9B425F2B-8B51-46AD-A534-9818206F9359}"/>
+    </Files>
+</Project>

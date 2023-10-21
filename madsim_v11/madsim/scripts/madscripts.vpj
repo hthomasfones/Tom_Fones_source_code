@@ -1,0 +1,87 @@
+<!DOCTYPE Project SYSTEM "http://www.slickedit.com/dtd/vse/10.0/vpj.dtd">
+<Project
+    Version="10.0"
+    VendorName="SlickEdit"
+    TemplateName="(Other)"
+    WorkingDir=".">
+    <Config
+        Name="Release"
+        OutputFile=""
+        CompilerConfigName="">
+        <Menu>
+            <Target
+                Name="Compile"
+                MenuCaption="&amp;Compile"
+                CaptureOutputWith="ProcessBuffer"
+                SaveOption="SaveCurrent"
+                RunFromDir="%rw">
+                <Exec/>
+            </Target>
+            <Target
+                Name="Build"
+                MenuCaption="&amp;Build"
+                CaptureOutputWith="ProcessBuffer"
+                SaveOption="SaveWorkspaceFiles"
+                RunFromDir="%rw">
+                <Exec/>
+            </Target>
+            <Target
+                Name="Rebuild"
+                MenuCaption="&amp;Rebuild"
+                CaptureOutputWith="ProcessBuffer"
+                SaveOption="SaveWorkspaceFiles"
+                RunFromDir="%rw">
+                <Exec/>
+            </Target>
+            <Target
+                Name="Debug"
+                MenuCaption="&amp;Debug"
+                SaveOption="SaveNone"
+                RunFromDir="%rw">
+                <Exec/>
+            </Target>
+            <Target
+                Name="Execute"
+                MenuCaption="E&amp;xecute"
+                SaveOption="SaveNone"
+                RunFromDir="%rw">
+                <Exec CmdLine='".exe"'/>
+            </Target>
+        </Menu>
+    </Config>
+    <Files>
+        <Folder
+            Name="Source Files"
+            Filters="*.c;*.C;*.cc;*.cpp;*.cp;*.cxx;*.c++;*.prg;*.pas;*.dpr;*.asm;*.s;*.bas;*.java;*.cs;*.sc;*.scala;*.e;*.cob;*.html;*.rc;*.tcl;*.py;*.pl;*.d;*.m;*.mm;*.go;*.groovy;*.gsh"
+            GUID="{38801747-B618-4EB6-A0A2-F00CC55A3F93}"/>
+        <Folder
+            Name="Header Files"
+            Filters="*.h;*.H;*.hh;*.hpp;*.hxx;*.h++;*.inc;*.sh;*.cpy;*.if"
+            GUID="{BE1CABFA-9B1A-479D-B480-6CF10597A79A}">
+            <F N="mad2drvrstest.sh"/>
+            <F N="madalldevicestest.sh"/>
+            <F N="madappintro.sh"/>
+            <F N="madbufrdiotest.sh"/>
+            <F N="madcachetest.sh"/>
+            <F N="maddirectiotest.sh"/>
+            <F N="madenv.sh"/>
+            <F N="madhotplugtest.sh"/>
+            <F N="madinsmods.sh"/>
+            <F N="madmsitest.sh"/>
+            <F N="madresults.sh"/>
+            <F N="madsetup.sh"/>
+        </Folder>
+        <Folder
+            Name="Resource Files"
+            Filters="*.ico;*.cur;*.dlg"
+            GUID="{91EF7017-3FD2-47D7-8388-636D51EF837D}"/>
+        <Folder
+            Name="Bitmaps"
+            Filters="*.bmp"
+            GUID="{24F6F8A5-EA8E-4A27-9552-B4815E4D0443}"/>
+        <Folder
+            Name="Other Files"
+            Filters=""
+            GUID="{F31D6F88-A33E-4AD9-99AE-A6E35BF9B1CE}"/>
+    </Files>
+</Project>
