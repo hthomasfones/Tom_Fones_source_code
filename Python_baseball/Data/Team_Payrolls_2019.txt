@@ -1,0 +1,30 @@
+ 	Boston Red Sox 	25 	$187,232,500 	$15,689,000
+ 	Chicago Cubs 	25 	$194,081,714 	$11,475,000
+ 	New York Yankees 	25 	$118,832,077 	$87,252,771
+ 	Los Angeles Dodgers 	25 	$99,803,334 	$52,316,668
+ 	San Francisco Giants 	25 	$157,271,237 	$21,000,000
+ 	St. Louis Cardinals 	25 	$125,365,166 	$33,005,100
+ 	Washington Nationals 	25 	$154,176,081 	$7,539,300
+ 	Houston Astros 	25 	$147,619,666 	$12,100,000
+ 	Los Angeles Angels 	25 	$132,175,083 	$26,703,500
+ 	New York Mets 	25 	$91,576,770 	$50,572,500
+ 	Seattle Mariners 	25 	$116,382,175 	$22,482,900
+ 	Colorado Rockies 	25 	$125,185,509 	$20,747,500
+ 	Philadelphia Phillies 	25 	$131,152,962 	$9,559,000
+ 	Texas Rangers 	25 	$104,349,564 	$1,668,000
+ 	Cincinnati Reds 	25 	$106,440,714 	$19,982,500
+ 	Milwaukee Brewers 	25 	$108,403,700 	$13,126,700
+ 	Arizona Diamondbacks 	25 	$96,777,231 	$11,124,600
+ 	Minnesota Twins 	25 	$101,056,933 	$12,270,000
+ 	Cleveland Indians 	25 	$88,713,833 	$30,277,868
+ 	Detroit Tigers 	25 	$97,988,900 	$3,934,500
+ 	Atlanta Braves 	25 	$89,551,043 	$23,825,000
+ 	Toronto Blue Jays 	25 	$54,568,171 	$8,603,000
+ 	Kansas City Royals 	25 	$67,941,887 	$28,605,350
+ 	San Diego Padres 	25 	$63,068,635 	$10,965,200
+ 	Oakland Athletics 	25 	$84,345,833 	$6,972,500
+ 	Chicago White Sox 	25 	$83,757,121 	$4,555,000
+ 	Pittsburgh Pirates 	25 	$54,577,502 	$20,230,500
+ 	Baltimore Orioles 	25 	$61,124,882 	$11,558,000
+ 	Miami Marlins 	25 	$69,574,714 	$1,665,000
+ 	Tampa Bay Rays 	25 	$49,084,731 	$4,360,200

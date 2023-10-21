@@ -1,0 +1,30 @@
+ 	Los Angeles Dodgers 	$155,887,854 	$37,354,166 	$242,065,828
+ 	New York Yankees 	$168,045,699 	$5,644,000 	$201,539,699
+ 	Boston Red Sox 	$136,780,500 	$38,239,250 	$199,805,178
+ 	Detroit Tigers 	$168,500,600 	$11,750,000 	$199,750,600
+ 	Toronto Blue Jays 	$159,175,968 	$2,169,400 	$177,795,368
+ 	Texas Rangers 	$115,162,703 	$39,136,360 	$175,909,063
+ 	San Francisco Giants 	$169,504,611 	$2,500,000 	$172,354,611
+ 	Chicago Cubs 	$170,189,880 	$2,000,000 	$172,189,880
+ 	Washington Nationals 	$163,111,918 	$535,000 	$167,846,918
+ 	Baltimore Orioles 	$142,066,615 	$19,501,668 	$163,676,616
+ 	Los Angeles Angels of Anaheim 	$116,844,833 	$17,120,500 	$160,375,333
+ 	New York Mets 	$120,870,470 	$26,141,990 	$155,187,460
+ 	Seattle Mariners 	$139,257,018 	$15,007,300 	$154,800,918
+ 	St. Louis Cardinals 	$136,181,533 	$13,521,400 	$152,452,933
+ 	Kansas City Royals 	$127,333,150 	$4,092,100 	$140,925,250
+ 	Colorado Rockies 	$86,909,571 	$14,454,000 	$130,963,571
+ 	Cleveland Indians 	$101,105,399 	$14,005,766 	$124,861,165
+ 	Houston Astros 	$117,957,800 	$4,386,100 	$124,343,900
+ 	Atlanta Braves 	$103,303,791 	$8,927,500 	$112,437,541
+ 	Miami Marlins 	$96,446,100 	$15,035,000 	$111,881,100
+ 	Philadelphia Phillies 	$86,841,000 	$537,000 	$111,378,000
+ 	Minnesota Twins 	$92,592,500 	$8,735,000 	$108,077,500
+ 	Pittsburgh Pirates 	$92,362,832 	- 	$100,575,946
+ 	Chicago White Sox 	$95,625,000 	$1,671,000 	$99,119,770
+ 	Cincinnati Reds 	$53,858,785 	$26,910,000 	$93,768,785
+ 	Arizona Diamondbacks 	$91,481,600 	$1,626,000 	$93,257,600
+ 	Oakland Athletics 	$64,339,166 	$5,732,500 	$81,738,333
+ 	San Diego Padres 	$29,628,400 	$4,946,000 	$71,624,400
+ 	Tampa Bay Rays 	$55,282,232 	$14,680,300 	$69,962,532
+ 	Milwaukee Brewers 	$50,023,900 	$13,037,400 	$63,061,300
