@@ -1,0 +1,75 @@
+;/*++
+;
+;Copyright (c) 2022 HTF Consulting
+;
+;Module Name:
+;    MadDiskMp.inf
+;
+;Abstract:
+;    INF file for installing the Model-Abstract-Demo-Device  
+;    function driver
+;
+;    This install file is provided by exclusive license for non-commercial
+;    use to XYZ Company  
+;
+;--*/
+
+[Version]
+Signature="$WINDOWS NT$"
+Class      = SCSIAdapter
+ClassGUID  = {4D36E97B-E325-11CE-BFC1-08002BE10318} ;scsi adapter
+;;;Class = FloppyDisk
+;;;ClassGuid = {4d36e980-e325-11ce-bfc1-08002be10318} ;FloppyDisk
+;;;Class = DiskDrive
+;;;ClassGuid = {4d36e967-e325-11ce-bfc1-08002be10318} ;Disk
+
+Provider   =; %ManufacturerName%
+DriverVer  =; 
+CatalogFile=; MadDiskMp.cat
+PnpLockdown=1
+
+[DestinationDirs]
+DefaultDestDir = 12
+MadDiskMp_Device_CoInstaller_CopyFiles = 11
+
+[SourceDisksNames]
+1 = %DiskName%,,,""
+
+[SourceDisksFiles]
+MadDiskMp.sys  = 1,,
+
+;*****************************************
+; Install Section
+;*****************************************
+[Manufacturer]
+%VendorHtfc%=Standard,NT$ARCH$; NTamd64
+
+[Standard.NT$ARCH$]
+;;;%MadDiskMp.DeviceDesc%=MadDiskMp_Device,  PCI\VEN_9808&DEV_2001 ; 
+%MadDiskMp.DeviceDesc%=MadDiskMp_Device, MadBus2\VEN_9808&DEV_2001 ; 
+
+[MadDiskMp_Device.NT]
+CopyFiles=Drivers_Dir
+
+[Drivers_Dir]
+MadDiskMp.sys
+
+;-------------- Service installation
+[MadDiskMp_Device.NT.Services]
+AddService = MadDiskMp,%SPSVCINST_ASSOCSERVICE%, MadDiskMp_Service_Inst
+
+; -------------- MadDiskMp driver install sections
+[MadDiskMp_Service_Inst]
+DisplayName    = %MadDiskMp.SVCDESC%
+ServiceType    = 1               ; SERVICE_KERNEL_DRIVER
+StartType      = 3               ; SERVICE_DEMAND_START
+ErrorControl   = 1               ; SERVICE_ERROR_NORMAL
+ServiceBinary  = %12%\MadDiskMp.sys
+LoadOrderGroup = SCSI Miniport
+
+[Strings]
+SPSVCINST_ASSOCSERVICE= 0x00000002
+VendorHtfc = "HTF Consulting"
+DiskName = "MadDiskMp Installation Disk"
+MadDiskMp.DeviceDesc = "HTF-Consulting MadScsiAdapter"
+MadDiskMp.SVCDESC = "HTF-Consulting MadDiskMp.sys"

@@ -1,0 +1,87 @@
+;/*++
+;
+;Copyright (c) 2022 HTF Consulting
+;
+;Module Name:
+;    MadDevice.INF
+;
+;Abstract:
+;    INF file for installing the Model-Abstract-Demo-Device  
+;    function driver
+;
+;    This install file is provided by exclusive license for non-commercial
+;    use to XYZ Company  
+;
+;--*/
+
+[Version]
+PnpLockdown=1
+Signature="$WINDOWS NT$"
+Class=ModelAbstractDemoDevice ;Device setup class (MadGUID.h)
+ClassGuid={c07f84c6-9092-4dbe-abab-465d3d99e5f2}
+Provider=;
+CatalogFile=;
+DriverVer=;
+
+; ================= Class section =====================
+[ClassInstall32]
+Addreg=ModelAbstractDemoDeviceClassReg
+
+[ModelAbstractDemoDeviceClassReg]
+HKR,,,0,%ClassName%
+HKR,,Icon,,-5
+
+[DestinationDirs]
+Drivers_Dir = 12
+
+[SourceDisksNames]
+1 = %DiskName%,,,""
+
+[SourceDisksFiles]
+MadDevice.sys  = 1,,
+
+;*****************************************
+; Install Section
+;*****************************************
+[Manufacturer]
+%VendorHtfc%=Standard,NTamd64
+
+[Standard.NTamd64]
+;;;%MadDevice.DeviceDesc%=Mad_Device,  PCI\VEN_9808&DEV_1001
+%MadDevice.DeviceDesc%=Mad_Device, MadBus1\VEN_9808&DEV_1001
+
+[Mad_Device.NT]
+CopyFiles=Drivers_Dir
+
+[Drivers_Dir]
+MadDevice.sys
+
+;-------------- Service installation
+[Mad_Device.NT.Services]
+AddService = MadDevice,%SPSVCINST_ASSOCSERVICE%, MadDevice_Service_Inst
+
+; -------------- MadDevice driver install sections
+[MadDevice_Service_Inst]
+DisplayName    = %MadDevice.SVCDESC%
+ServiceType    = 1               ; SERVICE_KERNEL_DRIVER
+StartType      = 3               ; SERVICE_DEMAND_START
+ErrorControl   = 1               ; SERVICE_ERROR_NORMAL
+ServiceBinary  = %12%\MadDevice.sys
+LoadOrderGroup = Extended Base
+AddReg=MadDevice_Service_RegParms
+
+[MadDevice_Service_RegParms]
+;;; These subkeys are relative to the Services key
+;Hive  Subkey             ValueName,       Flags(REG_DWORD),  Value
+HKR,   Parameters,        "DmaEnabled",    0x00010001,        0
+HKR,   Parameters\Wdf,    "VerifierOn",    0x00010001,        0
+
+;--- Mad_Device Coinstaller installation ------
+
+[Strings]
+SPSVCINST_ASSOCSERVICE= 0x00000002
+VendorHtfc = "HTF Consulting"
+ClassName="Model-Abstract-Device-Class"
+DiskName = "MadDevice Installation Disk"
+MadDevice.DeviceDesc = "HTF Consulting MadDevice"
+MadDevice.SVCDESC = "HTF Consulting MadDevice.sys"

@@ -1,0 +1,5 @@
+﻿  Building 'Madbus' with toolset 'WindowsKernelModeDriver10.0' and the 'Universal' target platform.
+  Stamping Debug\MadBus.inf
+  Stamping [Version] section with DriverVer=03/16/2022,12.25.34.940
+C:\Users\TOM\Source\Repos\MadsimVs2019\Madbus\MadBus.inx(28-28): error 1236: Empty string not allowed for Provider.
+C:\Users\TOM\Source\Repos\MadsimVs2019\Madbus\MadBus.inx(29-29): error 1233: Missing directive CatalogFile required for digital signature.

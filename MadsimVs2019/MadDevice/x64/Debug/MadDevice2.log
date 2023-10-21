@@ -1,0 +1,125 @@
+﻿  Building 'MadDevice' with toolset 'WindowsKernelModeDriver10.0' and the 'Universal' target platform.
+  Stamping x64\Debug\MadDevice.inf
+  Stamping [Version] section with DriverVer=12/15/2021,12.3.21.64
+     stampinf: found Section-Line 17: [Version]
+  
+     stampinf: In Version section
+     stampinf: updating existing DriverVer=
+     stampinf: REPLACE       Line 24: DriverVer=;
+  
+     stampinf: WITH          Line 24: DriverVer = 12/15/2021,12.3.21.64
+  
+     stampinf: changed file size by 22
+  Stamping [Version] section with CatalogFile=MadDevice2.cat
+     stampinf: found Section-Line 17: [Version]
+  
+     stampinf: In Version section
+     stampinf: updating existing CatalogFile=
+     stampinf: REPLACE       Line 23: CatalogFile=;
+  
+     stampinf: WITH          Line 23: CatalogFile = MadDevice2.cat
+  
+     stampinf: changed file size by 15
+  Stamping [Version] section with Provider=HTF Consulting
+     stampinf: found Section-Line 17: [Version]
+  
+     stampinf: In Version section
+     stampinf: updating existing Provider=
+     stampinf: REPLACE       Line 22: Provider=;
+  
+     stampinf: WITH          Line 22: Provider = HTF Consulting
+  
+     stampinf: changed file size by 15
+     stampinf: looking for [Manufacturer] section...
+     stampinf: found Section-Line 17: [Version]
+  
+     stampinf: found Section-Line 27: [ClassInstall32]
+  
+     stampinf: found Section-Line 30: [ModelAbstractDemoDeviceClassReg]
+  
+     stampinf: found Section-Line 34: [DestinationDirs]
+  
+     stampinf: found Section-Line 38: [SourceDisksNames]
+  
+     stampinf: found Section-Line 41: [SourceDisksFiles]
+  
+     stampinf: found Section-Line 49: [Manufacturer]
+  
+     stampinf: In Manufacturer section
+     stampinf: Line 50: %VendorHtfc%=Standard,NTamd64
+  
+     stampinf: found Section-Line 52: [Standard.NTamd64]
+  
+     stampinf: found end of [Manufacturer] section
+     stampinf: looking for decorated section names...
+     stampinf: found Section-Line 17: [Version]
+  
+     stampinf: found Section-Line 27: [ClassInstall32]
+  
+     stampinf: found Section-Line 30: [ModelAbstractDemoDeviceClassReg]
+  
+     stampinf: found Section-Line 34: [DestinationDirs]
+  
+     stampinf: found Section-Line 38: [SourceDisksNames]
+  
+     stampinf: found Section-Line 41: [SourceDisksFiles]
+  
+     stampinf: found Section-Line 49: [Manufacturer]
+  
+     stampinf: found Section-Line 52: [Standard.NTamd64]
+  
+     stampinf: found Section-Line 55: [Mad_Device.NT]
+  
+     stampinf: found Section-Line 58: [Drivers_Dir]
+  
+     stampinf: found Section-Line 62: [Mad_Device.NT.Services]
+  
+     stampinf: found Section-Line 66: [MadDevice_Service_Inst]
+  
+     stampinf: found Section-Line 75: [MadDevice_Service_RegParms]
+  
+     stampinf: found Section-Line 105: [Strings]
+  
+     stampinf: looking for WDF version strings
+               $KMDFVERSION$ = 1.15 $KMDFCOINSTALLERVERSION$ = 01015
+               $KMDFVERSION$ = 1.15 $KMDFCOINSTALLERVERSION$ = 01015
+               $KMDFVERSION$ = 1.15 $KMDFCOINSTALLERVERSION$ = 01015
+               $KMDFVERSION$ = 1.15 $KMDFCOINSTALLERVERSION$ = 01015
+               $KMDFVERSION$ = 1.15 $KMDFCOINSTALLERVERSION$ = 01015
+               $KMDFVERSION$ = 1.15 $KMDFCOINSTALLERVERSION$ = 01015
+               $KMDFVERSION$ = 1.15 $KMDFCOINSTALLERVERSION$ = 01015
+               $KMDFVERSION$ = 1.15 $KMDFCOINSTALLERVERSION$ = 01015
+               $KMDFVERSION$ = 1.15 $KMDFCOINSTALLERVERSION$ = 01015
+               $KMDFVERSION$ = 1.15 $KMDFCOINSTALLERVERSION$ = 01015
+               $KMDFVERSION$ = 1.15 $KMDFCOINSTALLERVERSION$ = 01015
+               $KMDFVERSION$ = 1.15 $KMDFCOINSTALLERVERSION$ = 01015
+               $KMDFVERSION$ = 1.15 $KMDFCOINSTALLERVERSION$ = 01015
+               $KMDFVERSION$ = 1.15 $KMDFCOINSTALLERVERSION$ = 01015
+  MC: Compiling MadDevice.mc
+  Writing x64\Debug\MadDevice_MSG00001.bin
+      [60070001 .. 60070002] - 184 bytes
+      [e0070003 .. e0070005] - 376 bytes
+      Total of 5 messages, 588 bytes
+  MadRegFunxns.cpp
+  DBG build!
+  WPP_TRACING defined!
+  MadUtilFunxns.cpp
+  DBG build!
+  WPP_TRACING defined!
+  MadDevice.cpp
+  DBG build!
+  WPP_TRACING defined!
+C:\Users\TOM\Source\Repos\MadsimVs2019\inc\MadDevice.h(47,10): fatal error C1083: Cannot open include file: '..\MadDevice\MadDeviceMC\MadDevice.h': No such file or directory
+  MadDevIoFunxns.cpp
+  DBG build!
+  WPP_TRACING defined!
+C:\Users\TOM\Source\Repos\MadsimVs2019\inc\MadDevice.h(47,10): fatal error C1083: Cannot open include file: '..\MadDevice\MadDeviceMC\MadDevice.h': No such file or directory
+  MadDevWMI.cpp
+  DBG build!
+  WPP_TRACING defined!
+C:\Users\TOM\Source\Repos\MadsimVs2019\inc\MadDevice.h(47,10): fatal error C1083: Cannot open include file: '..\MadDevice\MadDeviceMC\MadDevice.h': No such file or directory
+  MadPower.cpp
+  DBG build!
+  WPP_TRACING defined!
+C:\Users\TOM\Source\Repos\MadsimVs2019\inc\MadDevice.h(47,10): fatal error C1083: Cannot open include file: '..\MadDevice\MadDeviceMC\MadDevice.h': No such file or directory
+  Generating Code...

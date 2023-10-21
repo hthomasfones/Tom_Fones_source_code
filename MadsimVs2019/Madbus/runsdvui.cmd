@@ -1,0 +1,2 @@
+cd /d "C:\Users\TOM\Source\Repos\MadsimVs2019\Madbus" &msbuild "Madbus.vcxproj" /t:sdvViewer /p:configuration="Debug" /p:platform="x64" /p:SolutionDir="C:\Users\TOM\Source\Repos\MadsimVs2019" 
+exit %errorlevel% 

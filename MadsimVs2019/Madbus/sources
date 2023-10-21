@@ -1,0 +1,31 @@
+TARGETNAME=MadBus
+TARGETTYPE=DRIVER
+
+
+NTTARGETFILE0=$(OBJ_PATH)\$(O)\MadBus.bmf
+
+INCLUDES=$(INCLUDES);..\inc\;..\Includes
+
+KMDF_VERSION_MAJOR=1
+
+INF_NAME=MadBus
+
+TARGETLIBS=$(TARGETLIBS) \
+           $(DDK_LIB_PATH)\ntstrsafe.lib
+
+NTTARGETFILE1=$(OBJ_PATH)\$(O)\$(INF_NAME).inf
+
+
+
+PASS1_BINPLACE=$(NTTARGETFILE1)
+
+
+SOURCES= MadBus.rc              \
+         MadBus.cpp             \
+         MadBusPdo.cpp          \
+         MadBusWMI.cpp          \
+         MadBusDevIntThread.cpp \
+	 ..\MadMemoryFunxns.cpp    \
+	 ..\MadRegFunxns.cpp
+
+TARGET_DESTINATION=wdf

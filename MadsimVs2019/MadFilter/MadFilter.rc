@@ -1,0 +1,33 @@
+/********1*********2*********3*********4*********5**********6*********7*********/
+/*                                                                             */
+/*  PRODUCT      : MAD Device Simulation Framework                             */
+/*  COPYRIGHT    : (c) 2013 HTF Consulting                                     */
+/*                                                                             */
+/* This source code is provided by exclusive license for non-commercial use to */
+/* XYZ Company                                                                 */
+/*                                                                             */
+/*******************************************************************************/
+/*                                                                             */
+/*  Exe file ID  : MadFilter.sys                                               */
+/*                                                                             */
+/*  Module  NAME : MadFilter.rc                                                */
+/*                                                                             */
+/*  DESCRIPTION  :                                                             */
+/*                                                                             */
+/*                                                                             */
+/*                                                                             */
+/*******************************************************************************/
+
+#include <windows.h>
+#include <filter.h>
+#include <ntverp.h>
+
+#define VER_FILETYPE                VFT_DRV
+#define VER_FILESUBTYPE             VFT2_DRV_SYSTEM
+#define VER_FILEDESCRIPTION_STR     "Filter Driver for the MadDevice Stack"
+#define VER_INTERNALNAME_STR        "MadFilter.sys" 
+#define VER_ORIGINALFILENAME_STR    "MadFilter.sys"
+
+#include "common.ver"
+
+

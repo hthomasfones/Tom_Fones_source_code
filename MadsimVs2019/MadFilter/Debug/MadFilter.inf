@@ -1,0 +1,124 @@
+;/*++
+;
+;Copyright (c) 2022 HTF Consulting
+;
+;Module Name:
+;    MadFilter.inf
+;
+;Abstract:
+;    INF file for installing the Model-Abstract-Demo-Device  
+;    filter driver
+;
+;    This file is dependant on MadDevice.inf
+
+;    This install file is provided by exclusive license for non-commercial
+;    use to XYZ Company  
+;
+;--*/
+
+[Version]
+PnpLockDown=1
+Signature   = "$WINDOWS NT$"
+Class       = MADDEVICE
+ClassGuid   = {B85B7C50-6A01-11d2-B841-00C04FAD5171}
+Provider    =; 
+DriverVer = 03/17/2022,11.35.13.736
+CatalogFile =; 
+
+; ================= Class section =====================
+
+[ClassInstall32]
+;Addreg=MadDeviceClassReg
+;CopyFiles=MadDeviceClassInstallerCopyFiles
+
+;[MadDeviceClassReg]
+;HKR,,,0,%ClassName%
+;HKR,,Icon,,100
+;HKR,,Installer32,,"MadDevClass.dll,MadDeviceClassInstaller"
+;HKR,,DeviceCharacteristics,0x10001,0x100     ;Use same security checks on relative opens
+;HKR,,Security,,"D:P(A;;GA;;;SY)(A;;GA;;;BA)" ;Allow generic all access to system and built-in Admin.
+                                             ;This one overrides the security set by the driver
+
+;*****************************************
+; MadDevice Device Filter Install Section
+;*****************************************
+[Manufacturer]
+%StdMfg%=Standard,NTx86
+
+; For XP and later
+[Standard.NTx86]
+%MadDeviceFilter.DeviceDesc%=MadDeviceFilter, {b85b7c50-6a01-11d2-b841-00c04fad5171}\MsMadDevice
+
+[MadDeviceFilter.NT]  
+CopyFiles=MadDeviceFilter.NT.Copy
+
+[MadDeviceFilter.NT.Copy]
+MadFilter.sys
+
+[MadDeviceFilter.NT.HW]
+AddReg = MadDeviceFilter.NT.HW.AddReg
+
+[MadDeviceFilter.NT.HW.AddReg]  
+HKR,,"UpperFilters",0x00010000,"MadFilter"
+
+;*****************************************
+; MadDevice Device Filter Service Section
+;*****************************************
+
+[MadDeviceFilter.NT.Services]
+;Do not specify SPSVCINST_ASSOCSERVICE on filter drivers. 
+AddService      = MadFilter,, filter_Service_Inst 
+AddService      = MadDevice, %SPSVCINST_ASSOCSERVICE%, MadDevice_Service_Inst
+
+[filter_Service_Inst]
+DisplayName     = %filter.SvcDesc%                            
+ServiceType     = 1                  ; SERVICE_KERNEL_DRIVER
+StartType       = 3                  ; SERVICE_DEMAND_START
+ErrorControl    = 1                  ; SERVICE_ERROR_NORMAL
+ServiceBinary   = %12%\MadFilter.sys                            
+
+[MadDevice_Service_Inst]
+DisplayName     = %MadDevice.SVCDESC%
+ServiceType     = 1                  ; SERVICE_KERNEL_DRIVER
+StartType       = 3                  ; SERVICE_DEMAND_START
+ErrorControl    = 1                  ; SERVICE_ERROR_NORMAL
+ServiceBinary   = %12%\MadDevice.sys
+LoadOrderGroup  = Extended Base
+
+;*************************
+; Source file information
+;*************************
+[SourceDisksNames]
+1 = %DiskId1%,,,""
+
+;--- MadDeviceFilter Coinstaller installation ------
+[DestinationDirs]
+MadDeviceClassInstallerCopyFiles      = 11
+;MadDeviceFilter_CoInstaller_CopyFiles = 11
+MadDeviceFilter.NT.Copy
+
+[SourceDisksFiles]
+MadFilter.sys   = 1,,
+;;;MadDevice.sys   = 1,,
+
+[MadDeviceFilter.NT.Wdf]
+KmdfService              = MadFilter, Filter_wdfsect
+KmdfService              = MadDevice, MadDevice_wdfsect
+
+[Filter_wdfsect]
+KmdfLibraryVersion       = 1.15
+
+[MadDevice_wdfsect]
+KmdfLibraryVersion       = 1.15
+
+[Strings]
+SPSVCINST_ASSOCSERVICE   = 0x00000002
+HTFC                     = "HTF Consulting"
+StdMfg                   = "(Standard system devices)"
+ClassName                = "MadDevice"
+DiskId1                  = "MadDevice Filter Installation Disk #1"
+MadDeviceFilter.DeviceDesc = "HTF Consulting MadDevice Filter"
+filter.SvcDesc           = "HTF Consulting MadDevice Filter Driver"
+MadDevice.SVCDESC          = "HTF Consulting MadDevice Filter Driver"
+
+

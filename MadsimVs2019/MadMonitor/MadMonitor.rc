@@ -1,0 +1,116 @@
+//Microsoft Developer Studio generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#define APSTUDIO_HIDDEN_SYMBOLS
+#include "windows.h"
+#undef APSTUDIO_HIDDEN_SYMBOLS
+#include "MadMonitor.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+GENERICMENU MENU DISCARDABLE 
+BEGIN
+    POPUP "&Display"
+    BEGIN
+        MENUITEM "&Annotate",                   ID_DISPLAY_ANNOTATE
+        MENUITEM "&Copy All",                   ID_DISPLAY_COPYALL
+        MENUITEM "&Erase",                      IDM_DISPLAY_CLEAR
+    END
+    MENUITEM "&About",                      IDM_HELP_ABOUT
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_DIALOG DIALOG DISCARDABLE  0, 0, 232, 86
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Plug In Device"
+FONT 8, "MS Shell Dlg"
+BEGIN
+    DEFPUSHBUTTON   "OK",ID_OK,27,61,50,14,BS_NOTIFY
+    DEFPUSHBUTTON   "CANCEL",ID_CANCEL,121,60,50,14,BS_NOTIFY
+    LTEXT           "Serial Number :",IDC_STATIC,18,13,55,8
+    LTEXT           "Device ID :",IDC_STATIC,20,35,55,8
+    EDITTEXT        IDC_SERIALNO,75,11,24,14,ES_NUMBER
+    EDITTEXT        IDC_DEVICEID,76,32,131,14,ES_AUTOHSCROLL
+END
+
+IDD_DIALOG1 DIALOG DISCARDABLE  0, 0, 232, 86
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Enter SerialNo of the device"
+FONT 8, "MS Shell Dlg"
+BEGIN
+    LTEXT           "Serial Number :",IDC_STATIC,18,13,55,8
+    EDITTEXT        IDC_SERIALNO,75,11,24,14,ES_NUMBER
+    DEFPUSHBUTTON   "OK",ID_OK,27,61,50,14,BS_NOTIFY
+    DEFPUSHBUTTON   "CANCEL",ID_CANCEL,121,60,50,14,BS_NOTIFY
+END
+
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#define APSTUDIO_HIDDEN_SYMBOLS\r\n"
+    "#include ""windows.h""\r\n"
+    "#undef APSTUDIO_HIDDEN_SYMBOLS\r\n"
+    "#include ""absdevmon.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

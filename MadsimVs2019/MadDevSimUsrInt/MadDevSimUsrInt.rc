@@ -1,0 +1,689 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (United States) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "#define _AFX_NO_SPLITTER_RESOURCES\r\n"
+    "#define _AFX_NO_OLE_RESOURCES\r\n"
+    "#define _AFX_NO_TRACKER_RESOURCES\r\n"
+    "#define _AFX_NO_PROPERTY_RESOURCES\r\n"
+    "\r\n"
+    "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)\r\n"
+    "#ifdef _WIN32\r\n"
+    "LANGUAGE 9, 1\r\n"
+    "#pragma code_page(1252)\r\n"
+    "#endif\r\n"
+    "#include ""res\\Simulator.rc2""  // non-Microsoft Visual C++ edited resources\r\n"
+    "#include ""afxres.rc""         // Standard components\r\n"
+    "#endif\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDR_MAINFRAME           ICON                    "res\\Simulator.ico"
+
+IDI_JMNCO               ICON                    "res\\htfco.ico"
+
+IDI_ICON1               ICON                    "res\\icon1.ico"
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_ABOUTBOX DIALOG 0, 0, 265, 117
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "About Model-Abstract-Demo Device Simulation UI"
+FONT 8, "MS Sans Serif"
+BEGIN
+    ICON            IDR_MAINFRAME,IDC_STATIC,7,3,20,20
+    LTEXT           "Block Mode Int Device Simulator & UI:  Version 2.0",IDC_STATIC,37,10,148,8,SS_NOPREFIX
+    DEFPUSHBUTTON   "OK",IDOK,226,7,32,14,WS_GROUP
+    LTEXT           "Provided by HTF Consulting: http://www.htfconsulting.com",IDC_STATIC,36,19,174,8
+END
+
+IDD_SIMULATOR_DIALOG DIALOGEX 0, 0, 321, 356
+STYLE DS_SETFONT | WS_MINIMIZEBOX | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
+EXSTYLE WS_EX_APPWINDOW
+CAPTION "Model-Abstract-Demo Device Simulator UI: Unit X"
+MENU IDR_MAINMENU
+FONT 8, "MS Sans Serif", 0, 0, 0x1
+BEGIN
+    CONTROL         "Manual",IDC_ExeManual,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,15,12,38,10
+    CONTROL         "Auto Input",IDC_ExeAutoIn,"Button",BS_AUTORADIOBUTTON | NOT WS_VISIBLE | WS_GROUP | WS_TABSTOP,84,11,45,10
+    CONTROL         "Auto Output",IDC_ExeAutoOut,"Button",BS_AUTORADIOBUTTON | NOT WS_VISIBLE | WS_GROUP | WS_TABSTOP,84,26,50,10
+    LTEXT           "MesgID",IDC_STATIC,146,13,25,10
+    CONTROL         "General Errors",IDC_GENL_ERRORS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,186,23,62,10
+    CONTROL         "Underflow/Overflow",IDC_OVRUND_ERRS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,186,34,98,8
+    CONTROL         "Extraneous Interrupts",IDC_XTRA_INTS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,186,14,82,8
+    PUSHBUTTON      "&ERR",IDC_ERROR,292,13,20,14
+    PUSHBUTTON      "<-- &INT",IDC_INT,144,42,29,14
+    CONTROL         "",IDC_GO_HACK_IN,"Button",BS_OWNERDRAW | WS_TABSTOP,27,42,10,10
+    CONTROL         "",IDC_GO_HACK_OUT,"Button",BS_OWNERDRAW | WS_TABSTOP,98,41,10,10
+    PUSHBUTTON      "&Generate Packet",IDC_GENERATE,8,190,54,14
+    PUSHBUTTON      "&Load Data Window",IDC_SEND,95,190,59,14,WS_DISABLED | NOT WS_TABSTOP
+    COMBOBOX        IDC_DATA,8,211,146,124,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "Get I&nput State",IDC_GetInpState,64,239,52,14,WS_DISABLED
+    PUSHBUTTON      "Get &Device State",IDC_GETIOSTATE,130,239,70,14
+    PUSHBUTTON      "Get &Output State",IDC_GetOutState,209,238,52,14,WS_DISABLED
+    PUSHBUTTON      "Insert  &Comment",IDC_COMMENT,8,276,52,14
+    GROUPBOX        "Error Injection",IDC_STATIC,178,4,136,52
+    GROUPBOX        "Execution Mode",IDC_STATIC,10,4,128,33
+    GROUPBOX        "<<<Input from Model-Abstract-Demo Device",IDC_STATIC,7,181,149,48
+    LISTBOX         IDC_TRACE,61,261,200,70,LBS_OWNERDRAWFIXED | LBS_NOINTEGRALHEIGHT | LBS_NOSEL | WS_VSCROLL
+    LISTBOX         IDC_Data2Device,159,190,155,38,NOT LBS_NOTIFY | LBS_MULTIPLESEL | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_HSCROLL
+    LTEXT           "TRACE",IDC_STATIC,28,265,24,8
+    EDITTEXT        IDC_TRANSFER,62,191,32,12,ES_AUTOHSCROLL | ES_READONLY | WS_DISABLED | NOT WS_TABSTOP
+    LTEXT           "Output to Model-Abstract-Demo Device>>>",IDC_STATIC,167,181,121,8
+    CONTROL         "Auto Duplex",IDC_ExeAutoFull,"Button",BS_AUTORADIOBUTTON,15,25,56,10
+    CONTROL         "Device Busy",IDC_DEVBUSY_ERRS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,186,43,86,10
+    LTEXT           "Registers ...",IDC_STATIC,10,91,34,12,0,WS_EX_STATICEDGE
+    LTEXT           "I/O size  ..................   offset  ....................           DG   CD     ::       ::     BG     ::     CB   CX",IDC_STATIC,75,83,235,8
+    LTEXT           "Control",IDC_STATIC,48,91,22,8
+    LTEXT           "Write count  ...........     :        ::        ::      ::             Read count .........    DF   DB   OU   GE",IDC_STATIC,75,105,235,8
+    LTEXT           "Status",IDC_STATIC,50,114,21,8
+    LTEXT           "SA      ::       ::      ::      CA      ::     Dm   Bu            ::       ::       ::       ::       CA     ::     Dm  Bu",IDC_STATIC,75,140,230,8
+    LTEXT           "Int-Enable",IDC_STATIC,38,149,33,8
+    LTEXT           "Int ID",IDC_STATIC,52,162,17,8
+    LTEXT           "Device Bits .......",IDC_STATIC,75,64,74,8,NOT WS_VISIBLE
+    LTEXT           "15 ",IDC_STATIC,74,73,10,8
+    LTEXT           "14 ",IDC_STATIC,88,73,10,8,NOT WS_VISIBLE
+    LTEXT           "13 ",IDC_STATIC,102,73,10,8,NOT WS_VISIBLE
+    LTEXT           "12 ",IDC_STATIC,116,73,10,8,NOT WS_VISIBLE
+    LTEXT           "11 ",IDC_STATIC,130,73,10,8,NOT WS_VISIBLE
+    LTEXT           "10 ",IDC_STATIC,144,73,10,8,NOT WS_VISIBLE
+    LTEXT           "09 ",IDC_STATIC,158,73,10,8,NOT WS_VISIBLE
+    LTEXT           "08 ",IDC_STATIC,172,73,10,8
+    LTEXT           "-- ",IDC_STATIC,187,73,10,8,NOT WS_VISIBLE
+    LTEXT           "07 ",IDC_STATIC,197,73,10,8
+    LTEXT           "06 ",IDC_STATIC,211,73,10,8,NOT WS_VISIBLE
+    LTEXT           "05 ",IDC_STATIC,225,73,10,8,NOT WS_VISIBLE
+    LTEXT           "04 ",IDC_STATIC,239,73,10,8,NOT WS_VISIBLE
+    LTEXT           "03 ",IDC_STATIC,253,73,10,8,NOT WS_VISIBLE
+    LTEXT           "02 ",IDC_STATIC,267,73,10,8,NOT WS_VISIBLE
+    LTEXT           "01 ",IDC_STATIC,281,73,10,8,NOT WS_VISIBLE
+    LTEXT           "00 ",IDC_STATIC,295,73,10,8
+    CHECKBOX        " ",IDC_CNTL_15,75,91,8,10
+    CHECKBOX        " ",IDC_CNTL_14,89,91,8,10
+    CHECKBOX        " ",IDC_CNTL_13,103,91,8,10
+    CHECKBOX        " ",IDC_CNTL_12,117,91,8,10
+    CHECKBOX        " ",IDC_CNTL_11,131,91,8,10
+    CHECKBOX        " ",IDC_CNTL_10,145,91,8,10
+    CHECKBOX        " ",IDC_CNTL_09,159,91,8,10
+    CHECKBOX        " ",IDC_CNTL_08,173,91,8,10
+    CHECKBOX        " ",IDC_CNTL_07,197,91,8,10
+    CHECKBOX        " ",IDC_CNTL_06,211,91,8,10
+    CHECKBOX        " ",IDC_CNTL_05,225,91,8,10
+    CHECKBOX        " ",IDC_CNTL_04,239,91,8,10
+    CHECKBOX        " ",IDC_CNTL_03,253,91,8,10
+    CHECKBOX        " ",IDC_CNTL_02,267,91,8,10
+    CHECKBOX        " ",IDC_CNTL_01,281,91,8,10
+    CHECKBOX        " ",IDC_CNTL_00,295,91,8,10
+    CONTROL         "",IDC_STAT_15,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,75,114,8,10
+    CONTROL         " ",IDC_STAT_14,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,89,114,8,10
+    CONTROL         " ",IDC_STAT_13,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,103,114,8,10
+    CONTROL         " ",IDC_STAT_12,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,117,114,8,10
+    CONTROL         "",IDC_STAT_11,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,131,114,8,10
+    CONTROL         " ",IDC_STAT_10,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,145,114,8,10
+    CONTROL         " ",IDC_STAT_09,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,159,114,8,10
+    CONTROL         " ",IDC_STAT_08,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,173,114,8,10
+    CONTROL         " ",IDC_STAT_07,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,197,114,8,10
+    CONTROL         " ",IDC_STAT_06,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,211,114,8,10
+    CONTROL         " ",IDC_STAT_05,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,225,114,8,10
+    CONTROL         " ",IDC_STAT_04,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,239,114,8,10
+    CONTROL         " ",IDC_STAT_03,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,253,114,8,10
+    CONTROL         " ",IDC_STAT_02,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,267,114,8,10
+    CONTROL         " ",IDC_STAT_01,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,282,114,8,10
+    CONTROL         " ",IDC_STAT_00,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,295,114,8,10
+    CHECKBOX        " ",IDC_INTEN_15,75,149,8,10
+    CHECKBOX        " ",IDC_INTEN_14,89,149,8,10
+    CHECKBOX        " ",IDC_INTEN_13,103,149,8,10
+    CHECKBOX        " ",IDC_INTEN_12,117,149,8,10
+    CHECKBOX        " ",IDC_INTEN_11,131,149,8,10
+    CHECKBOX        " ",IDC_INTEN_10,145,149,8,10
+    CHECKBOX        " ",IDC_INTEN_09,159,149,8,10
+    CHECKBOX        " ",IDC_INTEN_08,173,149,8,10
+    CHECKBOX        " ",IDC_INTEN_07,197,149,8,10
+    CHECKBOX        " ",IDC_INTEN_06,211,149,8,10
+    CHECKBOX        " ",IDC_INTEN_05,225,149,8,10
+    CHECKBOX        " ",IDC_INTEN_04,239,149,8,10
+    CHECKBOX        " ",IDC_INTEN_03,253,149,8,10
+    CHECKBOX        " ",IDC_INTEN_02,267,149,8,10
+    CHECKBOX        " ",IDC_INTEN_01,281,149,8,10
+    CHECKBOX        " ",IDC_INTEN_00,295,149,8,10
+    CONTROL         " ",IDC_INTID_15,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,75,163,8,10
+    CONTROL         " ",IDC_INTID_14,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,89,163,8,10
+    CONTROL         " ",IDC_INTID_13,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,103,163,8,10
+    CONTROL         "Check1",IDC_INTID_12,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,117,163,8,10
+    CONTROL         "Check1",IDC_INTID_11,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,131,163,8,10
+    CONTROL         "Check1",IDC_INTID_10,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,145,163,8,10
+    CONTROL         "Check1",IDC_INTID_09,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,159,163,8,10
+    CONTROL         " ",IDC_INTID_08,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,173,163,8,10
+    CONTROL         " ",IDC_INTID_07,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,197,163,8,10
+    CONTROL         " ",IDC_INTID_06,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,211,163,8,10
+    CONTROL         " ",IDC_INTID_05,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,225,163,8,10
+    CONTROL         " ",IDC_INTID_04,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,239,163,8,10
+    CONTROL         " ",IDC_INTID_03,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,253,163,8,10
+    CONTROL         " ",IDC_INTID_02,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,267,163,8,10
+    CONTROL         " ",IDC_INTID_01,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,281,163,8,10
+    CONTROL         " ",IDC_INTID_00,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,295,163,8,10
+    LTEXT           "--",IDC_STATIC_CntlDash,187,91,8,8
+    LTEXT           "--",IDC_STATIC,187,115,8,8
+    LTEXT           "--",IDC_STATIC,187,150,8,8
+    LTEXT           "--",IDC_STATIC,187,163,8,8
+    EDITTEXT        IDC_MesgID,157,21,13,14,ES_RIGHT | ES_AUTOHSCROLL | ES_NUMBER,WS_EX_RIGHT
+    CTEXT           "WRITE",IDC_STATIC,132,131,48,10,0,WS_EX_CLIENTEDGE
+    CTEXT           "READ",IDC_STATIC,252,131,50,10,0,WS_EX_CLIENTEDGE
+END
+
+IDD_SETUP DIALOG 0, 0, 218, 102
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Automatic Execution Parameters"
+FONT 8, "MS Sans Serif"
+BEGIN
+    LTEXT           "I&RQ",IDC_STATIC,42,32,13,8,NOT WS_VISIBLE | WS_DISABLED
+    COMBOBOX        IDC_IRQ,7,24,29,87,CBS_DROPDOWNLIST | NOT WS_VISIBLE | WS_DISABLED | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "&Poll Interval (ms)",IDC_STATIC,54,11,50,8
+    EDITTEXT        IDC_POLLINTERVAL,9,7,31,14,ES_AUTOHSCROLL | ES_NUMBER
+    CONTROL         "Spin1",IDC_SPINPOLLINTERVAL,"msctls_updown32",UDS_SETBUDDYINT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS,41,7,10,14
+    GROUPBOX        "XFER->DONE delay",IDC_STATIC,109,7,102,41,NOT WS_VISIBLE | WS_DISABLED
+    LTEXT           "&Minimum (ms)",IDC_STATIC,123,19,42,8,NOT WS_VISIBLE | WS_DISABLED
+    EDITTEXT        IDC_GODONE_MIN,171,16,31,14,ES_AUTOHSCROLL | ES_NUMBER | NOT WS_VISIBLE | WS_DISABLED
+    CONTROL         "Spin1",IDC_SPINGODONEMIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS | NOT WS_VISIBLE | WS_DISABLED,201,16,10,14
+    LTEXT           "&Variance (ms)",IDC_STATIC,122,34,43,8,NOT WS_VISIBLE | WS_DISABLED
+    EDITTEXT        IDC_GODONE_VAR,171,31,31,14,ES_AUTOHSCROLL | ES_NUMBER | NOT WS_VISIBLE | WS_DISABLED
+    CONTROL         "Spin1",IDC_SPINGODONEVAR,"msctls_updown32",UDS_SETBUDDYINT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS | NOT WS_VISIBLE | WS_DISABLED,201,31,10,14
+    DEFPUSHBUTTON   "OK",IDOK,13,80,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,81,80,50,14
+    PUSHBUTTON      "&Help...",IDC_SETUP_HELP,140,78,50,14,NOT WS_VISIBLE | WS_DISABLED
+    CONTROL         "Introduce Automatic Timeouts",IDC_CHECK_IntTmOuts,
+                    "Button",BS_AUTOCHECKBOX | NOT WS_VISIBLE | WS_DISABLED | WS_TABSTOP,7,59,99,10
+    CONTROL         "Generat Random Packets",IDC_RandomPkts,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,43,88,10
+END
+
+IDD_IntErrors DIALOG 0, 0, 182, 159
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Interrupt Error Management"
+FONT 8, "MS Sans Serif"
+BEGIN
+    CONTROL         "&No Int Errors",IDC_IntErrNone,"Button",BS_AUTORADIOBUTTON | WS_GROUP,11,16,54,10
+    CONTROL         "&Lose Interrupts",IDC_LOSE,"Button",BS_AUTORADIOBUTTON,11,29,71,10
+    EDITTEXT        IDC_PLOSE,103,20,40,14,ES_AUTOHSCROLL | ES_NUMBER
+    CONTROL         "Spin1",IDC_SPINLOSE,"msctls_updown32",UDS_SETBUDDYINT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS,143,20,10,14
+    CONTROL         "&Extraneous Interrupts",IDC_SPURIOUS,"Button",BS_AUTORADIOBUTTON,11,42,78,10
+    EDITTEXT        IDC_PSPURIOUS,103,37,40,14,ES_AUTOHSCROLL | ES_NUMBER
+    CONTROL         "Spin1",IDC_SPINSPURIOUS,"msctls_updown32",UDS_SETBUDDYINT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS,143,37,10,14
+    CONTROL         "&Both lose and extra Ints",IDC_BOTH,"Button",BS_AUTORADIOBUTTON,11,55,82,10
+    GROUPBOX        "Error Style",IDC_STATIC,7,4,163,66,WS_GROUP
+    DEFPUSHBUTTON   "Update",IDOK,24,139,50,14
+    GROUPBOX        "Probability of error",IDC_PERR_CAPTION,97,11,65,44
+    EDITTEXT        IDC_PERR,103,80,40,14,ES_AUTOHSCROLL | ES_NUMBER
+    CONTROL         "Spin1",IDC_SPINPERR,"msctls_updown32",UDS_SETBUDDYINT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS,143,80,8,14
+    RTEXT           "Probability of &ERR",IDC_STATIC,43,84,56,8
+    EDITTEXT        IDC_POVR,103,97,40,14,ES_AUTOHSCROLL | ES_NUMBER
+    CONTROL         "Spin1",IDC_SPINPOVR,"msctls_updown32",UDS_SETBUDDYINT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS,143,97,8,14
+    RTEXT           "Probability of &OVR/UND",IDC_STATIC,25,101,74,8
+    PUSHBUTTON      "Cancel",IDCANCEL,100,139,50,14
+    LTEXT           "Probability of Device Busy",IDC_PROB_DEVBUSY,19,116,79,8
+    EDITTEXT        IDC_ProbTimOut,103,113,40,14,ES_AUTOHSCROLL | ES_NUMBER
+    CONTROL         "Spin1",IDC_SPIN_PROBTIMEOUT,"msctls_updown32",UDS_SETBUDDYINT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS,143,113,10,14
+END
+
+IDD_COMMENT DIALOG 0, 0, 259, 36
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Comment for trace log"
+FONT 8, "MS Sans Serif"
+BEGIN
+    LTEXT           "&Comment",IDC_STATIC,4,7,30,8
+    EDITTEXT        IDC_COMMENT,35,5,222,13,ES_AUTOHSCROLL
+    DEFPUSHBUTTON   "OK",IDOK,127,20,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,202,20,50,14
+END
+
+IDD_HDWTRACE DIALOG 0, 0, 187, 56
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Model-Abstract-Demo Device Simulator Trace Options"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,129,8,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,129,30,50,14
+    CONTROL         "All  IO&CTL  Activity",IDC_TRC_IOCTLS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,5,70,10
+    CONTROL         "&Register  Values",IDC_TRC_REGS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,19,66,10
+    CONTROL         "&Interrupts",IDC_TRC_INTS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,33,57,10
+END
+
+IDD_REGISTERS DIALOGEX 0, 0, 169, 154
+STYLE DS_SETFONT | DS_MODALFRAME | WS_MINIMIZEBOX | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Model-Abstract-Demo Device Registers"
+FONT 8, "MS Sans Serif", 0, 0, 0x1
+BEGIN
+    RTEXT           "MesgID",IDC_STATIC,28,21,26,8
+    RTEXT           "Control",IDC_STATIC,31,34,22,8
+    RTEXT           "Status",IDC_STATIC,34,47,20,8
+    RTEXT           "Int Active",IDC_STATIC,26,59,30,8
+    GROUPBOX        " ",IDC_STATIC,0,0,162,45,NOT WS_VISIBLE
+    EDITTEXT        IDC_RD_MESGID,59,20,36,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_RD_CONTROL,59,32,36,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_RD_STATUS,59,44,36,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_RD_INT_ACTV,61,56,34,12,ES_AUTOHSCROLL
+    RTEXT           "PIO read count",IDC_STATIC,6,85,49,8
+    RTEXT           "Int ID",IDC_STATIC,34,73,21,8
+    RTEXT           "PIO write count",IDC_STATIC,6,97,49,8
+    GROUPBOX        " ",IDC_STATIC,0,40,162,89,NOT WS_VISIBLE
+    EDITTEXT        IDC_RD_INT_ID,61,71,34,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_RD_IN_LEN,60,83,35,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_RD_OUT_LEN,61,95,34,12,ES_AUTOHSCROLL
+    LTEXT           "Power State SD",IDC_STATIC,17,133,54,8
+    EDITTEXT        IDC_RD_POWER_STATE,78,132,18,12,ES_AUTOHSCROLL | NOT WS_TABSTOP
+END
+
+IDD_PacketTermination DIALOGEX 0, 0, 193, 64
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Packet Termination (Output to Device)"
+FONT 8, "MS Sans Serif", 0, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,36,37,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,123,37,50,14
+    EDITTEXT        IDC_MaxLen,62,17,23,13,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
+    EDITTEXT        IDC_TermChar,149,16,19,12,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
+    LTEXT           "Maximum Length (Decimal)",IDC_STATIC,7,7,85,8
+    LTEXT           "Termination Character (Hex) ",IDC_STATIC,101,7,85,8
+    LTEXT           "9999",IDC_STATIC,42,19,16,8
+    LTEXT           "00",IDC_STATIC,137,17,8,8
+END
+
+IDD_AllocMemory DIALOG 0, 0, 187, 145
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Allocate Memory"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,27,124,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,110,124,50,14
+    EDITTEXT        IDC_Numpages,16,9,46,14,ES_RIGHT | ES_AUTOHSCROLL | ES_NUMBER
+    LTEXT           "Number of 4K pages  (decimal)",IDC_Stc_NumPages,66,12,96,8
+    GROUPBOX        "Memory Properties",IDC_STATIC,15,28,155,72
+    CONTROL         "DMA Input  (enforces Shared)",IDC_DmaIn,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,18,39,97,10
+    CONTROL         "DMA Output   (enforces Shared) ",IDC_DmaOut,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,18,51,116,10
+    CONTROL         "Locked    (Non-Pageable)",IDC_Locked,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,18,87,93,10
+    CONTROL         "Shared     (Mapped - enforces Contiguous)",IDC_Shared,
+                    "Button",BS_AUTORADIOBUTTON | WS_TABSTOP,18,63,141,10
+    CONTROL         "Contiguous - (enforces Locked)",IDC_Contig,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,18,75,109,10
+    LTEXT           "Default: Pageable (Not Contiguous, Shared, or Locked)",IDC_STATIC,12,106,163,8
+END
+
+IDD_DeallocMemory DIALOG 0, 0, 187, 113
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Release Memory"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,107,30,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,107,56,50,14
+    CONTROL         "Shared",IDC_DA_Shared,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,51,38,10
+    CONTROL         "Contiguous",IDC_DA_Contig,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,65,50,10
+    CONTROL         "Locked",IDC_DA_Locked,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,79,39,10
+    CONTROL         "Pageable ",IDC_DA_Paged,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,93,48,10
+    CONTROL         "DMA Output",IDC_DA_DmaOut,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,37,51,10
+    CONTROL         "DMA Input",IDC_DA_DmaIn,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,23,47,10
+    LTEXT           "Release all or any from this list.",IDC_STATIC,9,10,140,8
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 1,0,0,1
+ PRODUCTVERSION 1,0,0,1
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x4L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904B0"
+        BEGIN
+            VALUE "FileDescription", "SIMULATOR MFC Application"
+            VALUE "FileVersion", "1, 0, 0, 1"
+            VALUE "InternalName", "SIMULATOR"
+            VALUE "LegalCopyright", "Copyright © 1998"
+            VALUE "OriginalFilename", "SIMULATOR.EXE"
+            VALUE "ProductName", "SIMULATOR Application"
+            VALUE "ProductVersion", "1, 0, 0, 1"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1200
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO
+BEGIN
+    IDD_ABOUTBOX, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 258
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 110
+    END
+
+    IDD_SIMULATOR_DIALOG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 314
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 351
+    END
+
+    IDD_SETUP, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 211
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 95
+    END
+
+    IDD_IntErrors, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 175
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 152
+    END
+
+    IDD_COMMENT, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 252
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 29
+    END
+
+    IDD_HDWTRACE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 180
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 49
+    END
+
+    IDD_REGISTERS, DIALOG
+    BEGIN
+        RIGHTMARGIN, 162
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 147
+    END
+
+    IDD_PacketTermination, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 186
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 57
+    END
+
+    IDD_AllocMemory, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 180
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 138
+    END
+
+    IDD_DeallocMemory, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 180
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 106
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Accelerator
+//
+
+IDR_ACCELERATOR ACCELERATORS
+BEGIN
+    VK_F1,          ID_CONTEXT_HELP,        VIRTKEY, SHIFT, NOINVERT
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+IDB_TEC                 BITMAP                  "res\\tec.bmp"
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDR_MAINMENU MENU
+BEGIN
+    POPUP "&File"
+    BEGIN
+        MENUITEM "&Open the Model-Abstract-Demo Simulator", ID_FILE_OPENABSTRACTDEVICE, GRAYED
+        MENUITEM "Map device registers",        ID_FILE_MAPDEVICEREGISTERS
+        MENUITEM "&Retrieve device data from file", ID_FILE_RETRIEVE_DEVICEDATA
+        MENUITEM "&Save device data to file",   ID_FILE_SAVE_DEVICEDATA
+        POPUP "Save &Trace..."
+        BEGIN
+            MENUITEM "&Save",                       ID_FILE_SAVETRACE_SAVE
+            MENUITEM "Save &As",                    ID_FILE_SAVETRACE_SAVEAS
+        END
+        MENUITEM "E&xit",                       ID_FILE_EXIT
+    END
+    POPUP "&Parameters"
+    BEGIN
+        MENUITEM "&Packet Termination",         ID_SETUP_PACKETTERMINATION
+        MENUITEM "&Automatic Execution",        IDM_SETUP_IRQ
+        MENUITEM "&Error Management",           IDM_INTERRUPT_MGT
+    END
+    POPUP "&View"
+    BEGIN
+        MENUITEM "&Output to Model-Abstract-Demo Device", ID_VIEW_OUTPUTDISPLAY
+        MENUITEM "&Binary data as 7-bit ASCII", ID_VIEW_BINARYDATA
+        MENUITEM "&Internal Trace",             ID_VIEW_INTERNALTRACE
+        MENUITEM "&Detailed Internal Trace",    ID_VIEW_DETAILEDINTERNALTRACE
+        MENUITEM "Device &Registers",           ID_VIEW_REGISTERS
+        MENUITEM "&Simulator Driver Trace",     ID_VIEW_ABSTRACTDEVICEDRIVERTRACE
+    END
+    POPUP "&Windows"
+    BEGIN
+        MENUITEM "Clear &Loaded Input Data",    IDC_CLEAR_INPUT
+        MENUITEM "Clear &Generated Data",       ID_WINDOW_CLEARGENERATE
+        MENUITEM "Clear &Output Data",          IDC_CLEAR_OUTPUT
+        MENUITEM "Clear &Trace ",               ID_EDIT_CLEAR
+    END
+    POPUP "&Reset"
+    BEGIN
+        MENUITEM "&Device State ",              ID_RESET_IOwPower
+        MENUITEM "&Play Dead",                  ID_RESET_PLAYDEAD
+        MENUITEM "&Initialize Mad Device",      ID_RESET_Init_MAD_Drivr
+    END
+    MENUITEM "&About",                      ID_APP_ABOUT
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// AFX_DIALOG_LAYOUT
+//
+
+IDD_SIMULATOR_DIALOG AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE
+BEGIN
+    IDS_ABOUTBOX            "&About Model-Abstract Simulator UI ..."
+    IDS_PROGRAM_ROOT        "Software\\HTF Consulting\\Model-Abstract-Demo Device Simulator "
+    IDS_IRQ                 "IRQ"
+    IDS_SEND                "&Load Data Window"
+    IDS_SEND_NEXT           "&Advance Data Win"
+    IDS_OPEN_FAILED         "Can't open/communicate with the Simulator kernel module!\nMake sure that MadBus.sys is active if necessary.\nThen restart this program. Else, run it in test mode.\n"
+    IDS_POLLING_INTERVAL    "Polling Interval"
+    IDS_FILE_OPEN_FAILED    "Unable to open file"
+    IDS_FILE_SAVE           "Save File"
+    IDS_FILE_SAVE_AS        "Save File As"
+    IDS_FILTER              "Trace files (*.trc)|*.trc||"
+END
+
+STRINGTABLE
+BEGIN
+    ID_FILE_SAVE            "Saves the current trace list"
+    ID_FILE_SAVE_AS         "Save trace file as new name"
+END
+
+STRINGTABLE
+BEGIN
+    ID_FILE_EXIT            "Exit the simulator"
+    ID_SETUP_IRQ            "Select IRQ for simulator"
+    IDC_DEBUG               "Displays a detailed internal trace of the simulator"
+    IDC_CLEAR_INPUT         "Clears the input string"
+    IDM_REG_DISP            "Opens up the register display control"
+END
+
+STRINGTABLE
+BEGIN
+    ID_APP_ABOUT            "Displays the program information and copyright"
+    ID_HELP_INDEX           "Displays the table of contents for the online help"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_ITEM_UNKNOWN        "Unknown trace item"
+END
+
+STRINGTABLE
+BEGIN
+    ID_EDIT_CLEAR           "Clears the contents of the trace window"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_DEVICEIO_FAILED_READ 
+                            "DeviceIoControl operation on hardware simulator failed while reading register set"
+    IDS_WRONG_LENGTH_READ   "Expected to read %d bytes, read %d bytes"
+    IDS_DEVICEIO_FAILED_WRITE 
+                            "DeviceIoControl operation on hardware simulator failed while writing register set"
+    IDS_DEVICEIO_FAILED_SET_INTR 
+                            "DeviceIoControl operation on hardware simulator failed while attempting to set the IRQ number"
+    IDS_DEVICEIO_FAILED_GEN "DeviceIoControl operation on hardware simulator failed while attempting to generate an interrupt"
+    IDS_GODONEMIN           "Go-Done Minimum"
+    IDS_GODONEVAR           "Go-Done Variance"
+    IDS_STOP_TIMEOUT        "Timeout waiting for polling loop to stop"
+    IDS_STOP_ERROR          "Unknown Wait error waiting for polling loop to stop"
+    IDS_ERROR_INJECTED      "Error randomly injected"
+    IDS_PROB_LOST           "Probability of Lost Interrupts"
+    IDS_PROB_SPURIOUS       "Probability of Spurious Interrupts"
+    IDS_PROB_ERR            "Probability of Random Error"
+    IDS_PROB_OVR_UND        "Probability that Random Error is OVR or UND"
+    IDS_DEVICEIO_FAILED_SET_TRACE "Error setting trace flag"
+    IDS_DEVICEIO_FAILED_GET_TRACE "Error getting trace flag"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_PROB_BUSY           "Probability that Random Error is Device Busy"
+END
+
+#endif    // English (United States) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+#define _AFX_NO_SPLITTER_RESOURCES
+#define _AFX_NO_OLE_RESOURCES
+#define _AFX_NO_TRACKER_RESOURCES
+#define _AFX_NO_PROPERTY_RESOURCES
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE 9, 1
+#pragma code_page(1252)
+#endif
+#include "res\Simulator.rc2"  // non-Microsoft Visual C++ edited resources
+#include "afxres.rc"         // Standard components
+#endif
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

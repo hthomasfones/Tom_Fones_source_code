@@ -1,0 +1,592 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (United States) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "#define _AFX_NO_SPLITTER_RESOURCES\r\n"
+    "#define _AFX_NO_OLE_RESOURCES\r\n"
+    "#define _AFX_NO_TRACKER_RESOURCES\r\n"
+    "#define _AFX_NO_PROPERTY_RESOURCES\r\n"
+    "\r\n"
+    "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)\r\n"
+    "#ifdef _WIN32\r\n"
+    "LANGUAGE 9, 1\r\n"
+    "#pragma code_page(1252)\r\n"
+    "#endif\r\n"
+    "#include ""res\\AbsDevIo.rc2""  // non-Microsoft Visual C++ edited resources\r\n"
+    "#include ""afxres.rc""         // Standard components\r\n"
+    "#include ""afxprint.rc""       // printing/print preview resources\r\n"
+    "#endif\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDR_MAINFRAME MENU
+BEGIN
+    POPUP "&File"
+    BEGIN
+        POPUP "&Open ..."
+        BEGIN
+            MENUITEM "Device &1",                   ID_FILE_OPEN_DEVICE1
+            MENUITEM "Device &2",                   ID_FILE_OPEN_DEVICE2
+            MENUITEM "Device &3",                   ID_FILE_OPEN_DEVICE3
+        END
+        MENUITEM "&Close Device",               ID_DEVICE_CLOSE
+        MENUITEM SEPARATOR
+        MENUITEM "Identify &Device",            ID_FILE_IDENTIFYDRIVER, GRAYED
+        MENUITEM "Begin &log (open file)",      ID_FILE_LOGFILEOPEN
+        MENUITEM "&End logging (close file)",   ID_FILE_LOGFILECLOSE
+        MENUITEM SEPARATOR
+        MENUITEM "Print &Setup...",             ID_FILE_PRINT_SETUP
+        MENUITEM "&Print...\tCtrl+P",           ID_FILE_PRINT
+        MENUITEM SEPARATOR
+        MENUITEM "Open Device 1- &Read Access ", ID_FILE_OPEN_DEV1_READ, GRAYED
+        MENUITEM "Open Device 1 - &Write Access", ID_FILE_OPEN_DEV1_WRITE, GRAYED
+        MENUITEM SEPARATOR
+        MENUITEM "E&xit",                       ID_APP_EXIT
+    END
+    POPUP "&PlugnPlay"
+    BEGIN
+        MENUITEM "&Monitor",                    ID_PNP_MONITOR
+        POPUP "&Plug in"
+        BEGIN
+            MENUITEM "Unit &1",                     ID_PNP_PLUGIN_UNIT1
+            MENUITEM "Unit &2",                     ID_PNP_PLUGIN_UNIT2
+            MENUITEM "Unit &3",                     ID_PNP_PLUGIN_UNIT3
+            MENUITEM "&All (3) Units",              ID_PNP_PLUGIN_ALL
+        END
+        POPUP "&Unplug"
+        BEGIN
+            MENUITEM "Unit &1",                     ID_PNP_UNPLUG_UNIT1
+            MENUITEM "Unit &2",                     ID_PNP_UNPLUG_UNIT2
+            MENUITEM "Unit &3",                     ID_PNP_UNPLUG_UNIT3
+            MENUITEM "&All Units",                  ID_PNP_UNPLUG_ALL
+        END
+        POPUP "&Eject"
+        BEGIN
+            MENUITEM "Unit &1",                     ID_PNP_EJECT_UNIT1
+            MENUITEM "Unit &2",                     ID_PNP_EJECT_UNIT2
+            MENUITEM "Unit &3",                     ID_PNP_EJECT_UNIT3
+            MENUITEM "&All Units",                  ID_PNP_EJECT_ALL
+        END
+        MENUITEM "PnpStress",                   ID_PLUGNPLAY_PNPSTRESS
+    END
+    POPUP "Power&Mngt"
+    BEGIN
+        POPUP "Device State 0"
+        BEGIN
+            MENUITEM "Unit &1",                     ID_POWERMNGT_DEVSTATE0_UNIT1
+            MENUITEM "Unit &2",                     ID_POWERMNGT_DEVSTATE0_UNIT2
+            MENUITEM "Unit &3",                     ID_POWERMNGT_DEVSTATE0_UNIT3
+        END
+        POPUP "Device State 1"
+        BEGIN
+            MENUITEM "Unit &1",                     ID_POWERMNGT_DEVSTATE1_UNIT1
+            MENUITEM "Unit &2",                     ID_POWERMNGT_DEVSTATE1_UNIT2
+            MENUITEM "Unit &3",                     ID_POWERMNGT_DEVSTATE1_UNIT3
+        END
+        POPUP "Device State 2"
+        BEGIN
+            MENUITEM "Unit &1",                     ID_POWERMNGT_DEVSTATE2_UNIT1
+            MENUITEM "Unit &2",                     ID_POWERMNGT_DEVSTATE2_UNIT2
+            MENUITEM "Unit &3",                     ID_POWERMNGT_DEVSTATE2_UNIT3
+        END
+        POPUP "Device State 3"
+        BEGIN
+            MENUITEM "Unit &1",                     ID_POWERMNGT_DEVSTATE3_UNIT1
+            MENUITEM "Unit &2",                     ID_POWERMNGT_DEVSTATE3_UNIT2
+            MENUITEM "Unit &3",                     ID_POWERMNGT_DEVSTATE3_UNIT3
+        END
+    END
+    POPUP "&Input"
+    BEGIN
+        MENUITEM "&16 Bytes",                   ID_INPUT_READ1BYTE
+        MENUITEM "&64 Bytes",                   ID_INPUT_READ10BYTES
+        MENUITEM "&256 Bytes",                  ID_INPUT_READPACKET
+        MENUITEM "&512 Bytes",                  ID_INPUT_512BYTES
+        MENUITEM "&One sector",                 ID_INPUT_ONE_SECTOR
+        MENUITEM "&Four sectors",               ID_INPUT_FOUR_SECTORS
+        MENUITEM "&Sixteen sectors",            ID_INPUT_SIXTEEN_SECTORS
+        MENUITEM "&Automated script",           ID_INPUT_RUN_SCRIPT
+        MENUITEM "&Continuous",                 ID_INPUT_READCONTINUOUS, GRAYED
+        MENUITEM "Continuous Packet&s",         ID_INPUT_ReadPackets, GRAYED
+        MENUITEM "Continuous w/ &File Save",    ID_INPUT_READFILE, GRAYED
+        MENUITEM "Cont File Save  w/  &Errors ", ID_INPUT_READFILE_ERRS, GRAYED
+    END
+    POPUP "&Output"
+    BEGIN
+        MENUITEM "&16 Bytes",                   ID_OUTPUT_WRITE1BYTE
+        MENUITEM "&64 Bytes",                   ID_OUTPUT_WRITESTRING
+        MENUITEM "&256 Bytes",                  ID_OUTPUT_WRITEPACKET
+        MENUITEM "&512 Bytes",                  ID_OUTPUT_WRITECONTINOUS
+        MENUITEM "&One sector",                 ID_OUTPUT_ONE_SECTOR
+        MENUITEM "&Four sectors",               ID_OUTPUT_FOUR_SECTORS
+        MENUITEM "&Sixteen Sectors",            ID_OUTPUT_SIXTEEN_SECTORS
+        MENUITEM "&Automated script",           ID_OUTPUT_RUN_SCRIPT
+        MENUITEM "Continuous Packet&s",         ID_OUTPUT_CONTINUOUSPACKETS, GRAYED
+        MENUITEM "Continuous Packets w/ &Errors", ID_OUTPUT_CONTPKTSWERRS, GRAYED
+    END
+    POPUP "Io&Controls"
+    BEGIN
+        MENUITEM "&Initialize Device",          ID_IOCONTROLS_INITIALIZEDEVICE
+        MENUITEM SEPARATOR
+        MENUITEM "&Map device memory",          ID_DEVICE_IOCTL_MAPDEVICEREGS
+        MENUITEM "&Get registers",              ID_DEVICE_IOCTL_GETREGS
+        POPUP "&Set registers"
+        BEGIN
+            MENUITEM "&Control Reg",                ID_IOCTL_SET_MAD_CONTROL_REG
+            MENUITEM "&Int-Enable Reg",             ID_IOCTL_SET_INTEN_REG
+        END
+        MENUITEM "&Reset indeces",              ID_IOCONTROLS_RESET_INDECES, GRAYED
+        POPUP "&Cache"
+        BEGIN
+            MENUITEM "&Align read cache",           ID_CACHE_ALIGN_READ
+            MENUITEM "A&lign write cache",          ID_CACHE_ALIGN_WRITE
+            MENUITEM "&Read",                       ID_CACHE_READ
+            MENUITEM "&Write",                      ID_CACHE_WRITE
+        END
+        MENUITEM "&Non-valid Device Control",   ID_IOCONTROLS_NONVALIDCONTROL
+        MENUITEM "&Test Init",                  ID_IOCTL_TESTINIT, GRAYED
+        POPUP "Device I/&O", GRAYED
+        BEGIN
+            MENUITEM "&Read",                       ID_DEVCNTRLS_READ
+            MENUITEM "&Write",                      ID_DEVCNTRLS_WRITE
+        END
+        MENUITEM SEPARATOR
+    END
+    POPUP "&UserMode-PIO"
+    BEGIN
+        MENUITEM "&Read",                       ID_PIO_READ
+        MENUITEM "&Write",                      ID_PIO_WRITE
+        MENUITEM "Recei&Ve",                    ID_PIO_RECEIVE
+        MENUITEM "&Transmit",                   ID_PIO_TRANSMIT
+        MENUITEM "&Loopback",                   ID_PIO_LOOPBACK
+    END
+    POPUP "&WMI"
+    BEGIN
+        MENUITEM "Query &Bus:MadBusWmi.exe",    ID_WMI_BUS_QUERY
+        MENUITEM "Query &Device:MadDevWmi.exe", 32959
+    END
+    POPUP "&Edit"
+    BEGIN
+        MENUITEM "&Annotate (Append Text)",     ID_EDIT_ANNOTATE
+        MENUITEM "&Copy All",                   ID_EDIT_COPYALL
+    END
+    POPUP "&View"
+    BEGIN
+        MENUITEM "&Binary Mode",                ID_SetBinaryMode
+        MENUITEM "&Clear Display Window",       ID_VIEW_CLEARDISPLAY
+        MENUITEM "&Display Continuous I/O",     ID_VIEW_ContinuousIO
+    END
+    POPUP "&Help"
+    BEGIN
+        MENUITEM "Browse the device register &map", ID_HELP_VIEW_DEVREGMAP
+        MENUITEM "Browse the &simulation data flow diagram", ID_HELP_VIEW_SIMULATION_DIAGRAM
+        MENUITEM "Browse the &readme file",     ID_HELP_SHow_READMEFILE
+        MENUITEM "&About",                      ID_HELP_ABOUT
+    END
+    MENUITEM "&About",                      ID_APP_ABOUT, GRAYED
+    POPUP "&WinDBG", GRAYED
+    BEGIN
+        MENUITEM "&Assert",                     ID_WINDBG_ASSERT
+        MENUITEM "&BreakPoint",                 ID_WINDBG_BREAK
+        MENUITEM "&Exception",                  ID_WINDBG_EXCEPTION
+        MENUITEM "&Hang",                       ID_WINDBG_HANG
+        MENUITEM "&UMhang",                     ID_WINDBG_UMHANG
+        MENUITEM "&Verifier",                   ID_WINDBG_VERIFIER
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Accelerator
+//
+
+IDR_MAINFRAME ACCELERATORS
+BEGIN
+    "N",            ID_FILE_NEW,            VIRTKEY, CONTROL
+    "O",            ID_FILE_OPEN,           VIRTKEY, CONTROL
+    "S",            ID_FILE_SAVE,           VIRTKEY, CONTROL
+    "P",            ID_FILE_PRINT,          VIRTKEY, CONTROL
+    "Z",            ID_EDIT_UNDO,           VIRTKEY, CONTROL
+    "X",            ID_EDIT_CUT,            VIRTKEY, CONTROL
+    "C",            ID_EDIT_COPY,           VIRTKEY, CONTROL
+    "V",            ID_EDIT_PASTE,          VIRTKEY, CONTROL
+    VK_BACK,        ID_EDIT_UNDO,           VIRTKEY, ALT
+    VK_DELETE,      ID_EDIT_CUT,            VIRTKEY, SHIFT
+    VK_INSERT,      ID_EDIT_COPY,           VIRTKEY, CONTROL
+    VK_INSERT,      ID_EDIT_PASTE,          VIRTKEY, SHIFT
+    VK_F6,          ID_NEXT_PANE,           VIRTKEY 
+    VK_F6,          ID_PREV_PANE,           VIRTKEY, SHIFT
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_ABOUTBOX DIALOG 0, 0, 217, 55
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "About GenDriverTestApp"
+FONT 8, "MS Sans Serif"
+BEGIN
+    ICON            IDR_MAINFRAME,IDC_STATIC,11,17,20,20
+    LTEXT           "Generic Driver Test App Version 2.0",IDC_STATIC,40,10,119,8,SS_NOPREFIX
+    LTEXT           "Copyright (C) 2004 - HTF Consulting",IDC_STATIC,40,25,119,8
+    DEFPUSHBUTTON   "OK",IDOK,178,7,32,14,WS_GROUP
+END
+
+IDD_DevOut DIALOG 0, 0, 187, 95
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Output to Device"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,37,74,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,100,74,50,14
+    EDITTEXT        IDC_Output,16,15,155,42,ES_AUTOHSCROLL
+END
+
+IDD_ID_Device DIALOG 0, 0, 187, 95
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Identify Device"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,62,68,50,14
+    EDITTEXT        IDC_DeviceID,42,19,103,14,ES_AUTOHSCROLL
+END
+
+IDD_Display_IO DIALOG 0, 0, 187, 111
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Continuous I/O"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,61,90,50,14
+    LISTBOX         IDC_LB_DisplayIO,7,7,173,78,LBS_SORT | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+END
+
+IDD_Annotate DIALOG 0, 0, 220, 100
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Dialog"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,14,79,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,123,79,50,14
+    EDITTEXT        IDC_Annotation,14,17,199,14,ES_AUTOHSCROLL
+END
+
+IDD_SetRegBits DIALOGEX 0, 0, 279, 78
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Set MAD Register X:"
+FONT 8, "MS Sans Serif", 0, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,61,57,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,175,57,50,14
+    CONTROL         "15",IDC_BIT15,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,10,32,10,WS_EX_RTLREADING
+    CONTROL         "14",IDC_BIT14,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,44,10,32,10
+    CONTROL         "13",IDC_BIT13,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,76,10,32,10
+    CONTROL         "12",IDC_BIT12,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,113,10,32,10
+    CONTROL         "11",IDC_BIT11,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,146,10,32,10
+    CONTROL         "10",IDC_BIT10,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,180,10,32,10
+    CONTROL         "9",IDC_BIT9,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,216,10,20,10
+    CONTROL         "8",IDC_BIT8,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,250,10,20,10
+    CONTROL         "7",IDC_BIT7,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,26,20,10
+    CONTROL         "6",IDC_BIT6,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,44,27,20,10
+    CONTROL         "5",IDC_BIT5,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,77,27,20,10
+    CONTROL         "4",IDC_BIT4,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,114,27,20,10
+    CONTROL         "3",IDC_BIT3,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,146,27,27,10
+    CONTROL         "2",IDC_BIT2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,180,27,20,10
+    CONTROL         "1",IDC_BIT1,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,217,27,20,10
+    CONTROL         "0",IDC_BIT0,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,250,27,20,10
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 1,0,0,1
+ PRODUCTVERSION 1,0,0,1
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x4L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904b0"
+        BEGIN
+            VALUE "FileDescription", "Generic Driver Test Application"
+            VALUE "FileVersion", "1, 0, 0, 1"
+            VALUE "InternalName", "GenDriverTest"
+            VALUE "LegalCopyright", "Copyright (C) 2002"
+            VALUE "OriginalFilename", "GenDriverTest.exe"
+            VALUE "ProductName", "GenDriverTest  Application"
+            VALUE "ProductVersion", "1, 0, 0, 1"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1200
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO
+BEGIN
+    IDD_ABOUTBOX, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 210
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 48
+    END
+
+    IDD_DevOut, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 180
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 88
+    END
+
+    IDD_ID_Device, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 180
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 88
+    END
+
+    IDD_Display_IO, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 180
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 104
+    END
+
+    IDD_Annotate, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 213
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 93
+    END
+
+    IDD_SetRegBits, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 272
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 71
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDR_MAINFRAME           ICON                    "res\\GenDriverTest.ico"
+IDI_ICON3               ICON                    "res\\Copy of GenDriverTest.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE
+BEGIN
+    IDR_MAINFRAME           "AbsDevIo\n\nAbsDev\n\n\nAbsDevIo.Document\nAbsDev Document"
+END
+
+STRINGTABLE
+BEGIN
+    AFX_IDS_APP_TITLE       "AbsDevIo"
+    AFX_IDS_IDLEMESSAGE     "Ready"
+END
+
+STRINGTABLE
+BEGIN
+    ID_INDICATOR_EXT        "EXT"
+    ID_INDICATOR_CAPS       "CAP"
+    ID_INDICATOR_NUM        "NUM"
+    ID_INDICATOR_SCRL       "SCRL"
+    ID_INDICATOR_OVR        "OVR"
+    ID_INDICATOR_REC        "REC"
+END
+
+STRINGTABLE
+BEGIN
+    ID_FILE_NEW             "Create a new document\nNew"
+    ID_FILE_OPEN            "Open an existing document\nOpen"
+    ID_FILE_CLOSE           "Close the active document\nClose"
+    ID_FILE_SAVE            "Save the active document\nSave"
+    ID_FILE_SAVE_AS         "Save the active document with a new name\nSave As"
+    ID_FILE_PAGE_SETUP      "Change the printing options\nPage Setup"
+    ID_FILE_PRINT_SETUP     "Change the printer and printing options\nPrint Setup"
+    ID_FILE_PRINT           "Print the active document\nPrint"
+    ID_FILE_PRINT_PREVIEW   "Display full pages\nPrint Preview"
+END
+
+STRINGTABLE
+BEGIN
+    ID_APP_ABOUT            "Display program information, version number and copyright\nAbout"
+    ID_APP_EXIT             "Quit the application; prompts to save documents\nExit"
+END
+
+STRINGTABLE
+BEGIN
+    ID_FILE_MRU_FILE1       "Open this document"
+    ID_FILE_MRU_FILE2       "Open this document"
+    ID_FILE_MRU_FILE3       "Open this document"
+    ID_FILE_MRU_FILE4       "Open this document"
+    ID_FILE_MRU_FILE5       "Open this document"
+    ID_FILE_MRU_FILE6       "Open this document"
+    ID_FILE_MRU_FILE7       "Open this document"
+    ID_FILE_MRU_FILE8       "Open this document"
+    ID_FILE_MRU_FILE9       "Open this document"
+    ID_FILE_MRU_FILE10      "Open this document"
+    ID_FILE_MRU_FILE11      "Open this document"
+    ID_FILE_MRU_FILE12      "Open this document"
+    ID_FILE_MRU_FILE13      "Open this document"
+    ID_FILE_MRU_FILE14      "Open this document"
+    ID_FILE_MRU_FILE15      "Open this document"
+    ID_FILE_MRU_FILE16      "Open this document"
+END
+
+STRINGTABLE
+BEGIN
+    ID_NEXT_PANE            "Switch to the next window pane\nNext Pane"
+    ID_PREV_PANE            "Switch back to the previous window pane\nPrevious Pane"
+END
+
+STRINGTABLE
+BEGIN
+    ID_WINDOW_SPLIT         "Split the active window into panes\nSplit"
+END
+
+STRINGTABLE
+BEGIN
+    ID_EDIT_CLEAR           "Erase the selection\nErase"
+    ID_EDIT_CLEAR_ALL       "Erase everything\nErase All"
+    ID_EDIT_COPY            "Copy the selection and put it on the Clipboard\nCopy"
+    ID_EDIT_CUT             "Cut the selection and put it on the Clipboard\nCut"
+    ID_EDIT_FIND            "Find the specified text\nFind"
+    ID_EDIT_PASTE           "Insert Clipboard contents\nPaste"
+    ID_EDIT_REPEAT          "Repeat the last action\nRepeat"
+    ID_EDIT_REPLACE         "Replace specific text with different text\nReplace"
+    ID_EDIT_SELECT_ALL      "Select the entire document\nSelect All"
+    ID_EDIT_UNDO            "Undo the last action\nUndo"
+    ID_EDIT_REDO            "Redo the previously undone action\nRedo"
+END
+
+STRINGTABLE
+BEGIN
+    AFX_IDS_SCSIZE          "Change the window size"
+    AFX_IDS_SCMOVE          "Change the window position"
+    AFX_IDS_SCMINIMIZE      "Reduce the window to an icon"
+    AFX_IDS_SCMAXIMIZE      "Enlarge the window to full size"
+    AFX_IDS_SCNEXTWINDOW    "Switch to the next document window"
+    AFX_IDS_SCPREVWINDOW    "Switch to the previous document window"
+    AFX_IDS_SCCLOSE         "Close the active window and prompts to save the documents"
+END
+
+STRINGTABLE
+BEGIN
+    AFX_IDS_SCRESTORE       "Restore the window to normal size"
+    AFX_IDS_SCTASKLIST      "Activate Task List"
+END
+
+STRINGTABLE
+BEGIN
+    AFX_IDS_PREVIEW_CLOSE   "Close print preview mode\nCancel Preview"
+END
+
+#endif    // English (United States) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+#define _AFX_NO_SPLITTER_RESOURCES
+#define _AFX_NO_OLE_RESOURCES
+#define _AFX_NO_TRACKER_RESOURCES
+#define _AFX_NO_PROPERTY_RESOURCES
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE 9, 1
+#pragma code_page(1252)
+#endif
+#include "res\AbsDevIo.rc2"  // non-Microsoft Visual C++ edited resources
+#include "afxres.rc"         // Standard components
+#include "afxprint.rc"       // printing/print preview resources
+#endif
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

@@ -1,0 +1,5 @@
+﻿  Building 'MadDiskMP' with toolset 'WindowsKernelModeDriver10.0' and the 'Universal' target platform.
+  Stamping Debug\MadDiskMP.inf
+  Stamping [Version] section with DriverVer=03/16/2022,13.53.54.831
+C:\Users\TOM\Source\Repos\MadsimVs2019\MadDiskMP\MadDiskMP.inx(26-26): error 1236: Empty string not allowed for Provider.
+C:\Users\TOM\Source\Repos\MadsimVs2019\MadDiskMP\MadDiskMP.inx(28-28): error 1233: Missing directive CatalogFile required for digital signature.

@@ -1,0 +1,6 @@
+﻿  MadBusWmiApp.cpp
+  MadBusWmiExecute.cpp
+  MadBusWmiGetset.cpp
+  Generating Code...
+LINK : warning LNK4075: ignoring '/INCREMENTAL' due to '/FORCE' specification
+  MadBusWmiAppVs2013.vcxproj -> C:\Users\TOM\Source\Repos\MadsimVs2019\Debug\MadBusWmiApp.exe

@@ -1,0 +1,116 @@
+;/*++
+;/********1*********2*********3*********4*********5**********6*********7*********/
+;/*                                                                             */
+;/*  PRODUCT      : MAD Device Simulation Framework                             */
+;/*  COPYRIGHT    : (c) 2022 HTF Consulting                                     */
+;/*                                                                             */
+;/* This source code is provided by exclusive license for non-commercial use to */
+;/* XYZ Company                                                                 */
+;/*                                                                             */
+;/*******************************************************************************/
+;/*                                                                             */
+;/*  Module  NAME : MadBus.inf                                                  */
+;/*                  
+;Abstract:
+;    INF file for installing the madbus enumerator driver
+;
+;Installation Notes:
+;    Using Devcon: Type "devcon install madbus.inf root\madbus" to install
+;
+;/*******************************************************************************/
+
+[Version]
+Signature="$WINDOWS NT$"
+PnpLockdown=1
+Class=System
+ClassGuid={4D36E97D-E325-11CE-BFC1-08002BE10318}
+DriverVer=;
+Provider=; 
+CatalogFile=;
+
+[DestinationDirs]
+DefaultDestDir = 12
+
+[SourceDisksNames]
+1 = %DiskId1%,,,""
+
+[SourceDisksFiles]
+madbus.sys  = 1,,
+
+;*****************************************
+; MadBus  Install Section
+;*****************************************
+[Manufacturer]
+%StdMfg%=Standard,NT$ARCH$
+
+; For XP and later
+[Standard.NT$ARCH$]
+%MadBus1.DeviceDesc%=MadBus1_Device, root\madbus1
+%MadBus2.DeviceDesc%=MadBus2_Device, root\madbus2
+
+[MadBus1_Device.NT]
+CopyFiles=Drivers_Dir
+
+[MadBus1_Device.NT.HW]
+AddReg=MadBus1_Device.NT.AddReg
+
+[MadBus1_Device.NT.AddReg]                            
+HKR,,DeviceCharacteristics,0x10001,0x0100         ; Use same security checks on relative opens
+HKR,,Security,,"D:P(A;;GA;;;BA)(A;;GA;;;SY)"      ; Allow generic-all access to Built-in administrators and Local system 
+
+[MadBus2_Device.NT]
+CopyFiles=Drivers_Dir
+
+[MadBus2_Device.NT.HW]
+AddReg=MadBus2_Device.NT.AddReg
+
+[MadBus2_Device.NT.AddReg]                            
+HKR,,DeviceCharacteristics,0x10001,0x0100         ; Use same security checks on relative opens
+HKR,,Security,,"D:P(A;;GA;;;BA)(A;;GA;;;SY)"      ; Allow generic-all access to Built-in administrators and Local system 
+
+[Drivers_Dir]
+madbus.sys
+
+;-------------- Service(s) installation
+[MadBus1_Device.NT.Services]
+AddService = madbus,%SPSVCINST_ASSOCSERVICE%, madbus1_Service_Inst
+
+; -------------- madbus1 driver install sections
+[madbus1_Service_Inst]
+DisplayName    = %madbus1.SVCDESC%
+ServiceType    = 1               ; SERVICE_KERNEL_DRIVER
+StartType      = 3               ; SERVICE_DEMAND_START 
+ErrorControl   = 1               ; SERVICE_ERROR_NORMAL
+ServiceBinary  = %12%\madbus.sys
+LoadOrderGroup = Extended Base
+
+[MadBus2_Device.NT.Services]
+AddService = madbus,%SPSVCINST_ASSOCSERVICE%, madbus2_Service_Inst
+
+; -------------- madbus2 driver install sections
+[madbus2_Service_Inst]
+DisplayName    = %madbus2.SVCDESC%
+ServiceType    = 1               ; SERVICE_KERNEL_DRIVER
+StartType      = 3               ; SERVICE_DEMAND_START 
+ErrorControl   = 1               ; SERVICE_ERROR_NORMAL
+ServiceBinary  = %12%\madbus.sys
+LoadOrderGroup = Extended Base
+
+[MadBus1_Device.NT.Wdf]
+KmdfService = madbus, madbus_wdfsect
+
+[MadBus2_Device.NT.Wdf]
+KmdfService = madbus, madbus_wdfsect
+
+[madbus_wdfsect]
+KmdfLibraryVersion = $KMDFVERSION$
+
+[Strings]
+SPSVCINST_ASSOCSERVICE= 0x00000002
+HTFC = "HTF Consulting"
+StdMfg = "(Standard system devices)"
+DiskId1 = "MadDevice Bus Installation Disk #1"
+MadBus1.DeviceDesc = "MadDevice PCI-Simulation Bus"
+madbus1.SVCDESC = "MadDevice PCI-Simulation Bus"
+MadBus2.DeviceDesc = "MadDisk PCI-Simulation Bus"
+madbus2.SVCDESC = "MadDisk PCI-Simulation Bus"

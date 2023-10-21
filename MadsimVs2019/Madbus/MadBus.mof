@@ -1,0 +1,69 @@
+#PRAGMA AUTORECOVER
+
+[Dynamic, Provider("WMIProv"),
+ WMI,
+ Description("Mad Bus driver information"),
+ guid("{0006A660-8F12-11d2-B854-00C04FAD5171}"),
+ locale("MS\\0x409")]
+class MadBusWmiInfo
+{
+    [key, read]
+     string InstanceName;
+    [read] boolean Active;
+
+    [WmiDataId(1),
+     read,
+	 write,
+     Description("Number of errors that occurred on this bus")]
+     uint32   ErrorCount;
+
+    [WmiDataId(2),
+     read,
+     write,
+     Description("Current number of devices plugged into the bus.")]
+     uint32 CurrDevCount;
+
+	[WmiDataId(3),
+     read,
+     write,
+     Description("Total number of devices plugged into the bus.")]
+     uint32 TotlDevCount;
+};
+
+[WMI,
+ Dynamic,
+ Provider("WmiProv"),
+ Locale("MS\\0x409"),
+ Description("WMI method") : amended,
+ guid("37f5a699-0ac7-40b6-ad78-345a0ee60c17")]
+class MadBusWmiControl
+{
+    [key, read]
+    string InstanceName;
+
+    [read]
+    boolean Active;
+
+    [WmiDataId(1),
+     read,
+     write,
+     Description("MadBus Control Property")]
+     uint32 ControlValue;
+
+    [Implemented, WmiMethodId(1)]
+    void MadBusWmiControl1([in]  uint32 InData,
+                           [out] uint32 OutData);
+
+    [Implemented, WmiMethodId(2)]
+    void MadBusWmiControl2([in]  uint32 InData1,
+                           [in]  uint32 InData2,
+                           [out] uint32 OutData);
+
+    [Implemented, WmiMethodId(3)]
+    void MadBusWmiControl3([in]  uint32 InData1,
+                           [in]  uint32 InData2,
+                           [out] uint32 OutData1,
+                           [out] uint32 OutData2);
+};
+
+
