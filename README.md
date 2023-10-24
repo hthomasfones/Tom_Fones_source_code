@@ -138,6 +138,3 @@ F. Future development
    ==================
    Fixes to known issues.
    Any enhancement or adaptation that anyone is willing to pay for.
-   
-   Please look to GitHub:device_simulation for updates.
-
