@@ -32,7 +32,7 @@
 /*                                                                             */
 /*******************************************************************************/
 
-*
+/*
 ===============================================================================
 Driver Name		:		krash
 Author			:		TOM FONES
@@ -120,6 +120,8 @@ int zeroDivide(void)
 {
     int nDivider = 5;
     int nRes = 0;
+    PINFO("zeroDivide()\n");
+
     while(nDivider > 0)
         {
         nDivider--;
@@ -129,14 +131,61 @@ int zeroDivide(void)
     return nRes;
 }
 
+void hardRun(void)
+{
+
+    int X = 0;
+    PINFO("hardRun()\n");
+    while (true)
+        {
+        X += 5;
+        X -= 5;
+        }
+
+    return;
+}
+
+void exhaustMemory(void)
+{
+    void* ptr = (void*)0;
+    PINFO("exhaustMemory()\n");
+    while (true)
+        {
+        ptr = kmalloc(0x4000, GFP_KERNEL);
+        if (ptr==NULL)
+            break;
+        schedule();
+        }
+
+    ptr = kmalloc(0x4000, GFP_KERNEL);
+
+    return;
+}
+
+void leakMemory(void)
+{
+    void* ptr = (void*)0;
+    int j;
+    PINFO("leaktMemory()\n");
+    for (j=0; j < 12; j+=1)
+        {
+        ptr = kmalloc(0x50000, GFP_KERNEL);
+        }
+    kfree(ptr);
+
+    return;
+}
+
+
 static int process_krash(int knum, krash_private *priv)
 {
     struct task_struct *pThread;
+    int rc=0;
     PINFO("process_krash() knum=%d\n", knum);
 
     switch(knum)
         {
-        case 1: //divided by zero
+        case 0: //divided by zero
             if (priv != NULL) 
                 spin_lock(&priv->spinlock1);
             zeroDivide(); 
@@ -144,22 +193,22 @@ static int process_krash(int knum, krash_private *priv)
                 spin_unlock(&priv->spinlock1);
             break;
 
-        case 2: //nullptr
+        case 1: //nullptr
             {
             void* ptr = NULL;
+            freeSomething(ptr);
             memset(ptr, 0x00, 10);
-            //freeSomething(ptr);
             }
             break;
 
-        case 3: //invalid ptr
+        case 2: //invalid ptr
             {
             void* ptr = &krashnum;
             freeSomething(ptr);
             }
             break;
 
-        case 4: //double free
+        case 3: //double free
             {                                
             void* ptr = kmalloc(0x1000, GFP_KERNEL);
             freeSomething(ptr);
@@ -167,29 +216,24 @@ static int process_krash(int knum, krash_private *priv)
             }
             break;
 
-        case 5: //reference executable memory
+        case 4: //reference executable memory
             {
             void* ptr = (void *)freeSomething; 
             memset(ptr, 0x00, 10);
             }
             break;
 
-        case 6: //Deadlock
-            if (priv == NULL)
-                break;
-            {
-            priv->arg = 1;
-            pThread = 
-            kthread_create(KrashFaultThread, (void *)priv, "KrFltThrd1");
-            if (!IS_ERR(pThread))
-    	        wake_up_process(pThread);
+        case 5:
+            hardRun();
+            break; 
 
-            spin_lock(&priv->spinlock1);
-            }
-            break;
+        case 6:
+            exhaustMemory();
+            break; 
 
         case 7: //Memory leak
-            if (priv == NULL)
+            leakMemory();
+            /*if (priv == NULL)
                 break;
             {
             priv->arg = 3;
@@ -197,10 +241,25 @@ static int process_krash(int knum, krash_private *priv)
             kthread_create(KrashFaultThread, (void *)priv, "KrFltThrd3");
             if (!IS_ERR(pThread))
                 wake_up_process(pThread);
+            }/* */
+            rc=7;
+            break;
+
+        case 8: //Deadlock
+            if (priv == NULL)
+                break;
+            {
+            priv->arg = 1;
+            pThread = 
+            kthread_create(KrashFaultThread, (void *)priv, "KrFltThrd1");
+            if (!IS_ERR(pThread))
+                wake_up_process(pThread);
+
+            spin_lock(&priv->spinlock1);
             }
             break;
 
-        case 8: //System stall
+        /*case 8: //System stall
             if (priv == NULL)
                 break;
             {
@@ -216,7 +275,7 @@ static int process_krash(int knum, krash_private *priv)
             if (!IS_ERR(pThread))
                 wake_up_process(pThread);
             }
-            break;
+            break;*/
 
         default:
             PINFO("process_krash() invalid krash #\n");
@@ -225,7 +284,7 @@ static int process_krash(int knum, krash_private *priv)
 
     PINFO("process_krash() exit *!*\n");
 
-    return 0;
+    return rc;
 }
 
 /* static void krash_timer1(unsigned long data)
@@ -283,7 +342,7 @@ static struct platform_private *krash_create_device(int minor)
 {
 	dev_t curr_dev;
 
-	struct platform_private *priv;
+	struct platform_private *priv = NULL;
 	krash_private *charpriv;
 
 	PINFO("krash_create_device()... minor=%d\n", minor);
@@ -318,7 +377,7 @@ static struct platform_private *krash_create_device(int minor)
 
 	//platform_set_drvdata(pdev, priv);
 
-    PINFO("krash_create_device() exit\n");
+    PINFO("krash_create_device() exit priv=%p\n",priv);
 
 	return priv;
 }
@@ -487,7 +546,7 @@ static int __init krash_init(void)
 	/* TODO : Initialise tasklet argument */
 	//tasklet_init(&krash_tasklet1 , thread1 , 0);
 
-    PINFO("krash_init() exit \n");
+    PINFO("krash_init() exiting priv=%p\n", priv);
 
 	return 0;
 }

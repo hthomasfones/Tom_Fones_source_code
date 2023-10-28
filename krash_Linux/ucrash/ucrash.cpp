@@ -32,88 +32,174 @@
 /*******************************************************************************/
 
 #include "ucrash.h"
+#include <ctime>
+#include <iostream>
+#include <locale>
+#include <string>
+#include <cstring>
+#include <vector>
+#include <iterator>
 
 #define SLEEP_TIME 700
 #define KRASH_DEVICE_PATH "/dev/krashdev"
 
 void freeSomething(void *ptr)
 {
+    std::cout << "ucrash... freeSomething ";
+    std::cout << std::hex << ptr << std::endl;
     free(ptr);
 }
 
 int zeroDivide()
+{   
+    int rc = 0;
+    int five = 5;
+    int zero = 0;
+
+    std::cout << "ucrash... Divide by zero " << std::endl;
+    rc = five/zero;
+
+    return rc;
+}
+
+void hardRun(void)
 {
-    int nDivider = 5;
-    int nRes = 0;
-    while(nDivider > 0)
+    unsigned int cpuid = -1;
+    int rc = getcpu(&cpuid, NULL);
+    std::time_t now = std::time({});
+    std::vector<int> Now(20);
+    //std::strftime(std::data(Now), 20,
+     //                 "%FT%TZ", std::gmtime(&now));
+    std::cout << "ucrash... Hard run cpu=" << cpuid << " time=" << now << std::endl;
+    int X = 0;
+    while (true)
         {
-        nDivider--;
-        nRes = 5 / nDivider;
+        X += 5;
+        X -= 5;
         }
-    return nRes;
+
+    return;
+}
+
+void exhaustMemory(void)
+{
+    std::cout << "ucrash... Exhaust memory" << std::endl;
+    void* ptr = NULL;
+    while (true)
+        {
+        ptr = malloc(0x4000);
+        if (ptr==NULL)
+            break;
+        schedule();
+        }
+
+    ptr = malloc(0x4000);
+    return;
+}
+
+void leakMemory(void)
+{
+    std::cout << "ucrash... Leak memory" << std::endl;
+    void* ptr = NULL;
+    int n = 0;
+
+    for (n=0; n < 12; n++)
+        {
+        ptr = malloc(0x50000);
+        }
+    free(ptr);
+
+    return;
+}
+
+void writeExecMemory(void)
+{
+    void* ptr = (void *)&writeExecMemory;
+    std::cout << "ucrash... Write executable memory ";
+    std::cout << std::hex << ptr << std::endl;
+    memset(ptr, 0x00, 10);
+
+    return;
 }
 
 int main(int argc, char* argv[])
 {
-    int  crashnum = 0;
-    int  krashnum = 0;
+    int  crashnum = -1;
+    int  krashnum = -1;
     int rc = 0;
+    void* ptr = nullptr;
 
-    std::cout << "ucrash app started..." << std::endl;
-    std::cout << "Process Id: " << ::getpid() << std::endl;
+    std::cout << "ucrash app started... ";
+    std::cout << "Process Id: " << ::getpid();
 
     /* Throw SIGABRT */
     if (argc > 1)
         {
-        if (memcmp(argv[1], "-c", 2) == 0)
+        argv[1][1] = tolower(argv[1][1]);
+        if (memcmp(argv[1], "-u", 2) == 0)
             crashnum = (int)(argv[1][2] - 0x30);
 
         if (memcmp(argv[1], "-k", 2) == 0)
-            crashnum = (int)((argv[1][2] - 0x30) + 10);
+            {
+            krashnum = (int)(argv[1][2] - 0x30);
+            crashnum = -1;
+            }
         }
 
-    std::cout << "crashnum = " << crashnum << std::endl;
+    std::cout << "  crashnum=" << crashnum << ", krashnum=" << krashnum << std::endl;
     switch (crashnum)
         {
-        case 1: //divided by zero
+        case 0: //divided by zero
             zeroDivide(); 
             break;
 
-        case 2: //nullptr
+        case 1: //nullptr
             {
-            void* ptr = nullptr;
+            freeSomething(NULL);
+            }
+            break;
+
+        case 2: //invalid ptr
+            {
+            ptr = &crashnum;
             freeSomething(ptr);
             }
             break;
 
-        case 3: //invalid ptr
+        case 3: //double free
             {
-            void* ptr = &crashnum;
-            freeSomething(ptr);
-            }
-            break;
-
-        case 4: //double free
-            {
-            void* ptr = malloc(0x1000);
+            ptr = malloc(0x1000);
             freeSomething(ptr);
             freeSomething(ptr);
             }
             break;
 
-        case 5: //reference executable memory
-            {
-            void* ptr = (void *)freeSomething; 
-            memset(ptr, 0x00, 10);
-            }
-            break;
+        case 4: //reference executable memory
+            writeExecMemory();
+            break; 
 
+        case 5:
+            hardRun();
+            break; 
+
+        case 6:
+            exhaustMemory();
+            break; 
+
+        case 7:
+            leakMemory();
+            break; 
+/*                                                                  */
+        /*case 10:
         case 11:
         case 12:
         case 13:
         case 14:
         case 15:
-            krashnum = crashnum - 10;
+        case 16:
+        case 17:
+        case 18: */
+        case -1:
             {
             int fd = open(KRASH_DEVICE_PATH, (O_RDWR));
             if (fd < 0)
@@ -123,17 +209,19 @@ int main(int argc, char* argv[])
                 }
 
             rc = ioctl(fd, KRASH_DEV_IOC_KRASH_NUM, krashnum);
+            close(fd);
             }
             break;
 
         default:
-            std::cout << "ucrash -cX  (X = 1..5)" << std::endl
-                      << "ucrash -kX  (X = 1..5)" << std::endl
-            << "X/0, nullptr, invalid pointer, double free, reference exec memory"
+            std::cout << "ucrash -uX  (X = 0..7)" << std::endl
+                      << "ucrash -kX  (X = 0..9)" << std::endl
+            << "0..9: N/0, NullPntr, InvalidPntr, DoubleFree, ExecMemory" << std::endl
+            << "      HardRun, ExhaustMemory, LeakMemory, NotReady NotReady" 
             << std::endl << std::flush;
             break;
         }
    
-    std::cout << "ucrash - exit=" << rc << std::endl << std::flush;
+    std::cout << "ucrash exit=" << rc << std::endl << std::flush;
     exit(rc);
 }
