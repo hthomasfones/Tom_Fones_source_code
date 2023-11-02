@@ -85,7 +85,7 @@ krash_private *priv = (krash_private *)pvoid;
 int arg = priv->arg;
 void* pMem;
 
-    PINFO("KrashFaultThread()... priv=%p arg=%d\n", priv, arg);
+    PINFO("KrashFaultThread...  priv=%p arg=%d\n", priv, arg);
 	switch (arg)
 	    {
         case 1:
@@ -93,21 +93,25 @@ void* pMem;
             break;
         case 2:
             spin_lock(&priv->spinlock2);
+            //
+            spin_lock(&priv->spinlock1);
             break;
         default:;
         }
-                     
+              
+/* 
     while (priv->arg == arg) 
     {
         if (arg != 4)
             schedule();
         if (arg == 3)
             pMem = kmalloc(0x1000, GFP_KERNEL);
-    }
+    } */
 
     PINFO("KrashFaultThread() exit\n");
     return 0;
 }
+
 
 void freeSomething(void *ptr)
 {
@@ -176,10 +180,27 @@ void leakMemory(void)
     return;
 }
 
+void deadLock(krash_private *priv)
+{
+    struct task_struct *pThread;
+    //char ThreadName[] = "KTdeadlock";
+
+    priv->arg = 2;
+    spin_lock(&priv->spinlock1);
+
+    pThread = kthread_create(KrashFaultThread, (void *)priv, "%s", "KTdeadlock");
+    if (!IS_ERR(pThread))
+        wake_up_process(pThread);
+
+    schedule(); schedule(); 
+    spin_lock(&priv->spinlock2);
+
+    return;
+}
 
 static int process_krash(int knum, krash_private *priv)
 {
-    struct task_struct *pThread;
+    //struct task_struct *pThread;
     int rc=0;
     PINFO("process_krash() knum=%d\n", knum);
 
@@ -233,30 +254,12 @@ static int process_krash(int knum, krash_private *priv)
 
         case 7: //Memory leak
             leakMemory();
-            /*if (priv == NULL)
-                break;
-            {
-            priv->arg = 3;
-            pThread = 
-            kthread_create(KrashFaultThread, (void *)priv, "KrFltThrd3");
-            if (!IS_ERR(pThread))
-                wake_up_process(pThread);
-            }/* */
             rc=7;
             break;
 
         case 8: //Deadlock
-            if (priv == NULL)
-                break;
-            {
-            priv->arg = 1;
-            pThread = 
-            kthread_create(KrashFaultThread, (void *)priv, "KrFltThrd1");
-            if (!IS_ERR(pThread))
-                wake_up_process(pThread);
-
-            spin_lock(&priv->spinlock1);
-            }
+            if (priv != NULL)
+                deadLock(priv);
             break;
 
         /*case 8: //System stall

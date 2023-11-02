@@ -1,0 +1,1 @@
+cmd_/home/htfones/eclipse-wkspc/krash/krash/KERN_SRC/krash.ko := ld -r -m elf_x86_64  -z max-page-size=0x200000  --build-id  -T ./scripts/module-common.lds -o /home/htfones/eclipse-wkspc/krash/krash/KERN_SRC/krash.ko /home/htfones/eclipse-wkspc/krash/krash/KERN_SRC/krash.o /home/htfones/eclipse-wkspc/krash/krash/KERN_SRC/krash.mod.o;  true

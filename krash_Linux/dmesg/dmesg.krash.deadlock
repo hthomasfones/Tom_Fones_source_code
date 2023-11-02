@@ -1,0 +1,81 @@
+[  228.163249] krash: loading out-of-tree module taints kernel.
+[  228.163287] krash: module verification failed: signature and/or required key missing - tainting kernel
+[  228.164089] krash:krash_init()... 
+[  228.164092] krash:register device failed res=-16
+[  228.164107] krash:krash_create_device()... minor=1
+[  228.164170] krash:krash_create_device() exit priv=0000000099b15e7b
+[  228.164204] krash:krash_init() exiting priv=0000000099b15e7b
+[  351.514820] cma: cma_alloc(cma 00000000d438dd7d, count 5, align 3)
+[  351.515282] cma: cma_alloc(): returned 00000000d2f2beec
+[  351.515286] dma_alloc_contig... cma=ffffffff83f013c0 dmacontigdfltarea=ffffffff83f013c0 page=ffff88827db70600
+[  356.988223] cma: cma_release(page 00000000d2f2beec)
+[  424.801800] krash:krash_dev_open()... priv=0000000056c47100
+[  424.801802] krash:krash_dev_ioctl()... cmd=x40089A01, arg=8
+[  424.801803] krash:process_krash() knum=8
+[  424.802016] krash:process_krash() exit *!*
+[  424.802018] krash:krash_dev_release()... priv=0000000056c47100
+[  424.802020] krash:KrashFaultThread...  priv=0000000056c47100 arg=2
+[  452.294035] watchdog: BUG: soft lockup - CPU#3 stuck for 23s! [KTdeadlock:2329]
+[  452.294037] Modules linked in: krash(OE) nls_iso8859_1 intel_rapl_msr intel_rapl_common snd_hda_codec_generic ledtrig_audio snd_hda_intel snd_intel_dspcfg isst_if_common snd_hda_codec snd_hda_core snd_hwdep snd_pcm nfit crct10dif_pclmul ghash_clmulni_intel aesni_intel snd_seq_midi crypto_simd snd_seq_midi_event cryptd glue_helper rapl snd_rawmidi joydev binfmt_misc snd_seq snd_seq_device input_leds snd_timer qxl snd 9pnet_virtio mac_hid 9pnet qemu_fw_cfg drm_ttm_helper soundcore serio_raw sch_fq_codel vmwgfx ttm drm_kms_helper cec fb_sys_fops syscopyarea sysfillrect sysimgblt msr parport_pc ppdev drm lp parport ramoops reed_solomon efi_pstore virtio_rng ip_tables x_tables autofs4 hid_generic usbhid hid virtio_net net_failover crc32_pclmul failover ahci libahci psmouse lpc_ich i2c_i801
+[  452.294068] irq event stamp: 0
+[  452.294070] hardirqs last  enabled at (0): [<0000000000000000>] 0x0
+[  452.294072] hardirqs last disabled at (0): [<ffffffff81084039>] copy_process+0x4d9/0x1d30
+[  452.294073] softirqs last  enabled at (0): [<ffffffff81084039>] copy_process+0x4d9/0x1d30
+[  452.294074] softirqs last disabled at (0): [<0000000000000000>] 0x0
+[  452.294075] CPU: 3 PID: 2329 Comm: KTdeadlock Kdump: loaded Tainted: G           OE     5.7.19krnl_050719 #16
+[  452.294076] Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.13.0-1ubuntu1.1 04/01/2014
+[  452.294078] RIP: 0010:queued_spin_lock_slowpath+0x48/0x1b0
+[  452.294079] Code: 0f ba 2f 08 0f 92 c0 0f b6 c0 c1 e0 08 89 c2 8b 07 30 e4 09 d0 a9 00 01 ff ff 75 1c 85 c0 74 0e 8b 07 84 c0 74 08 f3 90 8b 07 <84> c0 75 f8 b8 01 00 00 00 5d 66 89 07 c3 f6 c4 01 75 04 c6 47 01
+[  452.294080] RSP: 0018:ffffc900011bfea8 EFLAGS: 00000202 ORIG_RAX: ffffffffffffff13
+[  452.294080] RAX: 0000000000000101 RBX: ffff888243015ce8 RCX: 0000000000000000
+[  452.294081] RDX: 0000000000000000 RSI: 0000000000000000 RDI: ffff888243015ce8
+[  452.294081] RBP: ffffc900011bfea8 R08: 0000000000000001 R09: 0000000000000000
+[  452.294082] R10: 0000000000000000 R11: 0000000000000000 R12: ffff888243015ce8
+[  452.294082] R13: ffff888236e96100 R14: ffff888243015810 R15: ffffc900010cbd80
+[  452.294083] FS:  0000000000000000(0000) GS:ffff88827fd80000(0000) knlGS:0000000000000000
+[  452.294083] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+[  452.294084] CR2: 000055ec64f43eb0 CR3: 0000000002860000 CR4: 0000000000740ee0
+[  452.294086] PKRU: 55555554
+[  452.294089] Call Trace:
+[  452.294091]  do_raw_spin_lock+0xb6/0xc0
+[  452.294093]  _raw_spin_lock+0x31/0x40
+[  452.294095]  ? KrashFaultThread+0x47/0x6d [krash]
+[  452.294096]  KrashFaultThread+0x47/0x6d [krash]
+[  452.294097]  kthread+0x106/0x140
+[  452.294098]  ? deadLock+0x6e/0x6e [krash]
+[  452.294099]  ? kthread_unpark+0x70/0x70
+[  452.294100]  ret_from_fork+0x24/0x50
+[  452.294103] Sending NMI from CPU 3 to CPUs 0-2:
+[  452.294147] NMI backtrace for cpu 0 skipped: idling at default_idle+0x2e/0x180
+[  452.294148] NMI backtrace for cpu 2 skipped: idling at default_idle+0x2e/0x180
+[  452.294149] NMI backtrace for cpu 1 skipped: idling at default_idle+0x2e/0x180
+[  452.295100] Kernel panic - not syncing: softlockup: hung tasks
+[  452.295102] CPU: 3 PID: 2329 Comm: KTdeadlock Kdump: loaded Tainted: G           OEL    5.7.19krnl_050719 #16
+[  452.295102] Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.13.0-1ubuntu1.1 04/01/2014
+[  452.295103] Call Trace:
+[  452.295104]  <IRQ>
+[  452.295106]  dump_stack+0x7a/0xaa
+[  452.295108]  panic+0x100/0x2ef
+[  452.295111]  watchdog_timer_fn.cold+0x87/0xa0
+[  452.295113]  __hrtimer_run_queues+0x1ef/0x490
+[  452.295115]  ? softlockup_fn+0x40/0x40
+[  452.295117]  hrtimer_interrupt+0x109/0x220
+[  452.295119]  smp_apic_timer_interrupt+0x8c/0x240
+[  452.295120]  apic_timer_interrupt+0xf/0x20
+[  452.295121]  </IRQ>
+[  452.295122] RIP: 0010:queued_spin_lock_slowpath+0x48/0x1b0
+[  452.295123] Code: 0f ba 2f 08 0f 92 c0 0f b6 c0 c1 e0 08 89 c2 8b 07 30 e4 09 d0 a9 00 01 ff ff 75 1c 85 c0 74 0e 8b 07 84 c0 74 08 f3 90 8b 07 <84> c0 75 f8 b8 01 00 00 00 5d 66 89 07 c3 f6 c4 01 75 04 c6 47 01
+[  452.295124] RSP: 0018:ffffc900011bfea8 EFLAGS: 00000202 ORIG_RAX: ffffffffffffff13
+[  452.295125] RAX: 0000000000000101 RBX: ffff888243015ce8 RCX: 0000000000000000
+[  452.295125] RDX: 0000000000000000 RSI: 0000000000000000 RDI: ffff888243015ce8
+[  452.295126] RBP: ffffc900011bfea8 R08: 0000000000000001 R09: 0000000000000000
+[  452.295127] R10: 0000000000000000 R11: 0000000000000000 R12: ffff888243015ce8
+[  452.295128] R13: ffff888236e96100 R14: ffff888243015810 R15: ffffc900010cbd80
+[  452.295131]  do_raw_spin_lock+0xb6/0xc0
+[  452.295132]  _raw_spin_lock+0x31/0x40
+[  452.295133]  ? KrashFaultThread+0x47/0x6d [krash]
+[  452.295135]  KrashFaultThread+0x47/0x6d [krash]
+[  452.295136]  kthread+0x106/0x140
+[  452.295137]  ? deadLock+0x6e/0x6e [krash]
+[  452.295138]  ? kthread_unpark+0x70/0x70
+[  452.295139]  ret_from_fork+0x24/0x50

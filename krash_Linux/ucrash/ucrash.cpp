@@ -90,7 +90,7 @@ void exhaustMemory(void)
         ptr = malloc(0x4000);
         if (ptr==NULL)
             break;
-        schedule();
+        //schedule();
         }
 
     ptr = malloc(0x4000);
@@ -190,34 +190,27 @@ int main(int argc, char* argv[])
             leakMemory();
             break; 
 /*                                                                  */
-        /*case 10:
-        case 11:
-        case 12:
-        case 13:
-        case 14:
-        case 15:
-        case 16:
-        case 17:
-        case 18: */
-        case -1:
-            {
-            int fd = open(KRASH_DEVICE_PATH, (O_RDWR));
-            if (fd < 0)
+        case -1: //Kernel mode
+            if (krashnum < 9)
                 {
-                rc = errno;
+                int fd = open(KRASH_DEVICE_PATH, (O_RDWR));
+                if (fd < 0)
+                    {
+                    rc = errno;
+                    break;
+                    }
+
+                rc = ioctl(fd, KRASH_DEV_IOC_KRASH_NUM, krashnum);
+                close(fd);
                 break;
                 }
-
-            rc = ioctl(fd, KRASH_DEV_IOC_KRASH_NUM, krashnum);
-            close(fd);
-            }
-            break;
+            //fall through
 
         default:
             std::cout << "ucrash -uX  (X = 0..7)" << std::endl
-                      << "ucrash -kX  (X = 0..9)" << std::endl
-            << "0..9: N/0, NullPntr, InvalidPntr, DoubleFree, ExecMemory" << std::endl
-            << "      HardRun, ExhaustMemory, LeakMemory, NotReady NotReady" 
+                      << "ucrash -kX  (X = 0..8)" << std::endl
+            << "0..8: N/0, NullPntr, InvalidPntr, DoubleFree, ExecMemory" << std::endl
+            << "      HardRun, ExhaustMemory, LeakMemory, Deadlock, NotReady" 
             << std::endl << std::flush;
             break;
         }
