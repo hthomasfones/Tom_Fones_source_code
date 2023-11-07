@@ -1,0 +1,49 @@
+[    0.000000] Linux version 5.7.19krnl_050719 (htfones@htfones-VirtualBox) (gcc version 9.3.0 (Ubuntu 9.3.0 0.006163] cma: dma_contiguous_reserve: reserving 32 MiB for global area  0.320993] devtmpfs: initialized 1.500325] RAS: Correctable Errors collector initialized.systemd[1]: Reached target System Time Set.4] cma: cma_alloc(cma 00000000b8b9c7b8, count 5, align 3)[265565.110618] dma_alloc_contig... cma=ffffffff83f013c0 dmacontigdfltarea=ffffffff83f013c0 page=ffff88827db70600
+[265570.387981] cma: cma_release(page 000000009421f17d)
+[265596.013068] krash:krash_init()... 
+[265596.013073] krash:register device failed res=-16
+[265596.013091] krash:krash_create_device()... minor=1
+[265596.013192] krash:krash_create_device() exit priv=00000000800ef3f9
+[265596.013246] krash:krash_init() exiting priv=00000000800ef3f9
+[265695.852374] krash:krash_dev_open()... priv=000000001450e83f
+[265695.852382] krash:krash_dev_ioctl()... cmd=x40089A01, arg=1
+[265695.852384] krash:process_krash() knum=1
+[265695.852385] krash:writeToAddr() ptr=0000000000000000
+[265695.852417] BUG: kernel NULL pointer dereference, address: 0000000000000000
+[265695.852424] #PF: supervisor write access in kernel mode
+[265695.852427] #PF: error_code(0x0002) - not-present page
+[265695.852430] PGD 0 P4D 0 
+[265695.852435] Oops: 0002 [#1] SMP NOPTI
+[265695.852439] CPU: 0 PID: 11463 Comm: ucrash Kdump: loaded Tainted: G           OE     5.7.19krnl_050719 #16
+[265695.852442] Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.13.0-1ubuntu1.1 04/01/2014
+[265695.852457] RIP: 0010:writeToAddr+0x2e/0x34 [krash]
+[265695.852460] Code: 00 55 48 89 fa 48 c7 c6 3c d0 5a a0 48 89 e5 41 54 49 89 fc 48 c7 c7 7d d0 5a a0 e8 bb a2 b6 e0 4c 89 e7 b9 00 01 00 00 b0 78 <f3> aa 41 5c 5d c3 0f 1f 44 00 00 55 48 c7 c6 3c d0 5a a0 48 c7 c7
+[265695.852464] RSP: 0018:ffffc900020ebe88 EFLAGS: 00010246
+[265695.852467] RAX: 0000000000000078 RBX: 0000000000000001 RCX: 0000000000000100
+[265695.852469] RDX: 0000000000000000 RSI: ffffffff81114507 RDI: 0000000000000000
+[265695.852472] RBP: ffffc900020ebe90 R08: 0000000000000000 R09: 0000000000000001
+[265695.852474] R10: 0000000000000000 R11: 0000000000000000 R12: 0000000000000000
+[265695.852476] R13: ffff88821c247010 R14: 0000000000000001 R15: 0000000000000003
+[265695.852506] FS:  00007f18266eb100(0000) GS:ffff88827fc00000(0000) knlGS:0000000000000000
+[265695.852510] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+[265695.852513] CR2: 0000000000000000 CR3: 00000000378c2000 CR4: 0000000000740ef0
+[265695.852520] PKRU: 55555554
+[265695.852522] Call Trace:
+[265695.852530]  process_krash+0x8e/0x17d [krash]
+[265695.852535]  krash_dev_ioctl+0x4c/0x55 [krash]
+[265695.852575]  ksys_ioctl+0x9d/0xd0
+[265695.852580]  __x64_sys_ioctl+0x1a/0x20
+[265695.852606]  do_syscall_64+0x59/0x220
+[265695.852637]  entry_SYSCALL_64_after_hwframe+0x49/0xb3
+[265695.852641] RIP: 0033:0x7f182694f3ab
+[265695.852644] Code: 0f 1e fa 48 8b 05 e5 7a 0d 00 64 c7 00 26 00 00 00 48 c7 c0 ff ff ff ff c3 66 0f 1f 44 00 00 f3 0f 1e fa b8 10 00 00 00 0f 05 <48> 3d 01 f0 ff ff 73 01 c3 48 8b 0d b5 7a 0d 00 f7 d8 64 89 01 48
+[265695.852647] RSP: 002b:00007ffed75f94f8 EFLAGS: 00000246 ORIG_RAX: 0000000000000010
+[265695.852650] RAX: ffffffffffffffda RBX: 0000559e92796c00 RCX: 00007f182694f3ab
+[265695.852652] RDX: 0000000000000001 RSI: 0000000040089a01 RDI: 0000000000000003
+[265695.852655] RBP: 0000559e92799040 R08: 0000000000000000 R09: 00007ffed75f9300
+[265695.852657] R10: 0000000000000000 R11: 0000000000000246 R12: 0000000000000001
+[265695.852659] R13: 0000000000000003 R14: 0000000000000000 R15: 0000000000000000
+[265695.852669] Modules linked in: krash(OE) nls_iso8859_1 intel_rapl_msr intel_rapl_common isst_if_common snd_hda_codec_generic ledtrig_audio snd_hda_intel snd_intel_dspcfg snd_hda_codec nfit crct10dif_pclmul ghash_clmulni_intel snd_hda_core aesni_intel crypto_simd cryptd glue_helper rapl snd_hwdep snd_pcm snd_seq_midi snd_seq_midi_event snd_rawmidi snd_seq binfmt_misc 9pnet_virtio 9pnet joydev input_leds serio_raw snd_seq_device snd_timer qemu_fw_cfg snd qxl soundcore mac_hid drm_ttm_helper sch_fq_codel vmwgfx ttm drm_kms_helper cec fb_sys_fops syscopyarea sysfillrect drm sysimgblt msr parport_pc ppdev lp parport ramoops reed_solomon efi_pstore virtio_rng ip_tables x_tables autofs4 hid_generic usbhid hid psmouse crc32_pclmul virtio_net i2c_i801 net_failover ahci failover libahci lpc_ich [last unloaded: krash]
+[265695.852768] Dumping ftrace buffer:
+[265695.852810]    (ftrace buffer empty)
+[265695.852813] CR2: 0000000000000000

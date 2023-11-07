@@ -83,7 +83,7 @@ int KrashFaultThread(void* pvoid)
 {
 krash_private *priv = (krash_private *)pvoid;
 int arg = priv->arg;
-void* pMem;
+//void* pMem;
 
     PINFO("KrashFaultThread...  priv=%p arg=%d\n", priv, arg);
 	switch (arg)
@@ -113,11 +113,28 @@ void* pMem;
 }
 
 
+void writeToAddr(void *ptr)
+{
+    PINFO("writeToAddr() ptr=%px\n", ptr);
+    memset(ptr, 'x', 256);
+    return;
+}
+
 void freeSomething(void *ptr)
 {
-    PINFO("freeSomething() ptr=%p\n", ptr);
-
+    PINFO("freeSomething() ptr=%px\n", ptr);
     kfree(ptr);
+}
+
+void freePage(void *ptr)
+{
+    struct page* pPage = NULL;
+
+    PINFO("freePage() ptr=%px\n", ptr);
+    pPage = virt_to_page(ptr);
+    PINFO("freePage() v2p_page=%px\n", pPage);
+
+    kfree(pPage);
 }
 
 int zeroDivide(void)
@@ -217,15 +234,15 @@ static int process_krash(int knum, krash_private *priv)
         case 1: //nullptr
             {
             void* ptr = NULL;
-            freeSomething(ptr);
-            memset(ptr, 0x00, 10);
+            writeToAddr(ptr);
+            //memset(ptr, 0x00, 10);
             }
             break;
 
         case 2: //invalid ptr
             {
-            void* ptr = &krashnum;
-            freeSomething(ptr);
+            void* ptr = (void *)0xFFFFFFFFFFFF0000;
+            writeToAddr(ptr);
             }
             break;
 
@@ -240,13 +257,14 @@ static int process_krash(int knum, krash_private *priv)
         case 4: //reference executable memory
             {
             void* ptr = (void *)freeSomething; 
-            memset(ptr, 0x00, 10);
+            writeToAddr(ptr);
+            //memset(ptr, 0x00, 10);
             }
             break;
 
         case 5:
             hardRun();
-            break; 
+            break;  
 
         case 6:
             exhaustMemory();
@@ -262,23 +280,13 @@ static int process_krash(int knum, krash_private *priv)
                 deadLock(priv);
             break;
 
-        /*case 8: //System stall
-            if (priv == NULL)
-                break;
+        case 9: //Bad Page
             {
-            priv->arg = 4;
-            pThread =  
-            kthread_create(KrashFaultThread, (void *)priv, "KrFltThrd4a");
-            pThread =  
-            kthread_create(KrashFaultThread, (void *)priv, "KrFltThrd4b");
-            pThread =  
-            kthread_create(KrashFaultThread, (void *)priv, "KrFltThrd4c");
-            pThread =  
-            kthread_create(KrashFaultThread, (void *)priv, "KrFltThrd4d");
-            if (!IS_ERR(pThread))
-                wake_up_process(pThread);
+            void* ptr = (void *)0xFFFFFFFFFFFF0000;
+            freePage(ptr);
             }
-            break;*/
+            break;
+
 
         default:
             PINFO("process_krash() invalid krash #\n");

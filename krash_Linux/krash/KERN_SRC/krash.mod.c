@@ -39,11 +39,12 @@ __used __section(__versions) = {
 	{ 0x3fd78f3b, "register_chrdev_region" },
 	{ 0xacbb36ba, "kmem_cache_alloc_trace" },
 	{ 0x48ec6627, "kmalloc_caches" },
-	{ 0xfb578fc5, "memset" },
 	{ 0x4c002e66, "wake_up_process" },
 	{ 0xcbc270a1, "kthread_create_on_node" },
 	{ 0x1000e51, "schedule" },
 	{ 0xb8b9f817, "kmalloc_order_trace" },
+	{ 0xd92dd855, "mem_section" },
+	{ 0x4c9d28b0, "phys_base" },
 	{ 0x37a0cba, "kfree" },
 	{ 0x95e1b5f7, "_raw_spin_lock" },
 	{ 0xc5850110, "printk" },
@@ -53,4 +54,4 @@ __used __section(__versions) = {
 MODULE_INFO(depends, "");
 
 
-MODULE_INFO(srcversion, "CC31F14067CE6A310A44775");
+MODULE_INFO(srcversion, "105562A3AA6AF9396314F43");
