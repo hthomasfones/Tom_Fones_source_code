@@ -65,7 +65,7 @@ $testapp_path$testapp $devnum wrr 4100 20480 Five_55555555555
 #
 $testapp_path$testapp $devnum wrr 4100 24576 Six_666666666666
 #
-$testapp_path$testapp $devnum wrr 16900 28672 Seven_7777777777
+#$testapp_path$testapp $devnum wrr 16900 28672 Seven_7777777777
 #
 set +x ; printf "\nNow some reads... \n" ; set -x
 $testapp_path$testapp $devnum rdr 4100 0

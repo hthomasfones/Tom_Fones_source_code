@@ -28,8 +28,10 @@
 #/* $Id: madalldevicestest.sh, v 1.0 2021/01/01 00:00:00 htf $ 
                           
 #Set up script environment variables
+bdev=0 #We will setup char-mode device(s)
 source madenv.sh
 
+#Clear the console; hide executing commands
 clear
 set -x
 

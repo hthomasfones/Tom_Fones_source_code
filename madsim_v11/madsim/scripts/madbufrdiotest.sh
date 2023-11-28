@@ -41,6 +41,22 @@ cd $currdir
 #source madappintro.sh
 
 cd $appbasepath 
+#set +x
+#echo "\nSanity tests... Get the device registers\n"
+#echo "from a simulator ioctl; from a simulator mmap\n"
+#echo "from a device driver ioctl; from a device driver mmap\n"
+#set -x
+
+#$simapp_path$simapp $devnum get 
+#sleep $delay
+#$simapp_path$simapp $devnum mget 
+#sleep $delay
+#$testapp_path$testapp $devnum get 
+#sleep $delay
+#$testapp_path$testapp $devnum mget 
+#
+#$testapp_path$testapp $devnum rst 
+
 ### Customized tests: Buffered i/o
 $simapp_path$simapp $devnum idd b
 

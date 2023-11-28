@@ -29,6 +29,7 @@
 #/*                                                                     
 
 #Set up script environment variables
+bdev=1 #We will setup  block-mode device(s)
 source madenv.sh
 
 clear
@@ -43,8 +44,9 @@ cd $currdir
 #source madappintro.sh
 cd $appbasepath 
 
-$simapp_path$simapp_exec 2 hun
-$simapp_path$simapp_exec 2 hpl 1004 
+$simapp_path$simapp 1 hun
+sleep 1
+$simapp_path$simapp 1 hpl 2001 
 
 ### Customized tests: Device Cacheing
 #
@@ -53,8 +55,8 @@ $testappbio_path$testappbio $devnum rst
 $testappbio_path$testappbio $devnum get
 $simappbio_path$simappbio_exec $devnum get
 
-#$simapp_path$simapp_exec $devnum mgt
-#$simapp_path$simapp_exec $devnum idd
+#$simapp_path$simapp $devnum mgt
+#$simapp_path$simapp $devnum idd
 #
 printf "\nLet's do some programmed i/o =================\n"
 $testappbio_path$testappbio $devnum piw 45 ABCDEFGHIJKLMNOPQRSTUVWXYZ_0123456789 &
@@ -64,87 +66,87 @@ $testapp_path$testapp $devnum pir 50
 printf "\nPopulate device sectors through the write cache =================\n"
 $testappbio_path$testappbio $devnum pwc Sector_zero_000 &
 sleep $delay
-$simapp_path$simapp_exec $devnum fwc
+$simapp_path$simapp $devnum fwc
 sleep $delay
 
 $testappbio_path$testappbio $devnum pwc Sector_one_111 &
 sleep $delay
-$simapp_path$simapp_exec $devnum fwc
+$simapp_path$simapp $devnum fwc
 sleep $delay
 
 $testappbio_path$testappbio $devnum pwc Sector_two_222 &
 sleep $delay
-$simapp_path$simapp_exec $devnum fwc
+$simapp_path$simapp $devnum fwc
 sleep $delay
 
 $testappbio_path$testappbio $devnum pwc Sector_three_333 &
 sleep $delay
-$simapp_path$simapp_exec $devnum fwc
+$simapp_path$simapp $devnum fwc
 sleep $delay
 
 $testappbio_path$testappbio $devnum pwc Sector_four_444 &
 sleep $delay
-$simapp_path$simapp_exec $devnum fwc
+$simapp_path$simapp $devnum fwc
 sleep $delay
 $testappbio_path$testappbio $devnum get
 
 printf "\nRetrieve device sectors through the read cache ==================\n"
 $testappbio_path$testappbio $devnum prc &
 sleep $delay
-$simapp_path$simapp_exec $devnum lrc
+$simapp_path$simapp $devnum lrc
 sleep $delay
 
 $testappbio_path$testappbio $devnum prc &
 sleep $delay
-$simapp_path$simapp_exec $devnum lrc
+$simapp_path$simapp $devnum lrc
 sleep $delay
 
 $testappbio_path$testappbio $devnum prc &
 sleep $delay
-$simapp_path$simapp_exec $devnum lrc
+$simapp_path$simapp $devnum lrc
 sleep $delay
 
 $testappbio_path$testappbio $devnum prc &
 sleep $delay
-$simapp_path$simapp_exec $devnum lrc
+$simapp_path$simappc $devnum lrc
 sleep $delay
 
 $testappbio_path$testappbio $devnum prc &
 sleep $delay
-$simapp_path$simapp_exec $devnum lrc
+$simapp_path$simapp $devnum lrc
 sleep $delay
 
 $testappbio_path$testappbio $devnum prc &
 sleep $delay
-$simapp_path$simapp_exec $devnum lrc
+$simapp_path$simapp $devnum lrc
 sleep $delay
 $testappbio_path$testappbio $devnum get
 
 printf "\nAlign (reset) the read cache and retrieve device sectors again=====\n"
 $testappbio_path$testappbio $devnum arc 1 &
 sleep $delay
-$simapp_path$simapp_exec $devnum arc
+$simapp_path$simapp $devnum arc
 sleep $delay
 $testappbio_path$testappbio $devnum get
 
 $testappbio_path$testappbio $devnum prc &
 sleep $delay
-$simapp_path$simapp_exec $devnum lrc
+$simapp_path$simapp $devnum lrc
 sleep $delay
 
 $testappbio_path$testappbio $devnum prc &
 sleep $delay
-$simapp_path$simapp_exec $devnum lrc
+$simapp_path$simapp $devnum lrc
 sleep $delay
 
 $testappbio_path$testappbio $devnum prc &
 sleep $delay
-$simapp_path$simapp_exec $devnum lrc
+$simapp_path$simapp $devnum lrc
 sleep $delay
 
 $testappbio_path$testappbio $devnum prc &
 sleep $delay
-$simapp_path$simapp_exec $devnum lrc
+$simapp_path$simapp $devnum lrc
 sleep $delay
 $testappbio_path$testappbio $devnum get
 #

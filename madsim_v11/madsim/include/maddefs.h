@@ -39,17 +39,20 @@
 #endif
 
 #define  HTFC_PCI_VENDOR_ID      0x9808
-//
 #define  MAD_PCI_VENDOR_ID       HTFC_PCI_VENDOR_ID
 //
 #define  MAD_PCI_BASE_DEVICE_ID      0x1001
 #define  MAD_PCI_CHAR_DEVICE_ID      MAD_PCI_BASE_DEVICE_ID
 #define  MAD_PCI_CHAR_INT_DEVICE_ID  MAD_PCI_BASE_DEVICE_ID
-#define  MAD_PCI_CHAR_MSI_DEVICE_ID  (MAD_PCI_BASE_DEVICE_ID+1)
-#define  MAD_PCI_BLOCK_DEVICE_ID     (MAD_PCI_BASE_DEVICE_ID+2)
-#define  MAD_PCI_BLOCK_INT_DEVICE_ID (MAD_PCI_BASE_DEVICE_ID+2)
-#define  MAD_PCI_BLOCK_MSI_DEVICE_ID (MAD_PCI_BASE_DEVICE_ID+3)
+#define  MAD_PCI_CHAR_MSI_DEVICE_ID  (MAD_PCI_CHAR_INT_DEVICE_ID+1)
+#define  MAD_PCI_BLOCK_DEVICE_ID     (MAD_PCI_BASE_DEVICE_ID+0x1000)
+#define  MAD_PCI_BLOCK_INT_DEVICE_ID (MAD_PCI_BASE_DEVICE_ID+0x1000)
+#define  MAD_PCI_BLOCK_MSI_DEVICE_ID (MAD_PCI_BLOCK_INT_DEVICE_ID+1)
 #define  MAD_PCI_MAX_DEVICE_ID       MAD_PCI_BLOCK_MSI_DEVICE_ID
+//
+#define  MAD_NUM_MSI_IRQS             8
+//
+#define  MAD_NO_VENDOR_DEVID_MATCH   -ECONNREFUSED
 
 #define  MAD_PCI_CFG_SPACE_SIZE  (PCI_CFG_SPACE_EXP_SIZE / 2) // 2K
 #define  MAD_PCI_VENDOR_OFFSET   (MAD_PCI_CFG_SPACE_SIZE / 2) // 1K
@@ -99,7 +102,10 @@ typedef enum  _MAD_DEV_INT_MODE {ePOLLED=0,
 typedef enum {eError=-1, eIoCmplt=0, eIoReset=eIoCmplt, eIoPending} IoState;
 
 typedef enum {eNOP=0, eBufrdRd, eBufrdWr, eLoadRdCache, eFlushWrCache,
-              eAlignRdCache, eAlignWrCache, eDmaRead, eDmaWrite, eInvalid} IoMesgId;
+              eAlignRdCache, eAlignWrCache, eDmaRead, eDmaWrite, eInvalid} IoType;
+
+#define NUM_MSI_IRQS (eInvalid-1)
+
 //Names .........................................................................
 //
 #ifdef PAGE_SIZE
@@ -215,16 +221,16 @@ typedef enum {eNOP=0, eBufrdRd, eBufrdWr, eLoadRdCache, eFlushWrCache,
 #define MAD_SECTORS_PER_PAGE         (LINUX_PAGE_SIZE / MAD_SECTOR_SIZE)
 #define MAD_BLOCK_SIZE               MAD_SECTOR_SIZE  
 
-#define MAD_KMALLOC_BYTES_PAGE_ORDER  9  //What we can get w/ kmalloc...  2MB
-#define MAD_ALLOC_PAGES_ORDER         10 //What we can get w/ alloc_pages... 4MB  
+#define MAD_PAGE_ORDER_KMALLOC_BYTES   9  //What we can get w/ kmalloc...  2MB
+#define MAD_PAGE_ORDER_ALLOC_PAGES    10 //What we can get w/ alloc_pages... 4MB  
                                          
 //Contiguous Memory Allocator: requires a kernel build enabling CMA - see the readme.txt
-//#define MAD_DMA_CMA_ALLOC_PAGES_ORDER 11 //Contiguous Memory Allocator... 8MB+ 
+#define MAD_PAGE_ORDER_CMA_ALLOC      11 //Contiguous Memory Allocator... 8MB+ 
 //
 //Rebuild EVERYTHING when changing this parameter... the test apps must mmap & munmap properly
-#define MAD_XALLOC_PAGES_ORDER       MAD_KMALLOC_BYTES_PAGE_ORDER
-//MAD_ALLOC_PAGES_ORDER*/ MAD_DMA_CMA_ALLOC_PAGES_ORDER  
-#define MAD_DEVICE_MAX_PAGES         (1 << MAD_XALLOC_PAGES_ORDER)
+#define MAD_PAGE_ORDER_XALLOC        MAD_PAGE_ORDER_KMALLOC_BYTES
+ 
+#define MAD_DEVICE_MAX_PAGES         (1 << MAD_PAGE_ORDER_XALLOC)
 #define MAD_DEVICE_MAX_SECTORS       (MAD_DEVICE_MAX_PAGES * MAD_SECTORS_PER_PAGE)
 #define MAD_TOTAL_ALLOC_SIZE         (MAD_SECTOR_SIZE * MAD_DEVICE_MAX_SECTORS)
 #define MAD_SAFE_MMAP_SIZE           (1 << 16)

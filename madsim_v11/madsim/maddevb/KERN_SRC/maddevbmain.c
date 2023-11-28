@@ -57,6 +57,9 @@ int maddev_nbr_devs = MADDEV_NBR_DEVS;	/* number of bare maddev devices */
 module_param(maddev_nbr_devs, int, S_IRUGO);
 MODULE_PARM_DESC(maddev_nbr_devs, "Number of devices to register");
 
+int mad_pci_devid = MAD_PCI_BLOCK_INT_DEVICE_ID;
+module_param(mad_pci_devid, int, S_IRUGO);
+
 int g_no_sched;
 module_param_named(no_sched, g_no_sched, int, 0444);
 MODULE_PARM_DESC(no_sched, "No io scheduler");
@@ -147,9 +150,9 @@ struct mutex lock;
 DEFINE_IDA(maddevb_indexes);
 
 //These function prototypes are needed here but are defined in maddrvrdefs.h
-static int maddev_probe(struct pci_dev *pcidev, const struct pci_device_id *ids);
-static void maddev_shutdown(struct pci_dev *pcidev);
-static void maddev_remove(struct pci_dev *pcidev);
+int maddev_probe(struct pci_dev *pcidev, const struct pci_device_id *ids);
+void maddev_shutdown(struct pci_dev *pcidev);
+void maddev_remove(struct pci_dev *pcidev);
 //
 struct mad_dev_obj; // *PMADDEVOBJ;
 
@@ -307,7 +310,7 @@ int maddevb_system_ioctl(struct block_device* bdev, fmode_t mode,
 {
     struct maddevb* pmaddevb       = bdev->bd_disk->private_data;
     struct mad_dev_obj* pmaddevobj = (PMADDEVOBJ)pmaddevb->mbdev->pmaddevobj;
-    int rc = -EINVAL;
+    int rc = -ENOSYS; 
 
     //PINFO("maddevb_system_ioctl... dev#=%d blkdev=%px fmode=x%X cmd=x%X arg=x%X\n",
     //      (int)pmaddevobj->devnum, bdev, mode, cmd, arg);
@@ -317,7 +320,7 @@ int maddevb_system_ioctl(struct block_device* bdev, fmode_t mode,
         case CDROM_GET_CAPABILITY:
             rc = MADDEVB_GENHD_FLAGS;
             PINFO("maddevb_system_ioctl... cdrom_get_caps; dev#=%d flags=x%X\n",
-                  pmaddevobj->devnum, rc);
+                  (int)pmaddevobj->devnum, (unsigned)rc);
             break;
 
         case CDROMCLOSETRAY:
@@ -331,8 +334,8 @@ int maddevb_system_ioctl(struct block_device* bdev, fmode_t mode,
         case CDROM_CHANGER_NSLOTS:
         case CDROM_LOCKDOOR:	
         case CDROM_DEBUG: 
-            PINFO("maddevb_system_ioctl... cdrom_ioctl dev#=%d rc=-ENOSYS\n");
-            rc = -ENOSYS;
+            PINFO("maddevb_system_ioctl... cdrom_ioctl dev#=%d rc=%d\n",
+                  (int)pmaddevobj->devnum, rc);
             break;
 
         default:;
@@ -351,27 +354,16 @@ int maddevb_system_ioctl(struct block_device* bdev, fmode_t mode,
 int maddevb_ioctl(struct block_device* bdev, fmode_t mode,
                   unsigned int cmd, unsigned long arg)
 {
-    static U32      MadIntAlignRd = (MAD_INT_STATUS_ALERT_BIT | MAD_INT_ALIGN_INPUT_BIT);
-    static U32      MadIntAlignWr = (MAD_INT_STATUS_ALERT_BIT | MAD_INT_ALIGN_OUTPUT_BIT);
-	static u8       CacheData[MAD_CACHE_SIZE_BYTES];
 	static MADREGS  MadRegs;
 	//
     struct maddevb* pmaddevb       = bdev->bd_disk->private_data;
 	struct mad_dev_obj *pmaddevobj =  (PMADDEVOBJ)pmaddevb->mbdev->pmaddevobj;
 	PMADREGS        pmadregs  = (PMADREGS)pmaddevobj->pDevBase;
 	PMADCTLPARMS    pCtlParms = (PMADCTLPARMS)arg;
-	u8*             pUsrBufr  = (u8 *)arg;
-	//
-    void*           pBufr = CacheData;
 	int err = 0;
 	long retval = 0;
-	U32  CntlReg = 0;
-	U32  IntReg = 0;
-	U32  RegVal;
-	U32  WorkBits;
 	U32  remains = 0;
     U32  flags1 = 0;
-
 
     PINFO("maddevb_ioctl... dev#=%d blkdev=%px fmode=x%X cmd=x%X arg=x%X\n",
 		  (int)pmaddevobj->devnum, bdev, mode, cmd, (int)arg);
@@ -393,7 +385,7 @@ int maddevb_ioctl(struct block_device* bdev, fmode_t mode,
 	    {
         mutex_unlock(&pmaddevobj->devmutex);
         PWARN("maddev_ioctl... dev#=%d cmd=x%X rc=-EACCES\n", 
-              pmaddevobj->devnum, cmd);
+              (int)pmaddevobj->devnum, (unsigned)cmd);
 		return -EACCES;
 	    }
 
@@ -401,7 +393,7 @@ int maddevb_ioctl(struct block_device* bdev, fmode_t mode,
 	if (err)
 	    {
         mutex_unlock(&pmaddevobj->devmutex);
-        PERR( "maddevb_ioctl... dev#=%d rc=-EINVAL\n", pmaddevobj->devnum);
+        PERR( "maddevb_ioctl... dev#=%d rc=-EINVAL\n", (int)pmaddevobj->devnum);
 		return -EINVAL;
 	    }
  
@@ -490,15 +482,13 @@ int maddevb_ioctl(struct block_device* bdev, fmode_t mode,
 int maddevb_init_module(void)
 {
 	int   rc = 0;
-    int   i;
-	PMADDEVOBJ pmaddevobj = NULL;
 	U32    devcount = 0;
-    size_t SetSize = ((maddev_max_devs+1) * PAGE_SIZE);
+    size_t SetSize = ((maddev_max_devs+3) * PAGE_SIZE); // Let padding consume a memory error
 
-    struct pci_dev* pPciDvTmp = NULL;
     int  mjr = 0;
     int len;
- 
+    u8 bMSI = (mad_pci_devid == MAD_PCI_BLOCK_MSI_DEVICE_ID);
+
     maddevb_major = maddev_major;
 	PINFO("maddevb_init_module... mjr=%d mnr=%d\n", maddevb_major, maddev_minor);
 
@@ -513,11 +503,11 @@ int maddevb_init_module(void)
         {
         maddevb_major = mjr;
         maddev_major = mjr;
-        PINFO("maddevb_init_module... mjr=%d reassigned!\n", 
-              maddevb_major, maddev_minor);
+        PINFO("maddevb_init_module... mjr=%d reassigned!\n", maddevb_major);
         }
 
     //Create a class for creating device nodes for hotplug devices
+    //Lop off the trailing X to make a generic class name in /sys/class/<name>
     len = strlen(MadDevNames[0]);
     MadDevNames[0][len-1] = 0x00;
     mad_class = class_create(THIS_MODULE, MadDevNames[0]);
@@ -529,7 +519,7 @@ int maddevb_init_module(void)
         }
 
     // Allocate memory for all device contexts - the number specified at load time
-	mad_dev_objects = kzalloc(SetSize, GFP_KERNEL);
+	mad_dev_objects = kzalloc(SetSize, MAD_KMALLOC_FLAGS);
 	if (!mad_dev_objects)
 	    {
         PERR("maddevb_init_module... kmalloc failed!\n");
@@ -554,21 +544,8 @@ int maddevb_init_module(void)
     /* Create & initialize each device. */
     PINFO("maddevb_init_module... #_static_devices=%d\n", maddev_nbr_devs);
 
-	for (i = 1; i <= maddev_nbr_devs; i++)
-	    {
-        pmaddevobj = 
-        (PMADDEVOBJ)((u8*)mad_dev_objects + (PAGE_SIZE * i));
-        pmaddevobj->devnum = i;
-        rc = maddev_setup_device(pmaddevobj, &pPciDvTmp, false); 
-        if (rc != 0)
-            {
-            PWARN("maddevb_init_module:maddev_setup_device... dev#=%d rc=%d\n",
-                   (int)pmaddevobj->devnum, rc);
-            continue;
-            }
-
-        devcount++;
-	    }
+    if (maddev_nbr_devs > 0) //Static devices
+        devcount = maddev_setup_devices(maddev_nbr_devs, false, bMSI); 
 
 #ifdef MADDEVOBJ_DEBUG /* only when debugging */
 	maddev_create_proc();

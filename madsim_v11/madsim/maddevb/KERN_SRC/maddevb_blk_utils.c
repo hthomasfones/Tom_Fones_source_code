@@ -63,8 +63,8 @@ static LIST_HEAD(maddevb_list);
 static void maddevb_free_device_storage(struct maddevblk_device *dev, bool is_cache);
 static struct maddevblk_device *maddevb_alloc_device(PMADDEVOBJ pmaddevobj);
 static int maddevb_add_device(struct maddevblk_device *dev);
-static int maddevb_rw_page(struct block_device *bdev, sector_t sector,
-		                   struct page *page, unsigned int op);
+//static int maddevb_rw_page(struct block_device *bdev, sector_t sector,
+//		                   struct page *page, unsigned int op);
 
 static int maddevb_param_store_val(const char *str, int *val, int min, int max)
 {
@@ -355,7 +355,7 @@ static struct configfs_attribute *maddevb_device_attrs[] =
 	NULL,
 };
 
-static void maddevb_free_device(struct maddevblk_device *dev)
+void maddevb_free_device(struct maddevblk_device *dev)
 {
     PMADDEVOBJ pmaddevobj;
 
@@ -556,7 +556,7 @@ static struct maddevb_cmd *maddevb_alloc_cmd(struct maddevb_queue *nq, int can_w
 	return cmd;
 }
 
-static void maddevb_end_cmd(struct maddevb_cmd *cmd)
+void maddevb_end_cmd(struct maddevb_cmd *cmd)
 {
 	int queue_mode = cmd->nq->dev->queue_mode;
 	struct mad_dev_obj *pmaddevobj = 
@@ -1046,7 +1046,7 @@ static int maddevb_handle_flush(struct maddevb *maddevb)
 
     if (err != 0)
         {PERR("maddevb_handle_flush... dev=%d err=%d\n",
-              pmaddevobj->devnum, err);}
+              (int)pmaddevobj->devnum, err);}
 	return err;
 }
 
@@ -1091,7 +1091,7 @@ static int maddevb_handle_req(struct maddevb_cmd *cmd)
 	struct bio_vec bvec;
 
 	PINFO("maddevb_handle_req dev#=%d cmd=%px req=%px sector=%ld\n", 
-          (int)pmaddevobj->devnum, cmd, req, sector);
+          (int)pmaddevobj->devnum, (void *)cmd, (void *)req, (long)sector);
 
 	if (req_op(req) == REQ_OP_DISCARD)
         {
@@ -1118,7 +1118,7 @@ static int maddevb_handle_req(struct maddevb_cmd *cmd)
 
     if (err != 0)
         {PERR("maddevb_handle_req... dev#=%d req=%px err=%d\n", 
-              (int)pmaddevobj->devnum, req, (int)err);}
+              (int)pmaddevobj->devnum, (void *)req, err);}
 
 	return err;
 }
@@ -1218,7 +1218,7 @@ static inline blk_status_t
 maddevb_handle_memory_backed(struct maddevb_cmd *cmd, enum req_opf op)
 {
 	struct maddevblk_device *mbdev = cmd->nq->dev;
-    struct maddevb *pmaddevb = mbdev->pmaddevb;
+    //struct maddevb *pmaddevb = mbdev->pmaddevb;
     struct mad_dev_obj *pmaddevobj = (struct mad_dev_obj *)mbdev->pmaddevobj;
     int err = 0;
 
@@ -1240,7 +1240,7 @@ static inline void maddevb_complete_cmd(struct maddevb_cmd *cmd)
 		               (struct mad_dev_obj *)cmd->nq->dev->pmaddevobj;
 
 	PINFO("maddevb_complete_cmd... dev#=%d cmd=%px req=%px\n",
-		  (int)pmaddevobj->devnum, cmd, cmd->req);
+		  (int)pmaddevobj->devnum, (void *)cmd, (void *)cmd->req);
 
 	/* Complete IO by inline, softirq or timer */
 	switch (cmd->nq->dev->irqmode)
@@ -1285,18 +1285,18 @@ maddevb_process_bio_command(struct mad_dev_obj *pmaddevobj, struct bio* pbio,
                             sector_t Sector, sector_t nr_sectors,
                             enum req_opf op)
 {
+    static struct   bio_vec biovecs[MAD_SGDMA_MAX_SECTORS];
+    //
     sector_t tsector = Sector;
     int      iorc = 0;
     int      nr_bvecs = 0;
-    struct   bio_vec biovecs[MAD_SGDMA_MAX_SECTORS];
     ssize_t  iocount;
 
-    mutex_lock(&pmaddevobj->devmutex);
-
     PINFO("maddevb_process_bio_command... dev#=%d op=%d bio=%px bio_next=%px #biovecs=%d biovecs=%px\n",
-          pmaddevobj->devnum, op, pbio, pbio->bi_next, 
-          pbio->bi_vcnt, pbio->bi_io_vec);
+          (int)pmaddevobj->devnum, op, (void *)pbio, (void *)pbio->bi_next, 
+          pbio->bi_vcnt, (void *)pbio->bi_io_vec);
 
+    mutex_lock(&pmaddevobj->devmutex);
     nr_bvecs = maddevb_collect_biovecs(pmaddevobj, pbio, nr_sectors, biovecs);
     if ((nr_bvecs == 0) || (nr_bvecs > MAD_SGDMA_MAX_SECTORS))
         {
@@ -1308,6 +1308,8 @@ maddevb_process_bio_command(struct mad_dev_obj *pmaddevobj, struct bio* pbio,
     iocount = 
     maddevb_xfer_sgdma_bvecs(pmaddevobj, biovecs, 
                              nr_bvecs, tsector, nr_sectors, (op==REQ_OP_WRITE));
+    mutex_unlock(&pmaddevobj->devmutex);
+
     if (iocount < 0)
         {iorc = (int)iocount;}
 
@@ -1315,12 +1317,10 @@ maddevb_process_bio_command(struct mad_dev_obj *pmaddevobj, struct bio* pbio,
         {PERR("maddevb_process_bio_command... dev#=%d iorc=%d\n",
               (int)pmaddevobj->devnum, iorc);}
 
-    mutex_unlock(&pmaddevobj->devmutex);
-
     return iorc;
 }
 
-static blk_status_t
+blk_status_t
 maddevb_handle_cmd(struct maddevb_cmd *cmd, sector_t sector,
                    sector_t nr_sectors, enum req_opf op)
 {
@@ -1331,7 +1331,7 @@ maddevb_handle_cmd(struct maddevb_cmd *cmd, sector_t sector,
     int err = -1;
 
 	PINFO("maddevb_handle_cmd... dev#=%d cmd=%px req=%px bio=%px sector=%d #sctrs=%d op=%d\n",
-          pmaddevobj->devnum, cmd, cmd->req, cmd->req->bio,
+          (int)pmaddevobj->devnum, (void *)cmd, (void *)cmd->req, (void *)cmd->req->bio,
           (int)sector, (int)nr_sectors, op);
 
 	if (test_bit(MADDEVB_DEV_FL_THROTTLED, &dev->flags))
@@ -1380,7 +1380,7 @@ maddevb_handle_cmd(struct maddevb_cmd *cmd, sector_t sector,
 
         default:
             PWARN("maddevb_handle_cmd... dev#=%d cmd=%px req=%px op=%d sts=BLK_STS_NOTSUPP\n",
-                  pmaddevobj->devnum, cmd, cmd->req, op);
+                  (int)pmaddevobj->devnum, (void *)cmd, (void *)cmd->req, op);
             cmd->error = sts = BLK_STS_NOTSUPP;
         }
 
@@ -1410,7 +1410,7 @@ static enum hrtimer_restart maddevb_bwtimer_fn(struct hrtimer *timer)
 	return HRTIMER_RESTART;
 }
 
-static void maddevb_setup_bwtimer(struct maddevb *maddevb)
+void maddevb_setup_bwtimer(struct maddevb *maddevb)
 {
 	ktime_t timer_interval = ktime_set(0, TIMER_INTERVAL);
 
@@ -1420,7 +1420,7 @@ static void maddevb_setup_bwtimer(struct maddevb *maddevb)
 	hrtimer_start(&maddevb->bw_timer, timer_interval, HRTIMER_MODE_REL);
 }
 
-static struct maddevb_queue *maddevb_to_queue(struct maddevb *maddevb)
+struct maddevb_queue *maddevb_to_queue(struct maddevb *maddevb)
 {
 	int index = 0;
 
@@ -1430,7 +1430,7 @@ static struct maddevb_queue *maddevb_to_queue(struct maddevb *maddevb)
 	return &maddevb->queues[index];
 }
 
-static blk_qc_t maddevb_queue_bio(struct request_queue *q, struct bio *bio)
+blk_qc_t maddevb_queue_bio(struct request_queue *q, struct bio *bio)
 {
 	sector_t sector = bio->bi_iter.bi_sector;
 	sector_t nr_sectors = bio_sectors(bio);
@@ -1448,7 +1448,7 @@ static blk_qc_t maddevb_queue_bio(struct request_queue *q, struct bio *bio)
 	return BLK_QC_T_NONE;
 }
 
-static bool maddevb_should_timeout_request(struct request *rq)
+bool maddevb_should_timeout_request(struct request *rq)
 {
 #ifdef CONFIG_BLK_DEV_NULL_BLK_FAULT_INJECTION
 	if (g_timeout_str[0])
@@ -1457,7 +1457,7 @@ static bool maddevb_should_timeout_request(struct request *rq)
 	return false;
 }
 
-static bool maddevb_should_requeue_request(struct request *rq)
+bool maddevb_should_requeue_request(struct request *rq)
 {
 #ifdef CONFIG_BLK_DEV_NULL_BLK_FAULT_INJECTION
 	if (g_requeue_str[0])
@@ -1544,7 +1544,7 @@ void maddevb_cleanup_queues(struct maddevb *maddevb)
 	kfree(maddevb->queues);
 
     PINFO("maddevb_cleanup_queues... mbdev#=%d dev=%px #Qs=%d\n",
-          pmaddevobj->devnum, maddevb->mbdev, (int)maddevb->nr_queues);
+          (int)pmaddevobj->devnum, (void *)maddevb->mbdev, (int)maddevb->nr_queues);
 }
 
 void maddevb_delete_device(struct maddevb *maddevb)
@@ -1561,12 +1561,13 @@ void maddevb_delete_device(struct maddevb *maddevb)
 
     if (pmaddevobj == NULL) 
         {
-        PERR("maddevb_delete_device... BAD ADDRESS! maddevb=%px mbdev=#px pmaddevobj=%px\n");
+        PERR("maddevb_delete_device... BAD ADDRESS! mbdev=%px maddevb=%px pmaddevobj=%px\n",
+             (void *)mbdev, (void *)maddevb, (void *)pmaddevobj);
 		return;
         }
 
     PDEBUG("maddevb_delete_device... dev#=%d mbdev=%px maddevb=%px\n",
-           pmaddevobj->devnum, mbdev, maddevb);
+           (int)pmaddevobj->devnum, (void *)mbdev, (void *)maddevb);
 
 	//ida_simple_remove(&maddevb_indexes, (maddevb->index));
 
@@ -1595,8 +1596,8 @@ void maddevb_delete_device(struct maddevb *maddevb)
 	kfree(maddevb);
 	mbdev->pmaddevb = NULL;
 
-    PINFO("maddevb_delete_device exit... mbdev#=%d dev=%px maddevb=%px\n",
-          pmaddevobj->devnum, mbdev, maddevb);
+    PINFO("maddevb_delete_device exit... mbdev#=%d mbdev=%px maddevb=%px\n",
+          (int)pmaddevobj->devnum, (void *)mbdev, (void *)maddevb);
 }
 
 static const struct block_device_operations maddevb_fops =
@@ -1662,11 +1663,11 @@ static struct maddevblk_device *maddevb_alloc_device(PMADDEVOBJ pmaddevobj)
     #endif
 
     PINFO("maddevblk_alloc_device... mbdev#=%d dev=%px\n",
-          pmaddevobj->devnum,mbdev);
+          (int)pmaddevobj->devnum, (void *)mbdev);
     return mbdev;
 }
 
-static int maddevb_gendisk_register(struct maddevb *maddevb)
+int maddevb_gendisk_register(struct maddevb *maddevb)
 {
 	struct gendisk *disk;
 	sector_t size;
@@ -1675,7 +1676,7 @@ static int maddevb_gendisk_register(struct maddevb *maddevb)
     int ret = 0;
 
     PINFO("maddevb_gendisk_register... dev#=%d maddevb=%px\n",
-          pmaddevobj->devnum, maddevb);
+          (int)pmaddevobj->devnum, (void *)maddevb);
 
 	disk = alloc_disk_node(1, maddevb->mbdev->home_node);
 	if (disk == NULL)
@@ -1794,7 +1795,7 @@ static int maddevb_add_device(struct maddevblk_device *mbdev)
 
         default:
             PWARN("maddevb_add_device... mbdev#=%d unsupported Qmode=%d\n",
-                  pmaddevobj->devnum, mbdev->queue_mode);
+                  (int)pmaddevobj->devnum, mbdev->queue_mode);
         }
 
 	if (mbdev->mbps) 
@@ -1902,12 +1903,12 @@ int maddevb_create_device(/*PMADDEVOBJ pmaddevobj*/void* pv)
     return rc;
 }  
 
-static void maddevb_config_discard(struct maddevb *maddevb)
+void maddevb_config_discard(struct maddevb *maddevb)
 {
     PMADDEVOBJ pmaddevobj = maddevb->mbdev->pmaddevobj;
 
     if (maddevb->mbdev->discard == false)
-        return;
+        {return;}
 
 	maddevb->reqQ->limits.discard_granularity = maddevb->mbdev->blocksize;
 	maddevb->reqQ->limits.discard_alignment = maddevb->mbdev->blocksize;
@@ -1918,8 +1919,8 @@ static void maddevb_config_discard(struct maddevb *maddevb)
           (int)pmaddevobj->devnum, maddevb->reqQ);
 }
 
-static int maddevb_rw_page(struct block_device *bdev, sector_t sector,
-		                    struct page *pPage, unsigned int op)
+int maddevb_rw_page(struct block_device *bdev, sector_t sector,
+		            struct page *pPage, unsigned int op)
 {
 	//struct pmem_device *pmem = bdev->bd_queue->queuedata;
     PMADDEVOBJ pmaddevobj = maddevb_get_parent_from_bdev(bdev);
@@ -1927,15 +1928,15 @@ static int maddevb_rw_page(struct block_device *bdev, sector_t sector,
     //u32 num_pgs = hpage_nr_pages(pPages); 
     //struct page*  *page_list = pPages;
     bool bWrite = op_is_write(op);
-    bool bSgDma = true;
+    //bool bSgDma = true;
     ssize_t iocount = 0;
     blk_status_t rc = 0;
-    u32 j;
+    //u32 j;
 
     mutex_lock(&pmaddevobj->devmutex);
 
     PINFO("maddevb_rw_page... dev#=%d bdev=%px PA=x%llX sector=%ld op=%d\n",
-          pmaddevobj->devnum, bdev, page_to_phys(pPage), (long int)sector, op);
+          (int)pmaddevobj->devnum, bdev, page_to_phys(pPage), (long int)sector, op);
 
     iocount = maddev_xfer_dma_page(pmaddevobj, pPage, sector, bWrite);
     if (iocount < 0)
@@ -1946,8 +1947,10 @@ static int maddevb_rw_page(struct block_device *bdev, sector_t sector,
     //PDEBUG("maddevb_rw_page... set the dirty bit if read page(s) reserved? wr=%d\n",
     //       bWrite);
     if (bWrite==false)
+        {
         if (!PageReserved(pPage))
             {SetPageDirty(pPage);}
+        }
 
 	/*
 	 * The ->rw_page interface is subtle and tricky.  The core
@@ -1956,7 +1959,7 @@ static int maddevb_rw_page(struct block_device *bdev, sector_t sector,
 	 * caused by double completion.
 	 */
 	if (rc == 0)
-	    page_endio(pPage, op_is_write(op), 0);
+        {page_endio(pPage, op_is_write(op), 0);}
 
     PINFO("maddevb_rw_page... dev#=%d rc=%d iocount=%ld\n",
           (int)pmaddevobj->devnum, rc, (long int)iocount);
@@ -1967,10 +1970,10 @@ static int maddevb_rw_page(struct block_device *bdev, sector_t sector,
     return rc;
 }
 
-static int maddevb_open(struct block_device *bdev, fmode_t mode)
+int maddevb_open(struct block_device *bdev, fmode_t mode)
 {
     PMADDEVOBJ pmaddevobj = maddevb_get_parent_from_bdev(bdev);
-    int wrc = 0;
+    //int wrc = 0;
 
     ASSERT((int)(pmaddevobj != NULL));
     ASSERT((int)(pmaddevobj->maddevblk_dev->pmaddevb->disk == bdev->bd_disk));
@@ -1997,7 +2000,7 @@ static int maddevb_open(struct block_device *bdev, fmode_t mode)
     return 0;
 }
 
-static void maddevb_release(struct gendisk *disk, fmode_t mode)
+void maddevb_release(struct gendisk *disk, fmode_t mode)
 {
     struct block_device *bdev = bdget_disk(disk, 0);
     PMADDEVOBJ pmaddevobj = maddevb_get_parent_from_bdev(bdev);
@@ -2012,7 +2015,7 @@ static void maddevb_release(struct gendisk *disk, fmode_t mode)
     return;
 }
 
-static int maddevb_revalidate_disk(struct gendisk *disk)
+int maddevb_revalidate_disk(struct gendisk *disk)
 {
     struct block_device *bdev = bdget_disk(disk, 0);
     PMADDEVOBJ pmaddevobj = maddevb_get_parent_from_bdev(bdev);
@@ -2027,7 +2030,7 @@ static int maddevb_revalidate_disk(struct gendisk *disk)
     return 0;
 }
 
-static int maddevb_getgeo(struct block_device* bdev, struct hd_geometry* geo)
+int maddevb_getgeo(struct block_device* bdev, struct hd_geometry* geo)
 {
     PMADDEVOBJ pmaddevobj = maddevb_get_parent_from_bdev(bdev);
 
@@ -2044,7 +2047,7 @@ static int maddevb_getgeo(struct block_device* bdev, struct hd_geometry* geo)
     return 0;
 }
 
-static void maddevb_swap_slot_free_notify(struct block_device* bdev,
+void maddevb_swap_slot_free_notify(struct block_device* bdev,
                                           unsigned long offset)
 {
     PMADDEVOBJ pmaddevobj = maddevb_get_parent_from_bdev(bdev);
@@ -2058,7 +2061,7 @@ static void maddevb_swap_slot_free_notify(struct block_device* bdev,
 
 //static int maddevb_zone_report(struct gendisk *disk, sector_t sector,
 //		                       struct blk_zone *zones, unsigned int *nr_zones)
-static int maddevb_zone_report(struct gendisk *disk, sector_t sector,
+int maddevb_zone_report(struct gendisk *disk, sector_t sector,
 		                       /*struct blk_zone *zones,*/ 
 							   unsigned int nr_zones, report_zones_cb cb, void* data)
 {
@@ -2094,7 +2097,7 @@ static void maddevb_init_queue(struct maddevb *maddevb, struct maddevb_queue *nq
 	nq->dev = maddevb->mbdev;
 }
 
-static void maddevb_init_queues(struct maddevb *maddevb)
+void maddevb_init_queues(struct maddevb *maddevb)
 {
 	struct request_queue *reqQ = maddevb->reqQ;
 	struct blk_mq_hw_ctx *hctx;
@@ -2146,7 +2149,7 @@ static int maddevb_setup_commands(struct maddevb_queue *nq)
 	return 0;
 }
 
-static int maddevb_setup_queues(struct maddevb *maddevb)
+int maddevb_setup_queues(struct maddevb *maddevb)
 
 {
 	maddevb->queues = kcalloc(maddevb->mbdev->submit_queues,
@@ -2162,7 +2165,7 @@ static int maddevb_setup_queues(struct maddevb *maddevb)
 	return 0;
 }
 
-static int maddevb_init_driver_queues(struct maddevb *maddevb)
+int maddevb_init_driver_queues(struct maddevb *maddevb)
 {
 	struct maddevb_queue *nq;
 	int i, ret = 0;
@@ -2191,7 +2194,7 @@ static int maddevb_init_driver_queues(struct maddevb *maddevb)
 	return 0;
 }
 
-static int maddevb_init_tag_set(struct maddevb *maddevb, struct blk_mq_tag_set *set)
+int maddevb_init_tag_set(struct maddevb *maddevb, struct blk_mq_tag_set *set)
 {
     PMADDEVOBJ pmaddevobj = (PMADDEVOBJ)maddevb->mbdev->pmaddevobj;
     int rc;
@@ -2219,7 +2222,7 @@ static int maddevb_init_tag_set(struct maddevb *maddevb, struct blk_mq_tag_set *
     return rc;
 }
 
-static void maddevb_validate_conf(struct maddevblk_device *mbdev)
+void maddevb_validate_conf(struct maddevblk_device *mbdev)
 {
     PMADDEVOBJ pmaddevobj = (PMADDEVOBJ)mbdev->pmaddevobj;
 

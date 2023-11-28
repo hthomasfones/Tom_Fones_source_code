@@ -33,6 +33,7 @@
 bdev=0  #which device driver; 0=char-mode, 1=block-mode
 source madenv.sh
 
+#Clear the console; hide executing commands
 clear
 set -x
 
@@ -46,6 +47,7 @@ cat /proc/meminfo | grep -i "CMa"
 ##exit
 sleep 1
 rmmod $madmodule
+sleep .50
 rmmod $busmodule
 lsmod | grep "mad"
 sleep 1
@@ -53,14 +55,4 @@ cat /proc/meminfo | grep -i "Cma"
 #cat /proc/meminfo | grep -i "Free:"
 set +x
 echo "=== maddriverstacktest.sh fini ==================="
-
-
-
-
-
-
-
-
-
-
 

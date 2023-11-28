@@ -111,6 +111,7 @@
 #define TYPE(minor)	(((minor) >> 4) & 0xf)	/* high nibble */
 #define NUM(minor)	((minor) & 0xf)		/* low  nibble */
 
+//typedef irq_handler_t isr_function(int irq, void* dev_id);
 /*
  * The different configurable parameters
  */
@@ -118,6 +119,13 @@ extern int maddev_major;     /* main.c */
 extern int maddev_nbr_devs;
 
 //
+ssize_t
+maddev_read(struct file *filp, char __user *buf, size_t count, loff_t *f_pos);
+///*static*/ ssize_t
+//maddev_read_bufrd(struct file *filp, char __user *buf, size_t count, loff_t *f_pos);
+ssize_t
+maddev_write(struct file *filp, const char __user *buf, size_t count, loff_t *f_pos);
+//static ssize_t
 extern ssize_t maddev_direct_io(struct file *filp, const char __user *buf, 
                                 size_t count, loff_t *f_pos, bool bWr);
 
@@ -125,8 +133,87 @@ extern ssize_t maddev_direct_io(struct file *filp, const char __user *buf,
 static int maddev_setup_cdev(/*PMADDEVOBJ*/ void* pmaddevobj, int indx);
 #endif
 
-static long maddev_ioctl(struct file *filp, unsigned int cmd, unsigned long arg);
-extern irqreturn_t maddevc_isr(int irq, void* dev_id);
+irqreturn_t maddevc_msi_one_isr(int irq, void* dev_id);
+irqreturn_t maddevc_msi_two_isr(int irq, void* dev_id);
+irqreturn_t maddevc_msi_three_isr(int irq, void* dev_id);
+irqreturn_t maddevc_msi_four_isr(int irq, void* dev_id);
+irqreturn_t maddevc_msi_five_isr(int irq, void* dev_id);
+irqreturn_t maddevc_msi_six_isr(int irq, void* dev_id);
+irqreturn_t maddevc_msi_seven_isr(int irq, void* dev_id);
+irqreturn_t maddevc_msi_eight_isr(int irq, void* dev_id);
+
+//This is the common worker function for all (msi & legacy interrupt functions
+//void *dev_get_drvdata(const struct device *dev); void dev_set_drvdata(struct device *dev, void *data)
+static inline irqreturn_t maddevc_isr_worker_fn(int irq, void* dev_id, int msinum)
+{
+    //struct pci_dev* pPciDev = (struct pci_dev *)dev_id;
+	//PMADDEVOBJ pmaddevobj = (PMADDEVOBJ)pPciDev->dev.driver_data;
+    PMADDEVOBJ pmaddevobj = dev_id;
+	PMADREGS pmadregs;
+	//
+	u32 flags1 = 0;
+	u32 IntID = 0;
+    int devnum = 0;
+
+    ASSERT((int)(pmaddevobj != NULL));
+    pmadregs = pmaddevobj->pDevBase;
+    devnum = pmaddevobj->devnum;
+    IntID = pmadregs->IntID;
+
+    PDEBUG("maddevc_isr... dev#=%d pmaddevobj=%px irq=%d msinum=%d IntID=x%lX Control=x%lX\n",
+           devnum, pmaddevobj, irq, msinum, (long unsigned)IntID, pmadregs->Control);
+
+    maddev_acquire_lock_disable_ints(&pmaddevobj->devlock, flags1);
+
+    //Save the device register state for the DPC
+	memcpy_fromio(&pmaddevobj->IntRegState, pmadregs, sizeof(MADREGS));
+
+    //Disable interrupts on this device
+    iowrite32(MAD_ALL_INTS_DISABLED, &pmadregs->IntEnable);
+    iowrite32(0, &pmadregs->MesgID);
+
+    IntID = ioread32(&pmadregs->IntID);
+    if (IntID == (u32)MAD_ALL_INTS_CLEARED)
+        {   //This is not our IRQ
+        maddev_enable_ints_release_lock(&pmaddevobj->devlock, flags1);
+
+        PERR("maddevc_isr... invalid int recv'd: dev#=%d IntID=x%X rc=%d\n",
+             (int)pmaddevobj->devnum, IntID, IRQ_NONE);
+    	return IRQ_NONE;
+        }
+
+    if (IntID == (u32)MAD_INT_INVALID_BYTEMODE_MASK)//Any / all undefined int conditions
+        {
+        maddev_enable_ints_release_lock(&pmaddevobj->devlock, flags1);
+
+        PERR("maddevc_isr... undefined int recv'd: dev#=%d IntID=x%X rc=%d\n",
+             (int)pmaddevobj->devnum, IntID, IRQ_HANDLED);
+    	return IRQ_HANDLED;
+        }
+
+    #ifdef _MAD_SIMULATION_MODE_ 
+    //Release the spinlock *NOT* at device-irql BEFORE enqueueing the DPC
+    maddev_enable_ints_release_lock(&pmaddevobj->devlock, flags1);
+    #endif
+
+    /* Schedule the DPC handler */
+    pmaddevobj->dpctask.data = devnum;
+    tasklet_hi_schedule(&pmaddevobj->dpctask);
+
+    #ifndef _MAD_SIMULATION_MODE_
+    //With real hardware release the spinlock at device-irql AFTER enqueueing the DPC
+    maddev_enable_ints_release_lock(&pmaddevobj->devlock, flags1);
+    #endif
+
+    PDEBUG("maddevc_isr... normal exit: dev#=%d IntID=x%X rc=%d\n",
+           (int)pmaddevobj->devnum, IntID, IRQ_HANDLED);
+
+	return IRQ_HANDLED;
+}
+
+long maddev_ioctl(struct file *filp, unsigned int cmd, unsigned long arg);
+extern irqreturn_t maddevc_legacy_isr(int irq, void* dev_id);
+irqreturn_t maddevc_legacy_isr(int irq, void* dev_id);
 //void maddevc_dpc(struct work_struct *work);
 extern void maddevc_dpctask(ulong indx);
 void maddev_complete_io(struct work_struct *work);

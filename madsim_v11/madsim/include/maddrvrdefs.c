@@ -32,6 +32,7 @@
 /*******************************************************************************/
 
 #include <asm/io.h>
+extern int mad_pci_devid;
 
 static struct driver_private maddrvr_priv_data =
 {
@@ -60,35 +61,47 @@ static struct device_private maddev_priv_data =
 #endif
 
 //Function definitions - only to appear in the main module of multiple device drivers
-static int maddev_probe(struct pci_dev *pcidev, const struct pci_device_id *ids)
+int maddev_probe(struct pci_dev *pcidev, const struct pci_device_id *ids)
 {
-    int rc = 0;
+    int rc = MAD_NO_VENDOR_DEVID_MATCH; //-ECONNREFUSED;
     U32 devnum;
     PMADDEVOBJ pmaddevobj = NULL;
+    u8 bMSI = 0;
 
     ASSERT((int)(pcidev != NULL));
     devnum = (U32)pcidev->slot;
-    pmaddevobj = &mad_dev_objects[devnum];
+    pmaddevobj = (PMADDEVOBJ)((U8*)mad_dev_objects + (PAGE_SIZE * devnum)); 
 
-	PINFO("maddev_probe... slotnum=%d pcidev=%px vendor=x%X pci_devid=x%X\n",
-          (int)devnum, pcidev, pcidev->vendor, pcidev->device);
+	PINFO("maddev_probe... slotnum=%d pmaddevobj=%px pcidev=%px vendor=x%X pci_devid=x%X\n",
+          (int)devnum, pmaddevobj, pcidev, pcidev->vendor, pcidev->device);
 
-    if ((pcidev->vendor != MAD_PCI_VENDOR_ID) || 
-        (pcidev->device < MAD_PCI_CHAR_INT_DEVICE_ID) || 
+    if (pcidev->vendor != MAD_PCI_VENDOR_ID)
+        {return rc;}
+
+    #ifdef _CDEV_
+     if ((pcidev->device < MAD_PCI_CHAR_INT_DEVICE_ID) || 
         (pcidev->device > MAD_PCI_CHAR_MSI_DEVICE_ID)) 
-        //
-        {return -EINVAL;}
+        {return rc;}
+
+    bMSI = (pcidev->device == MAD_PCI_CHAR_MSI_DEVICE_ID);
+    #endif
+
+    #ifdef _BLOCKIO_
+    if ((pcidev->device < MAD_PCI_BLOCK_INT_DEVICE_ID) || 
+        (pcidev->device > MAD_PCI_BLOCK_MSI_DEVICE_ID)) 
+        {return rc;}
+
+    bMSI = (pcidev->device == MAD_PCI_BLOCK_MSI_DEVICE_ID);
+    #endif
 
     pmaddevobj->devnum = devnum;
     pmaddevobj->pPciDev = pcidev;
 
     // Build the device object... 
-    rc = maddev_setup_device(pmaddevobj, &pmaddevobj->pPciDev, true);
-
-	return rc;
+	return maddev_setup_device(pmaddevobj, &pmaddevobj->pPciDev, true, bMSI);
 }
 //
-static void maddev_shutdown(struct pci_dev *pcidev)
+void maddev_shutdown(struct pci_dev *pcidev)
 {
     ASSERT((int)(pcidev != NULL));
 
@@ -100,7 +113,7 @@ static void maddev_shutdown(struct pci_dev *pcidev)
     return;
 }
 
-static void maddev_remove(struct pci_dev *pcidev)
+void maddev_remove(struct pci_dev *pcidev)
 {
     U32 devnum; 
     struct mad_dev_obj *pmaddevobj; 
@@ -129,22 +142,21 @@ static struct kobj_type mad_ktype =
     .default_attrs = NULL,
 };
 
+
 //This function sets up one pci device object
-static int 
-maddev_setup_device(PMADDEVOBJ pmaddevobj, struct pci_dev** ppPciDvTmp, U8 bHPL)
+int maddev_setup_device(PMADDEVOBJ pmaddevobj, struct pci_dev** ppPciDevTmp, U8 bHPL, u8 bMSI)
 {
     U32 i = pmaddevobj->devnum;
     dev_t devno = MKDEV(maddev_major, i);
     //
     struct pci_dev* pPciDevTmp;
-    struct pci_dev* ppcidev;
+    struct pci_dev* pPciDev;
     int rc = 0;
-    U8  bMSI;
-    int wrc = 0;
-    U32 flags1;
+    u16 num_irqs = 0;
+    U32 flags1 = 0;
 
-	PINFO("maddev_setup_device... dev#=%d pmaddevobj=%px bHPL=%d\n",
-		  (int)i, pmaddevobj, bHPL);
+	PINFO("maddev_setup_device... dev#=%d pmaddevobj=%px bHPL=%d bMSI=%d\n",
+		  (int)i, pmaddevobj, bHPL, bMSI);
 
     mutex_init(&pmaddevobj->devmutex);
     mutex_lock(&pmaddevobj->devmutex);
@@ -154,40 +166,41 @@ maddev_setup_device(PMADDEVOBJ pmaddevobj, struct pci_dev** ppPciDvTmp, U8 bHPL)
     maddev_acquire_lock_disable_ints(&pmaddevobj->devlock, flags1);
     maddev_enable_ints_release_lock(&pmaddevobj->devlock, flags1);
 
-    //Get the PCI device struct if this is not a discover - not a plugin
-    if (!bHPL)
-        {
-        *ppPciDvTmp = 
-        pci_get_device(MAD_PCI_VENDOR_ID, MAD_PCI_CHAR_DEVICE_ID, *ppPciDvTmp);
-        if ((*ppPciDvTmp == NULL) || (IS_ERR(*ppPciDvTmp)))
-            {
-            mutex_unlock(&pmaddevobj->devmutex);
-            PERR("maddev_setup_device... dev#=%d pci_get_device rc=%d\n",
-                 (int)i, PTR_ERR(*ppPciDvTmp));
-            return (int)PTR_ERR(*ppPciDvTmp);
-            }
-        }
-    //
-    pPciDevTmp = *ppPciDvTmp;
-
-    //Assign the device name for this device before acquiring resources
-	MadDevNames[i][MADDEVOBJNUMDX] = MadDevNumStr[i];
-
     #ifdef _MAD_SIMULATION_MODE_
     //Exchange parameters w/ the simulator
-    rc = maddev_xchange_sim_parms(pPciDevTmp, pmaddevobj);
+    rc = maddev_exchange_sim_parms(&pPciDevTmp, pmaddevobj);
     if (rc != 0)
 		{
         mutex_unlock(&pmaddevobj->devmutex);
-        PERR("maddev_setup_device:mad_xchange_sim_parms... dev#=%d rc=%d\n",
+        PERR("maddev_setup_device:mad_exchange_sim_parms... dev#=%d rc=%d\n",
              (int)i, rc);
 		return rc;
 		}
     #endif
 
-    bMSI = pPciDevTmp->msi_cap;
+    //Get the PCI device struct if this is not a discover - not a plugin
+    if (!bHPL)
+        {
+        *ppPciDevTmp = 
+        pci_get_device(MAD_PCI_VENDOR_ID, mad_pci_devid, *ppPciDevTmp);
+        if ((*ppPciDevTmp == NULL) || (IS_ERR(*ppPciDevTmp)))
+            {
+            mutex_unlock(&pmaddevobj->devmutex);
+            PERR("maddev_setup_device... dev#=%d pci_get_device rc=%d\n",
+                 (int)i, (int)PTR_ERR(*ppPciDevTmp));
+            return (int)PTR_ERR(*ppPciDevTmp);
+            }
+        }
+    //
+    pPciDevTmp = *ppPciDevTmp;
+    pPciDevTmp->msi_cap = bMSI;
+    //Assign the device name for this device before acquiring resources
+	MadDevNames[i][MADDEVOBJNUMDX] = MadDevNumStr[i];
+
+    num_irqs = (bMSI) ? MAD_NUM_MSI_IRQS : 0;
+    num_irqs++;
     rc = maddev_claim_pci_resrcs(pPciDevTmp, pmaddevobj,
-                                 MadDevNames[i], (1 + bMSI));
+                                 MadDevNames[i], num_irqs);
     if (rc != 0)
 		{
         mutex_unlock(&pmaddevobj->devmutex);
@@ -200,8 +213,9 @@ maddev_setup_device(PMADDEVOBJ pmaddevobj, struct pci_dev** ppPciDvTmp, U8 bHPL)
     if (!bHPL) 
         {pmaddevobj->pPciDev = pPciDevTmp;}
 
-    ppcidev = pmaddevobj->pPciDev;
-    ppcidev->driver = &maddev_driver;
+    pPciDev = pmaddevobj->pPciDev;
+    pPciDev->driver = &maddev_driver;
+    pPciDev->msi_cap = bMSI;
 	maddev_init_io_parms(pmaddevobj, i);
 
     //Create a device node - the equivalent to mknod in BASH
@@ -218,19 +232,20 @@ maddev_setup_device(PMADDEVOBJ pmaddevobj, struct pci_dev** ppPciDvTmp, U8 bHPL)
         }
 
     //Configure & register the generic device w/in pci_dev for the sysfs tree
-    ppcidev->dev.init_name = MadDevNames[i];
-    ppcidev->dev.driver    = (struct device_driver*)&maddev_driver;
-    ppcidev->dev.bus       = NULL;
-
-    rc = register_device(&ppcidev->dev);
-    pmaddevobj->bDevRegstrd = (rc == 0) ? true : false;
-	if (rc != 0)
+    pPciDev->dev.init_name = MadDevNames[i];
+    //pPciDev->dev.driver    = (struct device_driver*)&maddev_driver;
+    pPciDev->dev.driver_data = (void *)pmaddevobj;
+    rc = register_device(&pPciDev->dev
+                         #ifdef _MAD_SIMULATION_MODE_ 
+                         ,i  // The simulator needs the device #
+                         #endif
+                         );
+	if (rc != 0) //ToDO: Determine if fatal or not
 		{
-        maddev_release_pci_resrcs(pmaddevobj);
-        mutex_unlock(&pmaddevobj->devmutex);
-        PERR("maddev_setup_device:device_register... dev#=%d rc=%d\n", (int)i);
-        return rc;
+        PWARN("maddev_setup_device:register_device... dev#=%d rc=%d\n", (int)i, (int)rc);
         }
+
+    pmaddevobj->bDevRegstrd = (rc == 0) ? true : false;
 
     #ifndef _MAD_SIMULATION_MODE_
     rc = dma_set_mask(ppcidev, DMA_BIT_MASK(64));
@@ -265,7 +280,7 @@ maddev_setup_device(PMADDEVOBJ pmaddevobj, struct pci_dev** ppPciDvTmp, U8 bHPL)
     mutex_unlock(&pmaddevobj->devmutex);
 
     PINFO("maddev_setup_device... dev=%d pdevobj=%px devVA=%px devPA=x%llX exit :)\n",
-          (int)i, pmaddevobj, 
+          (int)i, (void *)pmaddevobj, 
           pmaddevobj->pDevBase, pmaddevobj->MadDevPA);
 
     //Release our quantum - let asynchronous threads run
@@ -274,13 +289,42 @@ maddev_setup_device(PMADDEVOBJ pmaddevobj, struct pci_dev** ppPciDvTmp, U8 bHPL)
     return rc;
 }
 
+int maddev_setup_devices(int num_devs, U8 bHPL, u8 bMSI) 
+{
+    int i;
+    int devcount = 0;
+    int rc;
+    PMADDEVOBJ  pmaddevobj;
+    struct pci_dev* pPciDevTmp = NULL;
+
+	for (i = 1; i <= num_devs; i++)
+	    {
+        pmaddevobj = 
+        (PMADDEVOBJ)((u8*)mad_dev_objects + (PAGE_SIZE * i));
+        pmaddevobj->devnum = i;
+        rc = maddev_setup_device(pmaddevobj, &pPciDevTmp, false, bMSI); 
+        if (rc != 0)
+            {
+            PWARN("maddev_init_module:maddev_setup_device... dev#=%d rc=%d\n",
+                  (int)pmaddevobj->devnum, rc);
+            continue;
+            }
+
+        devcount++;
+	    }
+
+    PINFO("maddev_setup_devices()... #devices=%d\n", devcount);
+
+    return devcount;
+}
+
 //This function tears down one device object
-static void maddev_remove_device(PMADDEVOBJ pmaddevobj)
+void maddev_remove_device(PMADDEVOBJ pmaddevobj)
 {
     int rc;
 
 	PINFO("maddev_remove_device... dev#=%d pmaddevobj=%px\n",
-		  (int)pmaddevobj->devnum, pmaddevobj);
+		  (int)pmaddevobj->devnum, (void *)pmaddevobj);
 
     pmaddevobj->bReady = false;
 
@@ -298,52 +342,62 @@ static void maddev_remove_device(PMADDEVOBJ pmaddevobj)
         pmaddevobj->bDevRegstrd = false;
         }
     else
-        {PWARN("maddev_remove_device... dev#=%d device not registered! (%px)\n",
-              (int)pmaddevobj->devnum, pmaddevobj->pPciDev->dev);}
+        {PWARN("maddev_remove_device... dev#=%d not registered! (%px)\n",
+              (int)pmaddevobj->devnum, (void *)pmaddevobj);}
 
     #if 0
     maddev_kobject_unregister(&pmaddevobj->pPciDev->dev.kobj);
     #endif
     if (pmaddevobj->pdevnode != NULL)
         {device_destroy(mad_class, MKDEV(maddev_major, pmaddevobj->devnum));}
+
     rc = maddev_release_pci_resrcs(pmaddevobj);
 
     PDEBUG("maddev_remove_device... dev#=%d exit :)\n",(int)pmaddevobj->devnum);
+}
+
+void maddev_remove_devices(int num_devices)
+{
+	U32 i;
+    PMADDEVOBJ pmaddevobj = NULL;
+
+	PINFO("maddev_remove_devices()... num devices=%d\n", num_devices);
+    for (i = 1; i <= num_devices; i++)
+        {
+        pmaddevobj = (PMADDEVOBJ)((u8*)mad_dev_objects + (PAGE_SIZE * i));
+        if (pmaddevobj == NULL)
+            {continue;}
+
+        if (pmaddevobj->devnum > 0) //If maddev_setup_device assigned a device#
+            {
+            ASSERT((int)(i == pmaddevobj->devnum));
+            if (pmaddevobj->bReady == true) //if not unplugged
+                {maddev_remove_device(pmaddevobj);}
+            else
+                {PWARN("maddev_cleanup... i=%d dev#=%d pmadobj=%px device not active!\n",
+                       (int)i, (int)pmaddevobj->devnum, (void *)pmaddevobj);}
+            }
+        }
+
+    PINFO("maddev_remove_devices() exit... \n");
 }
 
 /* The cleanup function is used to handle initialization failures as well.
  * Thefore, it must be careful to work correctly even if some of the items
  * have not been initialized 
  */ 
-static void maddev_cleanup_module(void)
+void maddev_cleanup_module(void)
 {
-	U32 i;
     #ifdef _CDEV_
 	dev_t devno = MKDEV(maddev_major, maddev_minor);
     #endif
-    PMADDEVOBJ pmaddevobj = NULL;
 
-	PINFO("maddev_cleanup_module... mjr=%d mnr=%d\n",
-          maddev_major, maddev_minor);
+	PINFO("maddev_cleanup_module... mjr=%d mnr=%d\n", maddev_major, maddev_minor);
 
 	/* Release our char dev entries */
 	if (mad_dev_objects != NULL)
 	    {
-		for (i = 1; i <= maddev_max_devs; i++)
-		    {
-            pmaddevobj = 
-            (PMADDEVOBJ)((u8*)mad_dev_objects + (PAGE_SIZE * i));
-            if (pmaddevobj->bReady == false)
-                {
-				PWARN("maddev_cleanup... i=%d dev#=%d pmadobj=%px device not active/plugged-in!\n",
-                      (int)i, (int)pmaddevobj->devnum, pmaddevobj);
-				continue;
-				}
-
-            ASSERT((int)(i == pmaddevobj->devnum));
-            maddev_remove_device(pmaddevobj);
-		    }
-
+        maddev_remove_devices(maddev_nbr_devs);
 		kfree(mad_dev_objects);
 	    }
 
@@ -367,15 +421,107 @@ static void maddev_cleanup_module(void)
 
    	PINFO("maddev_cleanup_module... exit :)\n");
 }   
-    
+ 
+   
+irq_handler_t select_isr_function(int msinum)
+{
+    irq_handler_t isr_function = NULL;
+
+    switch (msinum)
+        {
+        #ifdef  _CDEV_
+        case 0:
+            isr_function = maddevc_legacy_isr;
+            break; 
+
+        case 1:
+            isr_function = maddevc_msi_one_isr;
+            break; 
+
+        case 2:                                              
+            isr_function = maddevc_msi_two_isr; 
+            break;
+
+        case 3:
+            isr_function = maddevc_msi_three_isr; 
+            break;
+
+        case 4:
+            isr_function = maddevc_msi_four_isr; 
+            break;
+
+         case 5:
+             isr_function = maddevc_msi_five_isr; 
+             break;
+
+         case 6:
+            isr_function = maddevc_msi_six_isr; 
+            break;
+
+          case 7:
+            isr_function = maddevc_msi_seven_isr; 
+            break;
+
+          case 8:
+              isr_function = maddevc_msi_eight_isr; 
+              break;
+        #endif
+
+        #ifdef  _BLOCKIO_
+        case 0:
+            isr_function = maddevb_legacy_isr;
+            break; 
+
+        case 1:
+            isr_function = maddevb_msi_one_isr;
+            break; 
+
+        case 2:                                              
+            isr_function = maddevb_msi_two_isr; 
+            break;
+
+        case 3:
+            isr_function = maddevb_msi_three_isr; 
+            break;
+
+        case 4:
+            isr_function = maddevb_msi_four_isr; 
+            break;
+
+         case 5:
+             isr_function = maddevb_msi_five_isr; 
+             break;
+
+         case 6:
+            isr_function = maddevb_msi_six_isr; 
+            break;
+
+          case 7:
+            isr_function = maddevb_msi_seven_isr; 
+            break;
+
+          case 8:
+              isr_function = maddevb_msi_eight_isr; 
+              break;
+        #endif
+
+          default:;
+             PERR("maddev_claim_pci_resrcs:select_isr_function() invalid msi#(%d)\n", msinum);
+        }
+
+    return isr_function;
+
+}
+
 int maddev_claim_pci_resrcs(struct pci_dev* pPciDev, PMADDEVOBJ pmaddevobj,
-                            char* DevName, U32 NumIrqs)
+                            char* DevName, u16 NumIrqs)
 {
     static int irqflags = IRQF_TRIGGER_HIGH | IRQF_TRIGGER_LOW;
     //
     register U32 j = 0;
     //
     U8 bMSI = pPciDev->msi_cap;
+    irq_handler_t isr_function = NULL;
     int rc = 0;
     phys_addr_t BaseAddr;
     U64 Bar0end;
@@ -408,13 +554,8 @@ int maddev_claim_pci_resrcs(struct pci_dev* pPciDev, PMADDEVOBJ pmaddevobj,
 
     PciCnfgU64 = (U64)(PciCnfgHi << 32);
     PciCnfgU64 += PciCnfgLo;
-    PDEBUG("pci_read_config_dword... BaseAddr=x%llX PciCnfg_Hi:Lo,64=x%X:%X x%llX\n",
+    PDEBUG("pci_read_config_dword... BaseAddr=x%llX PciCnfg_Hi:Lo=x%lX:%lX x%llX\n",
            BaseAddr, PciCnfgHi, PciCnfgLo, PciCnfgU64);
-
-    //Optional integrity check - verify one retrieve of BAR_0 vs another
-    //ASSERT((int)(BaseAddr == PciCnfgU64));
-    //ASSERT((int)(((U32)(BaseAddr >> 32) == PciCnfgHi)));
-    //ASSERT((int)((U32)(BaseAddr & 0x0FFFFFFFF) == PciCnfgLo));
 
     rc = pci_request_region(pPciDev, 0, DevName);
     if (rc != 0)
@@ -427,15 +568,14 @@ int maddev_claim_pci_resrcs(struct pci_dev* pPciDev, PMADDEVOBJ pmaddevobj,
     //Get a kernel virt addr for the device
     pmaddevobj->MadDevPA = BaseAddr;
     pmaddevobj->pDevBase = phys_to_virt(pmaddevobj->MadDevPA);
-
-    PINFO("maddev_claim_pci_resrcs... dev#=%d PA=x%llX kva=%px\n",
-		  (int)pmaddevobj->devnum, pmaddevobj->MadDevPA, pmaddevobj->pDevBase);
 	if (pmaddevobj->pDevBase == NULL)
         {
         pci_release_region(pPciDev, 0);
         return -ENOMEM;
         }
 
+    PINFO("maddev_claim_pci_resrcs... dev#=%d PA=x%llX kva=%px\n",
+		  (int)pmaddevobj->devnum, pmaddevobj->MadDevPA, pmaddevobj->pDevBase);
     pmaddevobj->pDevBase->Devnum = pmaddevobj->devnum;
 
     rc = pci_read_config_byte(pPciDev, PCI_INTERRUPT_LINE, &PciCnfgU8);
@@ -447,7 +587,7 @@ int maddev_claim_pci_resrcs(struct pci_dev* pPciDev, PMADDEVOBJ pmaddevobj,
         }
 
     //Optional integrity check - verfiying one retrieve of Irq vs another
-    ASSERT((int)((int)PciCnfgU8 == pPciDev->irq));
+    //ASSERT((int)((int)PciCnfgU8 == pPciDev->irq));
 
     if (bMSI)
         {
@@ -462,45 +602,25 @@ int maddev_claim_pci_resrcs(struct pci_dev* pPciDev, PMADDEVOBJ pmaddevobj,
 	        }
         }
 
-    // Request the irq# indicated in the pci device object and
-    // establish the Int Srvc Routine for the irq#
-    #ifdef _BLOCKIO_
-    rc = request_irq(pPciDev->irq, maddevb_isr, irqflags, DevName, pmaddevobj);
-    #endif
-    #ifdef _CDEV_
-    rc = request_irq(pPciDev->irq, maddevc_isr, irqflags, DevName, pmaddevobj);
-    #endif
-
-    //If the device is MSI-capable do it N more times
-    if (bMSI)
+    pmaddevobj->base_irq = pPciDev->irq;
+    for (j=0; j < NumIrqs; j++)
         {
-        for (j=1; j < NumIrqs; j++)
-            {
-            if (rc != 0)
-                {break;} //Any request_irq failure is fatal
-
-            #ifdef _BLOCKIO_
-            rc = request_irq((pPciDev->irq + j), maddevb_isr,
-                             irqflags, DevName, pmaddevobj);
-            #endif
-
-            #ifdef _CDEV_
-            rc = request_irq((pPciDev->irq + j), maddevc_isr,
-                             irqflags, DevName, pmaddevobj);
-            #endif
-            }
+        isr_function = select_isr_function((int)j);
+        if (isr_function != NULL)
+            {rc = request_irq((pmaddevobj->base_irq + j), isr_function,
+                               irqflags, DevName, pmaddevobj);}
+        if (rc != 0)
+            {break;} //Any request_irq failure is fatal
         }
 
     if (rc != 0)
         {
-        PERR("maddev_claim_pci_resrcs:request_irq(%d)... dev=%d rc=%d\n",
-             (int)(pPciDev->irq+j), (int)pmaddevobj->devnum, rc);
+        PERR("maddev_claim_pci_resrcs:request_irq(%d)... dev=%d j=%d rc=%d\n",
+             (int)(pPciDev->irq+j), (int)pmaddevobj->devnum, (int)j, rc);
 
         pci_release_region(pPciDev, 0);
         return rc;
         }
-
-    pmaddevobj->irq = pPciDev->irq;
 
     rc = pci_enable_device(pPciDev);
 	if (rc != 0)
@@ -510,8 +630,7 @@ int maddev_claim_pci_resrcs(struct pci_dev* pPciDev, PMADDEVOBJ pmaddevobj,
         maddev_release_pci_resrcs(pmaddevobj);
         }
 
-    PDEBUG("maddev_claim_pci_resrcs... dev#=%d rc=%d\n",
-           (int)pmaddevobj->devnum, rc);
+    PDEBUG("maddev_claim_pci_resrcs... dev#=%d rc=%d\n", (int)pmaddevobj->devnum, rc);
 
     return rc;
 }
@@ -524,11 +643,11 @@ int maddev_release_pci_resrcs(PMADDEVOBJ pmaddevobj)
 
     PINFO("maddev_release_pci_resrcs... dev#=%d\n", (int)pmaddevobj->devnum);
 
-    rc = free_irq(pmaddevobj->irq, pmaddevobj);
+    rc = free_irq(pmaddevobj->base_irq, pmaddevobj);
     if (pmaddevobj->pPciDev->msi_cap != 0)
         {
-        for (j=1; j <= 7; j++)
-            {rc = free_irq((pmaddevobj->pPciDev->irq+j), pmaddevobj);}
+        for (j=1; j <= (MAD_NUM_MSI_IRQS); j++)
+            {rc = free_irq((pmaddevobj->base_irq+j), pmaddevobj);}
 
         pci_disable_msi(pmaddevobj->pPciDev);
         }
@@ -544,8 +663,6 @@ ssize_t maddev_xfer_dma_page(PMADDEVOBJ pmaddevobj, struct page* pPage,
 {
     static U32 DXBC = PAGE_SIZE;
     //
-    dma_addr_t HostPA = 
-               maddev_page_to_dma(pmaddevobj->pdevnode, pPage, PAGE_SIZE, bWr);
     U32    DevLoclAddr = (sector * MAD_SECTOR_SIZE);
     U32    IntEnable = 
            (bWr) ? (MAD_INT_STATUS_ALERT_BIT | MAD_INT_DMA_OUTPUT_BIT) :
@@ -554,22 +671,25 @@ ssize_t maddev_xfer_dma_page(PMADDEVOBJ pmaddevobj, struct page* pPage,
     U32    CntlReg   = 0; 
     long   iostat;
     size_t iocount = 0;
+    ssize_t lrc = -EADDRNOTAVAIL;
     u32 flags1 = 0; 
-    U32 flags2 = 0;
+    //U32 flags2 = 0;
+    dma_addr_t HostPA; 
 
     if (bWr)
         {DmaCntl |= MAD_DMA_CNTL_H2D;} //Write == Host2Disk
 
-    PINFO("maddev_xfer_dma_page... dev#=%d PA=x%llX sector=%ld wr=%d\n",
-          (int)pmaddevobj->devnum, HostPA, sector, bWr);
-
+    HostPA = maddev_dma_map_page(pmaddevobj->pdevnode, pPage, PAGE_SIZE, 0, bWr);
     if (dma_mapping_error(pmaddevobj->pdevnode, HostPA))
         {
-        PERR("maddev_xfer_dma_page... dev#=%d returning -ENOMEM\n",
-             (int)pmaddevobj->devnum);
+        PERR("maddev_xfer_dma_page... dev#=%d rc=%ld\n",
+             (int)pmaddevobj->devnum, (long int)lrc);
         ASSERT((int)false);
-        return -EADDRNOTAVAIL;
+        return lrc;
         }
+
+    PINFO("maddev_xfer_dma_page... dev#=%d PA=x%llX sector=%ld wr=%d\n",
+          (int)pmaddevobj->devnum, (long long int)HostPA, (long int)sector, bWr);
 
     pmaddevobj->ioctl_f = eIoPending;
 
@@ -592,9 +712,12 @@ ssize_t maddev_xfer_dma_page(PMADDEVOBJ pmaddevobj, struct page* pPage,
     iostat = maddev_get_io_status(pmaddevobj, &pmaddevobj->ioctl_q,
                                   &pmaddevobj->ioctl_f,
                                   &pmaddevobj->devlock);
+
     iocount = (iostat < 0) ? iostat : pmaddevobj->pDevBase->DTBC;
     if (iostat == 0)
         {ASSERT((int)(iocount == PAGE_SIZE));}
+
+    maddev_dma_unmap_page(pmaddevobj->pdevnode, HostPA, PAGE_SIZE, bWr);
 
     PDEBUG("maddev_xfer_dma_page... dev#=%d iostat=%ld iocount=%ld\n",
            (int)pmaddevobj->devnum, iostat, iocount);
@@ -607,7 +730,7 @@ ssize_t maddev_xfer_sgdma_pages(PMADDEVOBJ pmaddevobj,
                                 long num_pgs, struct page* page_list[],
                                 sector_t sector, bool bWr)
 {
-    static U32 DXBC = PAGE_SIZE;
+    //static U32 DXBC = PAGE_SIZE;
     //
     U32 DevLoclAddr = (sector * MAD_SECTOR_SIZE);
     PMAD_DMA_CHAIN_ELEMENT pSgDmaElement = &pmaddevobj->SgDmaElements[0];
@@ -615,32 +738,45 @@ ssize_t maddev_xfer_sgdma_pages(PMADDEVOBJ pmaddevobj,
     U32    IntEnable = 
            (bWr) ? (MAD_INT_STATUS_ALERT_BIT | MAD_INT_DMA_OUTPUT_BIT) :
                    (MAD_INT_STATUS_ALERT_BIT | MAD_INT_DMA_INPUT_BIT);
+    enum dma_data_direction dmadir = DMADIR(bWr);
     //
     U32    DmaCntl   = MAD_DMA_CNTL_INIT;
     U32    CntlReg   = MAD_CONTROL_CHAINED_DMA_BIT;
-    dma_addr_t HostPA;
     U64    CDPP;
     long   iostat;
     size_t iocount = 0;
 
+    ssize_t lrc;
+    u32 sgl_num = 0;
+    u32 sgelen = 0;
+
     u32 flags1 = 0; 
-    U32 flags2 = 0;
     U32 j;
 
     if (bWr)
         {DmaCntl |= MAD_DMA_CNTL_H2D;} //Write == Host2Disk
 
-    PDEBUG("maddev_xfer_sgdma_pages... dev#=%d num_pgs=%d wr=%d\n",
-           (int)pmaddevobj->devnum, num_pgs, bWr);
+    PDEBUG("maddev_xfer_sgdma_pages... dev#=%d num_pgs=%ld sector=%ld pglist=%px wr=%d\n",
+           (int)pmaddevobj->devnum, num_pgs, (long int)sector, page_list, bWr);
 
     if (num_pgs > MAD_SGDMA_MAX_PAGES)
         {
-        PERR("maddev_xfer_sgdma_pages... dev#=%d num_pgs(%d) > max(%d) rc=-EINVAL\n",
-             (int)pmaddevobj->devnum, num_pgs, MAD_SGDMA_MAX_PAGES);
+        lrc = -EINVAL;
+        PERR("maddev_xfer_sgdma_pages... dev#=%d num_pgs=(%ld) > max(%ld) rc=%ld\n",
+             (int)pmaddevobj->devnum, num_pgs, (long int)MAD_SGDMA_MAX_PAGES, (long int)lrc);
         ASSERT((int)false);
-        return -EINVAL;
+        return lrc;
         }
-
+ 
+    sgl_num = maddev_dma_map_sgl(pmaddevobj->pdevnode, page_list, pmaddevobj->sgl, num_pgs, dmadir);
+    if (sgl_num==0)
+        {
+        lrc = -EADDRNOTAVAIL;
+        PERR("maddev_xfer_sgdma_pages... dev#=%d rc=%ld\n",
+             (int)pmaddevobj->devnum, (long int)lrc);
+        return lrc;
+        }
+ 
     pmaddevobj->ioctl_f = eIoPending;
 
     maddev_acquire_lock_disable_ints(&pmaddevobj->devlock, flags1);
@@ -652,26 +788,18 @@ ssize_t maddev_xfer_sgdma_pages(PMADDEVOBJ pmaddevobj,
 
     for (j=0; j <= loop_lmt; j++)
         {
-        HostPA = maddev_page_to_dma(pmaddevobj->pdevnode, 
-                                    page_list[j], PAGE_SIZE, bWr);
-        if (dma_mapping_error(pmaddevobj->pdevnode, HostPA))
-            {
-            maddev_enable_ints_release_lock(&pmaddevobj->devlock, flags1);
-            PERR("maddev_xfer_sgdma_blocks... dev#=%d returning -ENOMEM\n",
-                  (int)pmaddevobj->devnum);
-            ASSERT((int)false);
-            return -EADDRNOTAVAIL;
-            }
-
         //The set of hardware SG elements is defined as a linked-list even though
         //it is created as an array
+        //Assign the phys_addr for the next sg-element in this sg-element
         CDPP = (j == loop_lmt) ? MAD_DMA_CDPP_END : 
                                  virt_to_phys(&pmaddevobj->SgDmaElements[j+1]);
 
+        sgelen = sg_dma_len(&pmaddevobj->sgl[j]);
         maddev_program_sgdma_regs(pSgDmaElement, 
-                                  HostPA, DevLoclAddr, DmaCntl, DXBC, CDPP);
-        iocount += PAGE_SIZE;
-        DevLoclAddr += PAGE_SIZE;
+                                  sg_dma_address(&pmaddevobj->sgl[j]),
+                                  DevLoclAddr, DmaCntl, sgelen, CDPP);
+        iocount += sgelen; 
+        DevLoclAddr += sgelen; 
 
         //We could use the next array element but instead we use the 
         //Chained-Dma-Pkt-Pntr because we treat the chained list as a
@@ -681,7 +809,7 @@ ssize_t maddev_xfer_sgdma_pages(PMADDEVOBJ pmaddevobj,
             {pSgDmaElement = phys_to_virt(CDPP);}
         }
 
-    //Finally - let's go
+    //Finally - initiate the i/o
     CntlReg |= MAD_CONTROL_DMA_GO_BIT;
     iowrite32(CntlReg, &pmaddevobj->pDevBase->Control);
     //
@@ -691,17 +819,47 @@ ssize_t maddev_xfer_sgdma_pages(PMADDEVOBJ pmaddevobj,
     iostat = maddev_get_io_status(pmaddevobj, &pmaddevobj->ioctl_q,
                                   &pmaddevobj->ioctl_f,
                                   &pmaddevobj->devlock);
-
     iocount = (iostat < 0) ? iostat : pmaddevobj->pDevBase->DTBC;
-
     if (iostat == 0)
         {ASSERT((int)(iocount == (num_pgs * PAGE_SIZE)));}
 
-    PINFO("maddev_xfer_sgdma_pages... dev#=%d num_pgs=%d iostat=%ld iocount=%ld\n",
-          (int)pmaddevobj->devnum, num_pgs, iostat, iocount);
+    maddev_dma_unmap_sgl(pmaddevobj->pdevnode, pmaddevobj->sgl, num_pgs, dmadir);
     pmaddevobj->ioctl_f = eIoReset;
 
+    PINFO("maddev_xfer_sgdma_pages... dev#=%d num_pgs=%ld iostat=%ld iocount=%ld\n",
+          (int)pmaddevobj->devnum, num_pgs, (long int)iostat, (long int)iocount);
+
     return iocount;
+}
+
+U32 maddev_dma_map_sgl(struct device* pdev, struct page* page_list[], 
+                       struct scatterlist sgl[],
+                       U32 num_pgs, enum dma_data_direction dir)
+{
+    u32 num_sge = num_pgs;  //We don't optimize for physically contiguous pages;
+    u32 j;
+
+    maddev_sg_set_pages(num_pgs, page_list, sgl);
+
+    #ifdef _MAD_SIMULATION_MODE_ 
+        //Set the dma address to the physical ram address
+        for (j=0; j < num_pgs; j++)
+            {
+            sgl[j].dma_address = (dma_addr_t)page_to_phys(page_list[j]); 
+            BUG_ON(!(virt_addr_valid(phys_to_virt(sgl[j].dma_address))));
+            }
+    #else 
+        //Do a true physical-to-bus-relative mapping
+        num_sge = dma_map_sg(pdev, sgl, num_pgs, dir); 
+        if (dma_mapping_error(pmaddevobj->pdevnode, 0))
+            {
+            PERR("maddev_xfer_sgdma_pages... dma_mapping_error pdev#=%px\n",
+                 (int)pmaddevobj->devnum);
+            ASSERT((int)num_sge==0);
+            }
+    #endif
+
+    return num_sge;
 }
 
 //This function services both read & write through direct-io
@@ -725,7 +883,7 @@ ssize_t maddev_xfer_pages_direct(PMADDEVOBJ pmaddevobj, int num_pgs,
     BUG_ON(pmaddevobj->devnum!=pmadregs->Devnum);
 
     PINFO("maddev_xfer_pages_direct... dev#=%d num_pgs=%d offset=%ld wr=%d\n",
-		  (int)pmaddevobj->devnum, num_pgs, offset, bWr);
+		  (int)pmaddevobj->devnum, num_pgs, (long int)offset, bWr);
 
     //Declare the specific queue to have a pending io
     if (bWr) 
@@ -740,7 +898,8 @@ ssize_t maddev_xfer_pages_direct(PMADDEVOBJ pmaddevobj, int num_pgs,
     CntlReg = CountBits;
     //
     HostPA = page_to_phys(page_list[0]);
-    maddev_program_stream_io(&pmaddevobj->devlock, pmadregs,
+    BUG_ON(!(virt_addr_valid(phys_to_virt(HostPA))));
+    maddevc_program_stream_io(&pmaddevobj->devlock, pmadregs,
                              CntlReg, IntEnable, HostPA, offset, bWr);
 
     //Wait for the io to complete and then process the results
@@ -782,7 +941,7 @@ ssize_t maddev_xfer_pages_direct(PMADDEVOBJ pmaddevobj, int num_pgs,
         {pmaddevobj->read_f = eIoReset;}
 
     PDEBUG("maddev_xfer_pages_direct... dev#=%d num_pgs=%d iocount=%ld\n",
-           (int)pmaddevobj->devnum, num_pgs, iocount);
+           (int)pmaddevobj->devnum, num_pgs, (long int)iocount);
 
     return iocount;
 }
@@ -803,6 +962,7 @@ bool maddev_need_sg(struct page* pPages[], u32 num_pgs)
     //If any pages are not contiguous - we must use scatter-gather
     for (j=1; j < num_pgs; j++)
         {
+
         PA[j] = page_to_phys(pPages[j]);
         if ((PA[j] - PA[j-1]) != PAGE_SIZE)
             {return true;}
@@ -812,7 +972,7 @@ NeedSgXit:;
     #if 1
     //We can DMA a contiguous block - no need for sg-dma
     PDEBUG("maddev_need_sg... num_pgs=%ld PA0=x%llX PAx=x%llX\n",
-           num_pgs, PA[0], PA[num_pgs-1]);
+           (long int)num_pgs, PA[0], PA[num_pgs-1]);
     #endif
 
     return false;
@@ -853,17 +1013,17 @@ long maddev_get_user_pages(U64 usrbufr, U32 nr_pages, struct page *pPages[],
 
 void maddev_put_user_pages(struct page** ppPages, u32 num_pgs)
 {
-    #if 1
+    //if 1
     struct page* pPage = *ppPages; 
-    PDEBUG("maddev_put_user_pages... num_pgs=%d pPages=%px pPS0=%px PA0=x%llX\n",
-           (int)num_pgs, ppPages, pPage, virt_to_phys(pPage));
-    #endif
+    u32 j; 
+    PDEBUG("maddev_put_user_pages... num_pgs=%ld pPages=%px pPS0=%px PA0=x%llX\n",
+           (long int)num_pgs, ppPages, pPage, virt_to_phys(pPage));
+    //#endif
 
     {
-    u32 j; 
     down_read(&current->mm->mmap_sem);
     //put_user_pages(ppPages, num_pgs);
-    struct page* pPage = *ppPages;
+    //struct page* pPage = *ppPages;
     for (j=1; j <= num_pgs; j++)
         {
         put_page(pPage);
@@ -878,16 +1038,17 @@ void maddev_put_user_pages(struct page** ppPages, u32 num_pgs)
 
 //This function programs the hardware for a buffered io.
 //A chunk of data is going across the bus to the device.
-void maddev_program_stream_io(spinlock_t *splock, PMADREGS pmadregs,
+void maddevc_program_stream_io(spinlock_t *splock, PMADREGS pmadregs,
 		                      U32 ControlReg, U32 IntEnableReg, 
                               phys_addr_t HostAddr, U32 offset, bool bWr)
 {
 	U32 CntlReg = ControlReg;
    	u32 flags1 = 0;
-    U32 flags2 = 0;
+    //U32 flags2 = 0;
 
-    PINFO("maddev_program_stream_io... dev#=%d PA=x%llX CntlReg=x%X IntEnable=x%X offset=x%X wr=%d\n",
-          (int)pmadregs->Devnum, HostAddr, ControlReg, IntEnableReg, offset, bWr);        
+    PINFO("maddevc_program_stream_io... dev#=%d PA=x%llX CntlReg=x%lX IntEnable=x%lX offset=%ld wr=%d\n",
+          (int)pmadregs->Devnum, (long long int)HostAddr, 
+          (unsigned long)ControlReg, (unsigned long)IntEnableReg, (long int)offset, bWr);        
 
     ASSERT((int)(pmadregs != NULL));
 
@@ -910,7 +1071,7 @@ void maddev_program_stream_io(spinlock_t *splock, PMADREGS pmadregs,
 	//
     maddev_enable_ints_release_lock(splock, flags1);
 
-    PINFO("maddev_program_stream_io... dev#=%d exit\n", (int)pmadregs->Devnum);        
+    PINFO("maddevc_program_stream_io... dev#=%d exit\n", (int)pmadregs->Devnum);        
 
 	return;
 }
@@ -920,7 +1081,7 @@ void maddev_reset_io_registers(PMADREGS pmadregs, spinlock_t *splock)
 {
 	u32 Status;
    	u32 flags1 = 0;
-    U32 flags2 = 0;
+    //U32 flags2 = 0;
     U32 IoTag;
 
     BUG_ON(!(virt_addr_valid(pmadregs)));
@@ -1021,8 +1182,6 @@ long maddev_get_io_status(PMADDEVOBJ pmdo, wait_queue_head_t* io_q,
     PMADDEVOBJ pmaddevobj = pmdo;
     PMADREGS   pIsrState  = &pmaddevobj->IntRegState;
     long iostat = 0;
-    U32 flags1 = 0;
-    U32 flags2 = 0;
 
     //Wait for the i/o-completion event signalled by the DPC
     wait_event(*io_q, (*io_f != eIoPending));
@@ -1046,7 +1205,7 @@ long maddev_get_io_status(PMADDEVOBJ pmdo, wait_queue_head_t* io_q,
         #endif
         }
 
-    PDEBUG("maddev_get_io_status... dev#=%d iostat=x%X\n",
+    PDEBUG("maddev_get_io_status... dev#=%ld iostat=x%lX\n",
            pmaddevobj->devnum, iostat);
     return iostat;
 }
@@ -1104,30 +1263,35 @@ void maddev_putkva(struct page* pPgStr)
 #ifdef _MAD_SIMULATION_MODE_ /////////////////////////////////////////
 //
 //This function exchanges necessary parameters w/ the simulator
-extern PMAD_SIMULATOR_PARMS madbus_xchange_parms(int num);
+extern PMAD_SIMULATOR_PARMS madbus_exchange_parms(int num);
 
-int maddev_xchange_sim_parms(struct pci_dev* pPciDev, PMADDEVOBJ pmaddevobj)
+int maddev_exchange_sim_parms(struct pci_dev** ppPciDev, PMADDEVOBJ pmaddevobj)
 {
     PMAD_SIMULATOR_PARMS pSimParms;
     int rc = 0;
 
-    ASSERT((int)(pPciDev != NULL));
+    ASSERT((int)(ppPciDev != NULL));
     ASSERT((int)(pmaddevobj != NULL));
 
-    pSimParms = madbus_xchange_parms((int)pmaddevobj->devnum);
+    pSimParms = madbus_exchange_parms((int)pmaddevobj->devnum);
     if (pSimParms == NULL)
         { 
-        PWARN("maddev_xchange_sim_parms... dev#=%d rc=-ENXIO\n",
+        PWARN("maddev_exchange_sim_parms... dev#=%d rc=-ENXIO\n",
               (int)pmaddevobj->devnum);
         return -ENXIO;
         }
 
     pmaddevobj->pSimParms = pSimParms;
+
+    //The pci-device struct is owned by the simulator bus driver
+    *ppPciDev = pSimParms->pPciDev;
+    pmaddevobj->pPciDev = *ppPciDev;
+    //
     pSimParms->pmaddevobj = pmaddevobj;
     pSimParms->pdevlock   = &pmaddevobj->devlock;
 
-    PINFO("maddev_xchange_sim_parms... dev#=%d pmbobj=%px\n",
-          (int)pmaddevobj->devnum, pSimParms->pmadbusobj);
+    PINFO("maddev_exchange_sim_parms... dev#=%d pmbobj=%px pPciDev=%px\n",
+          (int)pmaddevobj->devnum, pSimParms->pmadbusobj, *ppPciDev);
 
     return rc;
 }

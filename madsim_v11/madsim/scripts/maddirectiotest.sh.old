@@ -8,9 +8,10 @@
 #/*                                                                             
 #/*****************************************************************************
 #/*                                                                            
-#/*  Module NAME : madsetup.sh                                                  
+#/*  Module NAME : maddirectiotest.sh                                                  
 ##/*                                                                            
-#/*  DESCRIPTION : A BASH script for running setting the MAD environment for unit tests      
+#/*  DESCRIPTION : A BASH script for running one test of the Mad simulation testware      
+#/*                This script exercises direct-io between user mode kernel mode                 
 #/*                                                                        
 #/*  MODULE_AUTHOR("HTF Consulting");                                          
 #/*  MODULE_LICENSE("Dual/GPL");                                               
@@ -24,29 +25,82 @@
 #/* HTF Consulting assumes no responsibility for errors or fitness of use      
 #/*                                                                            
 #/*                                                                            
-#/* $Id: madsetup.sh, v 1.0 2021/01/01 00:00:00 htf $                            
-#/*                                                                   
-#/*    
+#/* $Id: maddirectiotest.sh, v 1.0 2021/01/01 00:00:00 htf $                            
+#/*                                                                            
 #Set up script environment variables
+bdev=0 # char-mode device(s)
 source madenv.sh
 
-#Clear the screen, show executing commands
+#Clear the console; hide executing commands
 clear
 set -x
 
 #Load the simulation & target drivers
-number_static_devs=$number_bus_slots
-bdev=0
 source madinsmods.sh
 
-#Check help for the testware
+#Check for help from the test app & sim-ui
 cd $currdir
-cd $appbasepath 
-#source madappintro.sh
+source madappintro.sh
 
-### Ready for a unit test
-#Hide executing commands
+### Customized tests: Direct I/O + DMA
+#
+printf "\nSanity tests\n"
+$testapp_path$testapp $devnum rst
+#$testapp_path$testapp $devnum get
+$testapp_path$testapp $devnum mget
+#$simapp_path$simapp $devnum get
+#$simapp_path$simapp $devnum mget
+$simapp_path$simapp $devnum idd
+
+printf "\nDirect I/O tests  =================\n"
+#printf "First some writes \n"
+#$testapp_path$testapp $devnum wdi 1 0 Zero_000000000000000000000 
+#sleep $delay
+$testapp_path$testapp $devnum rdi 1 0  
+sleep $delay
+
+$testapp_path$testapp $devnum wdi 1 4096 One_111111111111111111111 
+sleep $delay
+$testapp_path$testapp $devnum rdi 1 4096  
+sleep $delay
+
+$testapp_path$testapp $devnum wdi 1 8192 Two_2222222222222222222222 
+sleep $delay
+$testapp_path$testapp $devnum rdi 1 4096 xyz 4096 
+sleep $delay
+
+
+
+$testapp_path$testapp $devnum wdi 1 xyz 0 
+sleep $delay
+
+$testapp_path$testapp $devnum wdi 1 Three_333333333333333333333 12288 
+sleep $delay
+
+$testapp_path$testapp $devnum rdi 1 xyz 12288 
+sleep $delay
+
+printf "\nNow some reads\n"
+$testapp_path$testapp $devnum rdi 1 xyz 4096 
+sleep $delay
+
+$testapp_path$testapp $devnum rdi 1 xyz 8192 
+sleep $delay
+
+$testapp_path$testapp $devnum rdi 1 xyz 12288  
+sleep $delay
+
+$testapp_path$testapp $devnum mget
+#
+#kill all instances of the no-waited test app
+#killall --verbose --wait $testapp
+#ps -ef | grep -i $testapp
+
+cd $currdir
 set +x
+exit
+dumpsize=10000
+source madresults.sh
 echo "=== fini ==================="
 
 

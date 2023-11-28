@@ -68,8 +68,9 @@
 #define  MADBUSOBJNAME   "madbusobjX"
 #define  MBDEVNUMDX      9 //......^
 
-#define MADBUS_MAJOR_OBJECT_NAME     "madbus_object"
-#define MADBUS_NBR_DEVS              MAD_NBR_DEVS
+#define MADBUS_MAJOR_OBJECT_NAME  "madbus_object"
+#define MADBUS_NBR_DEVS           MAD_NBR_DEVS
+#define MADBUS_BASE_IRQ           30
 
 //A parm area to exchange information between the simulator & device driver(s)
 //A device driver only cares about this in simulation mode
@@ -84,6 +85,7 @@ struct mad_simulator_parms
     //
 	spinlock_t* pdevlock;
 	void*       pmaddevobj;
+    struct      pci_dev*  pPciDev;
     PMADREGS    pmadregs;
 };
 //
@@ -103,8 +105,8 @@ struct madbus_object
 	phys_addr_t  MadDevPA;
     PMADREGS    pmaddevice;
     //
-    irq_handler_t  isrfn[8];
-    int            irq[8];
+    irq_handler_t  isrfn[MAD_NUM_MSI_IRQS+1];
+    int            irq[MAD_NUM_MSI_IRQS+1];
 
     //The device to be exposed in SysFs
     U32        bRegstrd;
@@ -125,21 +127,21 @@ typedef struct madbus_object MADBUSOBJ, *PMADBUSOBJ;
 
 #define to_madbus_object(dev) container_of(dev, struct madbus_object, dev);
 
-static int madbus_setup_device(PMADBUSOBJ pmaddbusobj);
+int madbus_setup_device(PMADBUSOBJ pmaddbusobj, u32 indx);
 extern int register_mad_device(struct madbus_object *);
 extern void unregister_mad_device(struct madbus_object *);
 extern int madbus_create_thread(PMADBUSOBJ pmadbusobj);
 extern int madbus_dev_thread(void* pvoid);
-static void mbdt_process_bufrd_io(PMADBUSOBJ pmadbusobj, bool write);
-static void mbdt_process_cache_io(PMADBUSOBJ pmadbusobj, bool write);
-static void mbdt_process_align_cache(PMADBUSOBJ pmadbusobj, bool write);
-static void mbdt_process_dma_io(PMADBUSOBJ pmadbusobj, bool write);
-static void mbdt_process_sgdma(PMADREGS pmaddevice, bool bWrite);
+void mbdt_process_bufrd_io(PMADBUSOBJ pmadbusobj, bool write, u32 msidx);
+void mbdt_process_cache_io(PMADBUSOBJ pmadbusobj, bool write, u32 msidx);
+void mbdt_process_align_cache(PMADBUSOBJ pmadbusobj, bool write, u32 msidx);
+void mbdt_process_dma_io(PMADBUSOBJ pmadbusobj, bool write, u32 msidx);
+void mbdt_process_sgdma(PMADREGS pmaddevice, bool bWrite);
 //
 void madsim_complete_simulated_io(void* vpmadbusobj, PMADREGS pmadregs);
-static void madsim_complete_xfer_one_dma_element(PMADBUSOBJ pmadbusobj, 
+void madsim_complete_xfer_one_dma_element(PMADBUSOBJ pmadbusobj, 
                                                  PMAD_DMA_CHAIN_ELEMENT pSgDmaElement);
-static void madsim_complete_simulated_sgdma(PMADBUSOBJ pmadbusobj, PMADREGS pmadregs);
+void madsim_complete_simulated_sgdma(PMADBUSOBJ pmadbusobj, PMADREGS pmadregs);
 #ifdef _SIM_DRIVER_
 #include "../../include/simdrvrlib.h"
 #endif

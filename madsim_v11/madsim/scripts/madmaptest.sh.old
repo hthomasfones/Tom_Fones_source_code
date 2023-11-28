@@ -8,10 +8,10 @@
 #/*                                                                             
 #/*****************************************************************************
 #/*                                                                            
-#/*  Module NAME : madresults.sh                                                  
+#/*  Module NAME : madbufrdiotest.sh                                                  
 ##/*                                                                            
-#/*  DESCRIPTION : A BASH sub-script for aiding tests of the Mad simulation testware      
-#/*                This subscript presents results                 
+#/*  DESCRIPTION : A BASH script for running one test of the Mad simulation testware      
+#/*                This script exercises all types of buffered io                 
 #/*                                                                        
 #/*  MODULE_AUTHOR("HTF Consulting");                                          
 #/*  MODULE_LICENSE("Dual/GPL");                                               
@@ -25,25 +25,50 @@
 #/* HTF Consulting assumes no responsibility for errors or fitness of use      
 #/*                                                                            
 #/*                                                                            
-#/* $Id: madresults.sh, v 1.0 2021/01/01 00:00:00 htf $                            
-#/*                                                                    
-set +x ; printf "\nLet's present the device data... \n" ; set -x
-cd $appbasepath
-#
-#Remove the old data file
-rm maddev$devnum.dat
+#/* $Id: madbufrdiotest.sh, v 1.0 2021/01/01 00:00:00 htf $                           
 
-#Dump RAM to the data file
-$simapp_path$simapp $devnum sav $dumpsize
+#Set up script environment variables
+bdev=0 #We will setup  char-mode device(s)
+source madenv.sh
 
-if [ -e maddev$devnum.dat ]
-then #needs a separate line!
-     cat maddev$devnum.dat | more
-     xxd maddev$devnum.dat | more
-else
-    set -x ; printf "File not found! maddev$devnum.dat\n" ; set +x
-fi
+clear
+
+#Load the simulation & target drivers
+source madinsmods.sh
+
+#Check for help from the test app & sim-ui
+cd $currdir
+#source madappintro.sh
+
+cd $appbasepath 
 set +x
-printf "\n"
-###############################################
+echo "\nMemmap tests... Get the device registers\n"
+echo "from a simulator ioctl; from a simulator mmap\n"
+echo "from a device driver ioctl; from a device driver mmap\n"
+set -x
+
+$simapp_path$simapp $devnum get 
+sleep $delay
+$simapp_path$simapp $devnum mget 
+sleep $delay
+$testapp_path$testapp $devnum get 
+sleep $delay
+$testapp_path$testapp $devnum mget 
+#
+
+#kill all instances of the no-waited test apps
+#killall --verbose --wait $testapp
+#ps -ef | grep -i $testapp
+
+echo "=== fini ==================="
+
+
+
+
+
+
+
+
+
+
 

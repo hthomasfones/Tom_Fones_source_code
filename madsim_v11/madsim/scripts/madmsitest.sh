@@ -28,8 +28,10 @@
 #/* $Id: madmsitest.sh, v 1.0 2021/01/01 00:00:00 htf $ 
                           
 #Set up script environment variables
+bdev=0 #We will setup  char-mode device(s)
 source madenv.sh
 
+#Clear the console; hide executing commands
 clear
 set -x
 
@@ -44,41 +46,41 @@ cd $appbasepath
 #source madappintro.sh
 
 #printf "\nMSI tests\n"
-#$simapp_path$simapp_exec 1 hun 
+#$simapp_path$simapp 1 hun 
 #$simapp_path$simapp 2 hun
 #
-$simapp_path$simapp 1 hpl 1001 
-$simapp_path$simapp 2 hpl 1002
+$simapp_path$simapp 1 hpl 1002 
+#$simapp_path$simapp 1 hpl 1002
 # 
-tree /sys/devices/$busdevname/
+#tree /sys/devices/$busdevname/
 #
-$testapp_path$testapp 1 wb 16 abcdefghijklmnop &
+$testapp_path$testapp 1 wb 16 0 ABCDEFGHIJLLMNOP
 sleep $delay
-$simapp_path$simapp 1 cbw
+$testapp_path$testapp 1 wb 16 0 abcdefghijklmnop
 sleep $delay
-#
-$testapp_path$testapp 1 rb 16 &
+$testapp_path$testapp 1 wb 16 0 0123456789ABCDEF
 sleep $delay
-$simapp_path$simapp 1 cbr
+$testapp_path$testapp 1 wb 16 0 fedcbi9876543210
 sleep $delay
-
-#$simapp_path$simapp 2 hpl 1002 
-#
-$testapp_path$testapp 2 wb 16 abcdefghijklmnop &
-sleep $delay
-$simapp_path$simapp 2 cbw
+$testapp_path$testapp 1 wb 16 0 ABCDEFGHIJLLMNOP
 sleep $delay
 #
-$testapp_path$testapp 2 rb 16 &
+$testapp_path$testapp 1 rb 16 0
 sleep $delay
-$simapp_path$simapp 2 cbr
+$testapp_path$testapp 1 rb 16 0
 sleep $delay
-
+$testapp_path$testapp 1 rb 16 0
+sleep $delay
+$testapp_path$testapp 1 rb 16 0
+sleep $delay
+$testapp_path$testapp 1 rb 16 0
+#
+cd $currdir
+devnum=1
+source madresults.sh
+sleep 20
 $simapp_path$simapp 1 hun 
-$simapp_path$simapp 2 hun  
 
-$simapp_path$simapp 1 hpl 1003 
-$simapp_path$simapp 2 hpl 1004
 
 #kill all instances of the no-waited test apps
 killall --verbose --wait $testapp

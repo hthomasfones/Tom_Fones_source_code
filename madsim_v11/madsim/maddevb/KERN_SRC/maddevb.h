@@ -190,7 +190,7 @@ enum maddevb_device_flags
 extern int maddev_major;     /* main.c */
 extern int maddev_nbr_devs;
 
-static struct maddevb_cmd
+struct maddevb_cmd
 {
 	struct list_head list;
 	struct llist_node ll_list;
@@ -203,7 +203,7 @@ static struct maddevb_cmd
 	struct hrtimer timer;
 };
 
-static struct maddevb_queue
+struct maddevb_queue
 {
 	unsigned long *tag_map;
 	wait_queue_head_t wait;
@@ -214,7 +214,7 @@ static struct maddevb_queue
 	struct maddevb_cmd *cmds;
 };
 
-static struct maddevb 
+struct maddevb 
 {
 	struct maddevblk_device *mbdev;
 	struct list_head list;
@@ -233,7 +233,7 @@ static struct maddevb
 	char disk_name[DISK_NAME_LEN];
 };
 
-static struct maddevblk_device
+struct maddevblk_device
 {
 	struct maddevb *pmaddevb;
 	struct config_item item;
@@ -268,6 +268,7 @@ static struct maddevblk_device
 	bool zoned; /* if device is zoned */
     void*     pmaddevobj;
 };
+//typedef struct maddevblk_device madblk_dev;
 
 static inline u64 mb_per_tick(int mbps)
 {
@@ -275,25 +276,25 @@ static inline u64 mb_per_tick(int mbps)
 }
 
 extern int maddevb_create_device(/*PMADDEVOBJ pmaddev*/void* pv);
-static int maddevb_gendisk_register(struct maddevb *maddevb);
-static blk_qc_t maddevb_queue_bio(struct request_queue *q, struct bio *bio);
+int maddevb_gendisk_register(struct maddevb *maddevb);
+blk_qc_t maddevb_queue_bio(struct request_queue *q, struct bio *bio);
 void maddevb_restart_queue_async(struct maddevb *maddevb);
-static void maddevb_end_cmd(struct maddevb_cmd *cmd);
-static bool maddevb_should_requeue_request(struct request *rq);
-static bool maddevb_should_timeout_request(struct request *rq);
-static blk_status_t maddevb_handle_cmd(struct maddevb_cmd *cmd, sector_t sector,
+void maddevb_end_cmd(struct maddevb_cmd *cmd);
+bool maddevb_should_requeue_request(struct request *rq);
+bool maddevb_should_timeout_request(struct request *rq);
+blk_status_t maddevb_handle_cmd(struct maddevb_cmd *cmd, sector_t sector,
 				                       sector_t nr_sectors, enum req_opf op);
-static int maddevb_init_tag_set(struct maddevb *maddevb, struct blk_mq_tag_set *set);
-static int maddevb_init_driver_queues(struct maddevb *maddevb);
-static void maddevb_init_queues(struct maddevb *maddevb);
-static void maddevb_config_discard(struct maddevb *maddevb);
-static int maddevb_setup_queues(struct maddevb *maddevb);
-static void maddevb_validate_conf(struct maddevblk_device *dev);
+int maddevb_init_tag_set(struct maddevb *maddevb, struct blk_mq_tag_set *set);
+int maddevb_init_driver_queues(struct maddevb *maddevb);
+void maddevb_init_queues(struct maddevb *maddevb);
+void maddevb_config_discard(struct maddevb *maddevb);
+int maddevb_setup_queues(struct maddevb *maddevb);
+void maddevb_validate_conf(struct maddevblk_device *dev);
 bool maddevb_setup_fault(void);
-static void maddevb_setup_bwtimer(struct maddevb *maddevb);
+void maddevb_setup_bwtimer(struct maddevb *maddevb);
 void maddevb_cleanup_queues(struct maddevb *maddevb);
 extern void maddevb_delete_device(struct maddevb *maddevb);
-static void maddevb_free_device(struct maddevblk_device *dev);
+void maddevb_free_device(struct maddevblk_device *dev);
 int maddevb_ioctl(struct block_device* bdev, fmode_t mode, 
                   unsigned int cmd, unsigned long arg);
 int maddevb_collect_biovecs(struct mad_dev_obj *pmaddevobj, struct bio* pbio,
@@ -305,6 +306,74 @@ maddevb_xfer_sgdma_bvecs(PMADDEVOBJ pmaddevobj, struct bio_vec* biovecs,
 #ifdef CONFIG_BLK_DEV_ZONED
 int maddevb_zone_init(struct maddevblk_device *dev);
 void maddevb_zone_exit(struct maddevblk_device *dev);
+
+//This is the common worker function for all (msi & legacy interrupt functions
+static inline irqreturn_t maddevb_isr_worker_fn(int irq, void* dev_id, int msinum)
+{
+    PMADDEVOBJ pmaddevobj = (PMADDEVOBJ)dev_id;
+	PMADREGS pmadregs;
+	//
+	u32 flags1 = 0;
+	u32 IntID = 0;
+	u32 Control = 0;
+    int devnum = 0;
+
+    ASSERT((int)(pmaddevobj != NULL));
+    pmadregs = pmaddevobj->pDevBase;
+    devnum = pmaddevobj->devnum;
+
+    PDEBUG("maddevb_isr... dev#=%d pmaddevobj=%px irq=%d msinum=%d IntID=x%lX Control=x%lX\n",
+           devnum, pmaddevobj, irq, msinum, (long unsigned)IntID, (long unsigned)Control);
+
+    maddev_acquire_lock_disable_ints(&pmaddevobj->devlock, flags1);
+
+    //Copy the device register state for the DPC
+    memcpy_fromio(&pmaddevobj->IntRegState, pmadregs, sizeof(MADREGS));
+
+    //Disable interrupts on this device
+    iowrite32(MAD_ALL_INTS_DISABLED, &pmadregs->IntEnable);
+    iowrite32(0, &pmadregs->MesgID);
+
+    IntID = ioread32(&pmadregs->IntID);
+    if (IntID == (u32)MAD_ALL_INTS_CLEARED)
+        {   //This is not our IRQ
+        maddev_enable_ints_release_lock(&pmaddevobj->devlock, flags1);
+
+        PERR("maddevb_isr... invalid int recv'd: dev#=%d IntID=x%X\n",
+             (int)pmaddevobj->devnum, IntID);
+    	return IRQ_NONE;
+        }
+
+    if (IntID == (u32)MAD_INT_INVALID_BYTEMODE_MASK)//Any / all undefined int conditions
+        {
+        maddev_enable_ints_release_lock(&pmaddevobj->devlock, flags1);
+
+        PERR("maddevb_isr... undefined int-id from device: dev#=%d IntID=x%X\n",
+             (int)pmaddevobj->devnum, IntID);
+    	return IRQ_HANDLED;
+        }
+
+	/* Invoke the DPC handler */
+    #ifdef _MAD_SIMULATION_MODE_ 
+    //Release the spinlock *NOT* at device-irql BEFORE enqueueing the DPC
+    maddev_enable_ints_release_lock(&pmaddevobj->devlock, flags1);
+    #endif
+
+    /* Invoke the DPC handler */
+    pmaddevobj->dpctask.data = devnum;
+    tasklet_hi_schedule(&pmaddevobj->dpctask);
+
+    #ifndef _MAD_SIMULATION_MODE_ //(real hardware)
+    //With real hardware release the spinlock at device-irql  AFTER enqueueing the DPC
+    maddev_enable_ints_release_lock(&pmaddevobj->devlock, flags1);
+    #endif
+
+    PDEBUG("maddevb_isr... normal wxit: dev#=%d IntID=x%X rc=%d\n",
+           (int)pmaddevobj->devnum, IntID, IRQ_HANDLED);
+
+	return IRQ_HANDLED;
+}
+
 //int maddevb_zone_report(struct gendisk *disk, sector_t sector,
 //		                struct blk_zone *zones, unsigned int *nr_zones);
 //static blk_status_t 
@@ -364,22 +433,32 @@ maddev_write_direct(struct file *filp, const char __user *buf, size_t count, lof
 //loff_t  maddev_llseek(struct file *filp, loff_t off, int whence);
 #endif
 
-static int maddevb_rw_page(struct block_device *bdev, sector_t sector,
+irqreturn_t maddevb_msi_one_isr(int irq, void* dev_id);
+irqreturn_t maddevb_msi_two_isr(int irq, void* dev_id);
+irqreturn_t maddevb_msi_three_isr(int irq, void* dev_id);
+irqreturn_t maddevb_msi_four_isr(int irq, void* dev_id);
+irqreturn_t maddevb_msi_five_isr(int irq, void* dev_id);
+irqreturn_t maddevb_msi_six_isr(int irq, void* dev_id);
+irqreturn_t maddevb_msi_seven_isr(int irq, void* dev_id);
+irqreturn_t maddevb_msi_eight_isr(int irq, void* dev_id);
+
+int maddevb_rw_page(struct block_device *bdev, sector_t sector,
 		                   struct page *pPages, unsigned int op);
-static int maddevb_open(struct block_device *bdev, fmode_t mode);
-static void maddevb_release(struct gendisk *disk, fmode_t mode);
-static int maddevb_revalidate_disk(struct gendisk *disk);
-static int maddevb_getgeo(struct block_device* bdev, struct hd_geometry* geo);
-static void maddevb_swap_slot_free_notify(struct block_device* bdev, 
+int maddevb_open(struct block_device *bdev, fmode_t mode);
+void maddevb_release(struct gendisk *disk, fmode_t mode);
+int maddevb_revalidate_disk(struct gendisk *disk);
+int maddevb_getgeo(struct block_device* bdev, struct hd_geometry* geo);
+void maddevb_swap_slot_free_notify(struct block_device* bdev, 
                                           unsigned long offset);
 //static int maddevb_zone_report(struct gendisk *disk, sector_t sector,
 //		                       struct blk_zone *zones, unsigned int *nr_zones);
-static int maddevb_zone_report(struct gendisk *disk, sector_t sector,
+int maddevb_zone_report(struct gendisk *disk, sector_t sector,
 		                       /*struct blk_zone *zones,*/ 
 							   unsigned int nr_zones, report_zones_cb cb, void* data);
 
 //int maddevb_ioctl(struct block_device* bdev, fmode_t mode, unsigned int cmd, unsigned long arg);
-extern irqreturn_t maddevb_isr(int irq, void* dev_id);
+extern irqreturn_t maddevb_legacy_isr(int irq, void* dev_id);
+
 //void maddevb_dpc(struct work_struct *work);
 extern void maddevb_dpctask(ulong indx);
 //void maddevb_dpctask(ulong indx);

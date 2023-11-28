@@ -56,7 +56,7 @@ int   madbus_minor    = 0;
 int madbus_nbr_slots = MADBUS_NUMBER_SLOTS;	
 module_param(madbus_nbr_slots, int, S_IRUGO);
 //
-int   madbus_base_irq = 30;
+int   madbus_base_irq = MADBUS_BASE_IRQ;
 module_param(madbus_base_irq, int, S_IRUGO);
 //
 //ulong maddev_size = MAD_DEVICE_MAP_MEM_SIZE;
@@ -131,11 +131,12 @@ static long madbus_dev_ioctl(struct file *fp, unsigned int cmd, unsigned long ar
 	PMADBUSCTLPARMS pCtlParms = (PMADBUSCTLPARMS)arg;
     U32             indx = mbobj->devnum;
 	//
+	MADBUSCTLPARMS CtlParms;
     U32  remains = 0;
     int err = 0;
 	int retval = 0;
 
-	PINFO("madbusobj_ioctl: dev#=%d fp=%px cmd=x%X arg=x%X\n",
+	PINFO("madbusobj_ioctl: dev#=%d fp=%px cmd=x%X arg=x%lX\n",
 		  (int)mbobj->devnum, fp, cmd, arg);
 
 	// Extract the type and number bitfields, and don't decode
@@ -213,11 +214,17 @@ static long madbus_dev_ioctl(struct file *fp, unsigned int cmd, unsigned long ar
 		    break;
 
         case MADBUS_IOC_HOT_PLUG:
-            retval = madbus_hotplug(pCtlParms->Parm, //devnum (slotnum) 
-                                    pCtlParms->Val); //pci_devid
+            PDEBUG( "madbusobj_ioctl: MADBUS_IOC_HOTPLUG\n");
+            {
+            remains = copy_from_user(&CtlParms, pCtlParms, sizeof(MADBUSCTLPARMS)); 
+            ASSERT((int)(remains == 0)); //No remainder
+            retval = madbus_hotplug(CtlParms.Parm, //devnum (slotnum) 
+                                    CtlParms.Val); //pci_devid
+            }
             break;
 
         case MADBUS_IOC_HOT_UNPLUG:
+            PDEBUG( "madbusobj_ioctl: MADBUS_IOC_HOT_UNPLUG\n");
             retval = madbus_hotunplug(arg);
             break;
 
@@ -300,15 +307,15 @@ static struct vm_operations_struct madbus_remap_vm_ops =
 static int madbus_dev_mmap(struct file *fp, struct vm_area_struct* vma)
 {
 	struct madbus_object *mbobj = fp->private_data;
-	struct inode* inode_str     = fp->f_inode;
+	//struct inode* inode_str     = fp->f_inode;
     phys_addr_t    pfn          = phys_to_pfn(mbobj->MadDevPA);
     size_t MapSize              = vma->vm_end - vma->vm_start;
     //
 	int rc = 0;
 
-	PINFO("madbus_dev_mmap... dev#=%d fp=%px pfn=x%llX PA=x%llX MapSize=%d prot=x%X\n",
-          (int)mbobj->devnum, fp, pfn, mbobj->MadDevPA, 
-          (int)MapSize, vma->vm_page_prot);
+	PINFO("madbus_dev_mmap... dev#=%d fp=%px pfn=x%llX PA=x%llX MapSize=%d\n",
+          (int)mbobj->devnum, (void *)fp, (unsigned long long)pfn, mbobj->MadDevPA, 
+          (int)MapSize);
 
     rc = remap_pfn_range(vma, vma->vm_start, pfn, MapSize, vma->vm_page_prot);
     if (rc != 0)
@@ -325,7 +332,7 @@ static int madbus_dev_mmap(struct file *fp, struct vm_area_struct* vma)
     //Increment the reference count on first use
 	madbus_vma_open(vma);
     PDEBUG("madbus_dev_mmap:remap_pfn_range... dev#=%d start=%px rc=%d\n",
-           (int)mbobj->devnum, vma->vm_start, rc);
+           (int)mbobj->devnum, (void *)vma->vm_start, rc);
 
     return rc;
 }
@@ -347,13 +354,14 @@ static struct file_operations madbus_dev_fileops = {
 
 U8 bBusDevRegstrd = 0;
 
-//Free device memory   consistend with how it was malloced
+//Free device memory consistent with how it was Alloc'd
 static int madbus_free_device_memory(PMADBUSOBJ pmadbusobj)
 {
+int devnum = (int)pmadbusobj->devnum;
 size_t size;
 int rc = 0;
 
-	PINFO("madbus_free_device_memory... dev#=%d\n", pmadbusobj->devnum);
+	PINFO("madbus_free_device_memory... dev#=%d\n", devnum);
 
     if (pmadbusobj->SimParms.pInBufr != NULL)
         kfree(pmadbusobj->SimParms.pInBufr);
@@ -364,20 +372,20 @@ int rc = 0;
     if (pmadbusobj->pmaddevice == NULL)
         return 0;
 
-    switch (MAD_XALLOC_PAGES_ORDER) 
+    switch (MAD_PAGE_ORDER_XALLOC) 
         {
-        case MAD_KMALLOC_BYTES_PAGE_ORDER:
+        case MAD_PAGE_ORDER_KMALLOC_BYTES:
             kfree(pmadbusobj->pmaddevice);
             break;
 
-        case MAD_ALLOC_PAGES_ORDER:
-            __free_pages(pmadbusobj->pPage, MAD_ALLOC_PAGES_ORDER);
+        case MAD_PAGE_ORDER_ALLOC_PAGES:  
+            __free_pages(pmadbusobj->pPage, MAD_PAGE_ORDER_ALLOC_PAGES);
             break;
 
-        #ifdef MAD_DMA_CMA_ALLOC_PAGES_ORDER
+        #ifdef MAD_PAGE_ORDER_CMA_ALLOC
         //We should have export_symbol(dma_free_contiguous) in the kernel
-        case MAD_DMA_CMA_ALLOC_PAGES_ORDER:
-            size = ((1 << MAD_DMA_CMA_ALLOC_PAGES_ORDER) * PAGE_SIZE);
+        case MAD_PAGE_ORDER_CMA_ALLOC:
+            size = ((1 << MAD_PAGE_ORDER_CMA_ALLOC) * PAGE_SIZE);
             dma_free_contiguous(NULL, pmadbusobj->pPage, size);
             break;
         #endif
@@ -389,8 +397,7 @@ int rc = 0;
         }
 
     if (rc != 0)
-        {PWARN("madbus_free_device_memory... dev#=%d rc=%d\n", 
-               pmadbusobj->devnum, rc);}
+        {PWARN("madbus_free_device_memory... dev#=%d rc=%d\n", devnum, rc);}
 
     return rc;
 }
@@ -424,7 +431,7 @@ static void madbus_exit(void)
 	    	    {
 	    		rc = kthread_stop(pmadbusobj->pThread);
 	    		if (rc != 0)
-                    {PWARN("kthread_stop returned: (%d), dev#=%d, pThread=%px\n",
+                    {PWARN("kthread_stop returned: (%d) dev#=%d pThread=%px\n",
                            rc, (int)i, pmadbusobj->pThread);}
                 }
 
@@ -446,7 +453,7 @@ static void madbus_exit(void)
 	//
 	unregister_chrdev_region(devno, madbus_nbr_slots);
 
-	PINFO( "madbus_exit() :)\n");
+	PINFO( "madbus_exit()...  :)\n");
 }
 
 /*
@@ -484,9 +491,9 @@ int rc = 0;
     if (pmadbusobj->SimParms.pOutBufr == NULL)
         {return -ENOMEM;}
 
-    switch (MAD_XALLOC_PAGES_ORDER) 
+    switch (MAD_PAGE_ORDER_XALLOC) 
         {
-        case MAD_KMALLOC_BYTES_PAGE_ORDER:
+        case MAD_PAGE_ORDER_KMALLOC_BYTES:
             pmadbusobj->pmaddevice = 
             (PMADREGS)kmalloc(MAD_DEVICE_MAP_MEM_SIZE, MAD_DEVICE_KMALLOC_FLAGS);
             if (pmadbusobj->pmaddevice == NULL)
@@ -497,8 +504,8 @@ int rc = 0;
                 }
             break;
 
-        case MAD_ALLOC_PAGES_ORDER:
-            pmadbusobj->pPage = alloc_pages(__GFP_HIGHMEM, MAD_ALLOC_PAGES_ORDER);
+        case MAD_PAGE_ORDER_ALLOC_PAGES:
+            pmadbusobj->pPage = alloc_pages(__GFP_HIGHMEM, MAD_PAGE_ORDER_ALLOC_PAGES);
             if (pmadbusobj->pPage != NULL)
                 {pmadbusobj->pmaddevice = page_to_virt(pmadbusobj->pPage);}
 
@@ -510,10 +517,10 @@ int rc = 0;
                 }
             break;
 
-        #ifdef MAD_DMA_CMA_ALLOC_PAGES_ORDER
+        #ifdef MAD_PAGE_ORDER_CMA_ALLOC
         //We should have export_symbol(dma_alloc_contiguous) in the kernel
-        case MAD_DMA_CMA_ALLOC_PAGES_ORDER:
-            size = ((1 << MAD_DMA_CMA_ALLOC_PAGES_ORDER) * PAGE_SIZE);
+        case MAD_PAGE_ORDER_CMA_ALLOC:
+            size = ((1 << MAD_PAGE_ORDER_CMA_ALLOC) * PAGE_SIZE);
             ASSERT((int)(size == MAD_DEVICE_MAP_MEM_SIZE));
 
             pmadbusobj->pPage = dma_alloc_contiguous(NULL, //no device necessary
@@ -536,60 +543,56 @@ int rc = 0;
                   rc);
         }
 
-    if (rc == 0)
-        {
-        ASSERT((int)(pmadbusobj->pmaddevice != NULL));
-        pmadbusobj->MadDevPA = virt_to_phys(pmadbusobj->pmaddevice);
-        memset(pmadbusobj->pmaddevice, 0x00, MAD_DEVICE_MEM_SIZE_NODATA);
-        memset(((u8*)pmadbusobj->pmaddevice + MAD_DEVICE_MEM_SIZE_NODATA),
-               0xFF, MAD_DEVICE_DATA_SIZE);
+    if (rc != 0)
+        {return rc;}
 
-        PINFO("madbus_setup_device... dev#=%d order=%d pPage=%px PA=x%llX kva=%px #pages=%ld size=%ld\n",
-              (int)pmadbusobj->devnum, MAD_XALLOC_PAGES_ORDER, pmadbusobj->pPage, 
-              pmadbusobj->MadDevPA, pmadbusobj->pmaddevice,
-              MAD_DEVICE_MAX_PAGES, (MAD_DEVICE_MAX_PAGES * PAGE_SIZE));
-              //{PINFO("madbus_setup_device... dev#=%d  VA=%px PA=x%llX\n",
-              //       (int)i, pmadbusobj->pmaddevice, pmadbusobj->MadDevPA);}
-        }
+    ASSERT((int)(pmadbusobj->pmaddevice != NULL));
+    pmadbusobj->MadDevPA = virt_to_phys(pmadbusobj->pmaddevice);
+    memset(pmadbusobj->pmaddevice, 0x00, MAD_DEVICE_MEM_SIZE_NODATA);
+    memset(((u8*)((u64)pmadbusobj->pmaddevice + MAD_DEVICE_MEM_SIZE_NODATA)),
+           0xFF, MAD_DEVICE_DATA_SIZE);
+        
+    PINFO("madbus_setup_device... dev#=%d order=%d pPage=%px PA=x%llX kva=%px #pages=%ld size=%ld\n",
+          (int)pmadbusobj->devnum, MAD_PAGE_ORDER_XALLOC, pmadbusobj->pPage, 
+          pmadbusobj->MadDevPA, pmadbusobj->pmaddevice,
+          (long)MAD_DEVICE_MAX_PAGES, (long)(MAD_DEVICE_MEM_SIZE_NODATA+MAD_DEVICE_DATA_SIZE));
+          //{PINFO("madbus_setup_device... dev#=%d  VA=%px PA=x%llX\n",
+          //       (int)i, pmadbusobj->pmaddevice, pmadbusobj->MadDevPA);}
 
-    return rc;
+    return 0;
 }
 
-static int madbus_setup_device(PMADBUSOBJ pmadbusobj)
+int madbus_setup_device(PMADBUSOBJ pmadbusobj, u32 indx)
 {
-    U32 i = pmadbusobj->devnum;
-    int rc  = 0;
-
+    int i= indx;
+    int rc = 0;
+    pmadbusobj->devnum = indx;
+    
+    PINFO("madbus_setup_device... pmadbusobj=%px dev#=%d\n", pmadbusobj, i);
     rc = madbus_dev_setup_cdev(pmadbusobj, i);
     if (rc != 0)
         {return rc;} 
 
-    //Register the sysfs device
+    //Register the bus-discovered device with sysfs
     MadBusObjNames[i][MBDEVNUMDX] = MadBusNumStr[i];
     pmadbusobj->sysfs_dev.init_name = MadBusObjNames[i];
-    if (i > 0)
-        {pmadbusobj->sysfs_dev.parent = &madbus_dev;}
 
+    // madbus_dev becomes the root of the bus object device tree
+    pmadbusobj->sysfs_dev.parent = &madbus_dev;
     pmadbusobj->sysfs_dev.driver = &madbus_drvr;
     pmadbusobj->sysfs_dev.release = madbus_release;
     rc = device_register(&pmadbusobj->sysfs_dev);
-    if (rc != 0)
-        {PWARN("madbus_setup_device:device_register... dev#=%d rc=%d\n",
-               (int)i, rc);}
-    //
-    pmadbusobj->bRegstrd = (rc == 0);
-    //Sysfs device register failure is not fatal
+    PINFO("madbus_setup_device:device_register... dev#=%d rc=%d\n", (int)i, rc);
 
-    if (i > 0) //Only malloc a virtual device in ram for devnums 1..N
-        {
-        rc = madbus_malloc_device_memory(pmadbusobj);     
-        if (rc != 0)
-            {return rc;} 
-        
+    //Sysfs device register failure is not fatal
+    pmadbusobj->bRegstrd = (rc == 0);
+
+    if (i == 0) //Only malloc a virtual device in ram for devices 1..N
+        {return 0;}
+
+    rc = madbus_malloc_device_memory(pmadbusobj);
+    if (rc == 0)
         rc = madbus_create_thread(pmadbusobj);
-        if (rc != 0)
-            {return rc;} 
-        }
 
     if (rc != 0)
         {PWARN("madbus_setup_device... dev#=%d rc=%d\n", (int)i, rc);}
@@ -597,9 +600,39 @@ static int madbus_setup_device(PMADBUSOBJ pmadbusobj)
     return rc;
 }
 
+int madbus_setup_devices(PMADBUSOBJ madbusobjs, int num_devices)
+{
+PMADBUSOBJ pmadbusobj = madbusobjs; 
+int i;
+int rc = 0;
+int numdevsready = 0;
+
+    for (i = 0; i <= num_devices; i++)
+        {
+        rc = madbus_setup_device(pmadbusobj, i);
+       	if (rc != 0)
+        	{
+       		if (i > 1)
+        		{
+                rc = 0;  
+                break;
+                } //We assume a failure condition will persist
+
+            //If we failed the 1st device setup
+            PERR("madbus_init_module:madbus_setup_devices() rc=%d\n", rc);
+            return rc;
+       		}
+
+        numdevsready++;
+        pmadbusobj++; 
+        }
+
+    return numdevsready;
+}
+
 static int madbus_init(void)
 {
-	register ulong i = 0;
+	//register ulong i = 0;
 	int ret = 0;
     int rc = 0;
     dev_t dev = 0;
@@ -616,9 +649,8 @@ static int madbus_init(void)
 
     //But we trust our statically assigned major number for bus slot-devices
     //therefore we can use register_chrdev_region
-    ret = 
-    register_chrdev_region(madbus_major, madbus_nbr_slots,
-                           MADBUS_MAJOR_OBJECT_NAME);
+    ret = register_chrdev_region(madbus_major, madbus_nbr_slots, 
+                                 MADBUS_MAJOR_OBJECT_NAME);
 	if (ret < 0)
 	    {
 		PERR("madbus_init_module: can't register region... mjr=%d mnr=%d rc=%d\n",
@@ -662,7 +694,7 @@ static int madbus_init(void)
 //
 	SimInitPciConfig(DfltPciConfig);
     madbus_objects = 
-    kzalloc(((madbus_nbr_slots+1) * sizeof(MADBUSOBJ)), MAD_KMALLOC_FLAGS);
+    kzalloc(((MADBUS_NUMBER_SLOTS+1) * sizeof(MADBUSOBJ)), MAD_KMALLOC_FLAGS);
     if (madbus_objects == NULL)
         {
 	    ret = -ENOMEM;
@@ -671,29 +703,18 @@ static int madbus_init(void)
         goto InitExit;
         }
 
-    //memset(madbus_objects, 0x00, (madbus_nbr_slots+1) * sizeof(MADBUSOBJ));
-    //
-    for (i = 0; i <= madbus_nbr_slots; i++)
+    pmadbusobj = madbus_objects;
+    rc = madbus_setup_devices(pmadbusobj, madbus_nbr_slots);
+   	if (rc < 0)
         {
-       	pmadbusobj = &madbus_objects[i];
-       	pmadbusobj->devnum = i;
-        rc = madbus_setup_device(pmadbusobj);
-       	if (rc != 0)
-        	{
-       		if (i > 1)
-        		{break;} //We assume a failure condition will persist
-
-            //If we failed the 1st device setup
-            PERR("madbus_init_module: Xmalloc failed-0... exiting\n");
-       		madbus_exit();
-            ret = rc;
-            goto InitExit;
-       		}
-        }
+        PERR("madbus_init_module:madbus_setup_devices() rc=%d\n", rc);
+   		madbus_exit();
+        ret = rc;
+   		}
 
 InitExit:;
 	PINFO("madbus_init_module... rc=%d madbus_objects=%px #slots=%d #devices=%d\n",
-          ret, madbus_objects, madbus_nbr_slots, (int)(i-1));
+          ret, madbus_objects, madbus_nbr_slots, rc);
 
  	return ret;
 }

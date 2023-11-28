@@ -31,9 +31,16 @@
 /*                                                                             */
 /*******************************************************************************/
 
+#include <asm/page.h>	
+#include <linux/mm.h>
+
 #ifndef _MAD_DRVR_DEVS_
 //
 #define _MAD_DRVR_DEFS_
+
+#define DMADIR(bWR) (((bool)bWR) ? DMA_TO_DEVICE : DMA_FROM_DEVICE)
+
+//extern struct bus_type madbus_type;
 
 //drivers/base/base.h
 struct driver_private
@@ -59,11 +66,11 @@ struct async_work
 };
 
 // The device context structure
-static struct mad_dev_obj
+struct mad_dev_obj
 {
 	U32                devnum;
 	//U32                size;       /* amount of data stored here */
-    int                irq;
+    int                base_irq;
     struct mutex       devmutex;     
 	spinlock_t         devlock;
     struct pci_dev*    pPciDev;
@@ -92,6 +99,7 @@ static struct mad_dev_obj
     struct async_work  wr_workq;
 
     MAD_DMA_CHAIN_ELEMENT SgDmaElements[MAD_SGDMA_MAX_SECTORS];
+    struct scatterlist    sgl[MAD_SGDMA_MAX_PAGES];
     //
     char               pci_config_space[MAD_PCI_CFG_SPACE_SIZE];
 
@@ -109,28 +117,27 @@ typedef struct mad_dev_obj MADDEVOBJ;
 typedef struct mad_dev_obj* PMADDEVOBJ;
 
 //Function prototypes
-static ssize_t
+ssize_t
 maddev_read(struct file *filp, char __user *buf, size_t count, loff_t *f_pos);
 ///*static*/ ssize_t
 //maddev_read_bufrd(struct file *filp, char __user *buf, size_t count, loff_t *f_pos);
-static ssize_t
+ssize_t
 maddev_write(struct file *filp, const char __user *buf, size_t count, loff_t *f_pos);
 //static ssize_t
 //maddev_write_bufrd(struct file *filp, const char __user *buf, size_t count, loff_t *f_pos);
 
-static loff_t  maddev_llseek(struct file *filp, loff_t off, int whence);
+int maddev_setup_devices(int num_devs, U8 bHPL, u8 bMSI); 
+void maddev_remove_devices(int num_devices);
+void maddev_cleanup_module(void);
+int  maddev_probe(struct pci_dev *pcidev, const struct pci_device_id *ids);
+void maddev_shutdown(struct pci_dev *pcidev);
+void maddev_remove(struct pci_dev *pcidev);
+int  maddev_setup_device(PMADDEVOBJ pmaddevobj, 
+                         struct pci_dev** ppPciDvTmp, U8 HPL, u8 bMSI);
+void maddev_remove_device(PMADDEVOBJ pmaddevobj);
+loff_t  maddev_llseek(struct file *filp, loff_t off, int whence);
 bool  maddev_need_sg(struct page* pPages[], u32 num_pgs);
-void maddev_put_user_pages(struct page* page_list[], u32 num_pgs);
-
-static void maddev_cleanup_module(void);
-static int  maddev_probe(struct pci_dev *pcidev, const struct pci_device_id *ids);
-static void maddev_shutdown(struct pci_dev *pcidev);
-static void maddev_remove(struct pci_dev *pcidev);
-static int  maddev_setup_device(PMADDEVOBJ pmaddevobj, 
-                                struct pci_dev** ppPciDvTmp, U8 HPL);
-static void maddev_remove_device(PMADDEVOBJ pmaddevobj);
-
-void maddev_program_stream_io(spinlock_t *splock, PMADREGS pmadregs,
+void maddevc_program_stream_io(spinlock_t *splock, PMADREGS pmadregs,
 		                     U32 ControlReg, U32 IntEnableReg,
                              phys_addr_t HostAddr, U32 offset, bool bWr);
 void maddev_reset_io_registers(PMADREGS pmadregs, spinlock_t *splock);
@@ -139,9 +146,9 @@ long maddev_get_io_status(struct mad_dev_obj *pmaddev, wait_queue_head_t* io_q,
                           long* io_f, spinlock_t* plock0); 
 void maddev_get_pciconfig_sim(void* pPciCnfg, U32 Len);
 int  maddev_claim_pci_resrcs(struct pci_dev* pPciDev, 
-                             PMADDEVOBJ pmaddevobj, char* Devname, U32 NumIrqs);
+                             PMADDEVOBJ pmaddevobj, char* Devname, U16 NumIrqs);
 int maddev_release_pci_resrcs(PMADDEVOBJ pmaddevobj);
-int  maddev_xchange_sim_parms(struct pci_dev* pPciDev, PMADDEVOBJ pmaddevobj);
+int  maddev_exchange_sim_parms(struct pci_dev** ppPciDev, PMADDEVOBJ pmaddevobj);
 void maddev_init_io_parms(PMADDEVOBJ pmaddevobj, U32 indx);
 void* maddev_getkva(phys_addr_t PhysAddr, struct page** ppPgStr);
 void mad_putkva(struct page* pPgStr);
@@ -153,10 +160,14 @@ ssize_t maddev_xfer_dma_page(PMADDEVOBJ pmaddev, struct page* pPage,
 ssize_t maddev_xfer_sgdma_pages(PMADDEVOBJ pmaddev, 
                                long num_pgs, struct page* page_list[],
                                sector_t sector, bool bWrite);
+U32 maddev_dma_map_sgl(struct device* pdev, struct page* page_list[], 
+                       struct scatterlist sgl[],
+                       U32 num_pgs, enum dma_data_direction dir);
 long maddev_get_user_pages(U64 usrbufr, U32 num_pgs,
                            struct page** pPages, struct vm_area_struct** pVMAs,
                            bool bUpdate);
 void maddev_put_user_pages(struct page** ppPages, u32 num_pgs);
+void maddev_put_user_pages(struct page* page_list[], u32 num_pgs);
 //
 int maddev_kobject_init(struct kobject* pkobj, struct kobject* pPrnt,
                      struct kset* kset, struct kobj_type* ktype, const char *objname);
@@ -165,6 +176,7 @@ int maddev_kobject_register(struct kobject* pkobj, struct kobject* pPrnt,
                             const char *objname);
 void maddev_kobject_unregister(struct kobject* pkobj);
 int maddev_kset_create(void);
+irq_handler_t select_isr_function(int msinum);
 
 //inline functions
 static inline void 
@@ -172,11 +184,14 @@ maddev_program_sgdma_regs(PMAD_DMA_CHAIN_ELEMENT pSgDmaElement,
                           U64 HostPA, U32 DevLoclAddr, U32 DmaCntl,
                           U32 DXBC, U64 CDPP)
 {
+    //PDEBUG("maddev_program_sgdma_regs... HostPA=x%llX DevLoclAddr=x%lX DXBC=x%lX\n",
+    //       HostPA, DevLoclAddr, DXBC);
     pSgDmaElement->HostAddr    = HostPA;
     pSgDmaElement->DevLoclAddr = DevLoclAddr;
     pSgDmaElement->DmaCntl     = DmaCntl;
     pSgDmaElement->DXBC        = DXBC;
     pSgDmaElement->CDPP        = CDPP;
+    ASSERT((int)((pSgDmaElement->DXBC % MAD_SECTOR_SIZE) == 0));
 }
 
 static inline void 
@@ -237,14 +252,12 @@ static inline void maddev_acquire_lock_disable_ints(spinlock_t* splock, U32 F1)
     spin_lock_irqsave(splock, F1);
     #endif
     ASSERT((int)(spin_is_locked(splock)));
-    //local_irq_save(F2);
 }
 
 //This function 1st reenables interrupts on the current processor
 //and then releases the device spinlock  
 static inline void maddev_enable_ints_release_lock(spinlock_t* splock, U32 F1)
 {
-    //local_irq_restore(F2);
     ASSERT((int)(spin_is_locked(splock)));
     #ifdef _MAD_SIMULATION_MODE_
     spin_unlock(splock); 
@@ -254,16 +267,61 @@ static inline void maddev_enable_ints_release_lock(spinlock_t* splock, U32 F1)
     ASSERT((int)(spin_is_locked(splock) == 0));
 }
 
-static inline dma_addr_t
-maddev_page_to_dma(struct device* pdev, struct page* pPage, U32 size, bool bWr)
+static inline void 
+maddev_sg_set_pages(u32 num_pgs, struct page* page_list[], struct scatterlist sgl[])
 {
+    ulong j;
+    for (j=0; j < num_pgs; j++)
+        {
+        sg_set_page(&sgl[j], page_list[j], PAGE_SIZE, 0);
+
+        // Because we don't know the state of the kernel #define CONFIG_NEED_SG_DMA_LENGTH
+        //Just belt and suspenders
+        #ifdef _MAD_SIMULATION_MODE_
+            sgl[j].dma_length = PAGE_SIZE;
+            sgl[j].length = PAGE_SIZE;
+        #endif
+        }
+
+}
+
+static inline void maddev_dma_unmap_sgl(struct device* pdev, struct scatterlist sgl[],
+                                        u32 num_pgs, enum dma_data_direction dir)
+
+{
+    #ifndef _MAD_SIMULATION_MODE_
+    dma_unmap_sg(pdev, sgl, num_pgs, dir); 
+    #endif
+}
+
+static inline dma_addr_t
+maddev_dma_map_page(struct device* pdev, struct page* pPage, U32 size, u32 offset, bool bWr)
+{
+    dma_addr_t dma_addr;
+    BUG_ON(!(virt_addr_valid(page_to_virt(pPage))));
+
     #ifdef _MAD_SIMULATION_MODE_
-        return (dma_addr_t)page_to_phys(pPage);
+        dma_addr = (dma_addr_t)page_to_phys(pPage);
     #else 
         //Real hardware - get a bus-relative dma address
         BUG_ON(dma_get_mask(pdev) == 0); //If dma mask not set
-        enum dma_data_direction dir = (bWr) ? DMA_TO_DEVICE : DMA_FROM_DEVICE;
-        return dma_map_single(pdev, page_to_virt(pPage), size, dir);
+        dma_addr = dma_map_page(pdev, pPage, size, DMADIR(bWr));
+    #endif
+
+    return dma_addr;
+}
+
+static inline void
+maddev_dma_unmap_page(struct device* pdev, dma_addr_t dma_addr, U32 size, bool bWr)
+{
+    #ifdef _MAD_SIMULATION_MODE_
+        void* va = phys_to_virt(dma_addr);
+        BUG_ON(!(virt_addr_valid(va)));
+        ASSERT((int)(virt_to_page(va) != NULL));
+    #else 
+        //Real hardware
+        BUG_ON(dma_get_mask(pdev) == 0); //If dma mask not set
+        dma_unmap_page(pdev, dma_addr, size, DMADIR(bWr));
     #endif
 }
 

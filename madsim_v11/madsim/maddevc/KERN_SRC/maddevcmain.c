@@ -55,6 +55,9 @@ module_param(maddev_max_devs, int, S_IRUGO);
 int maddev_nbr_devs = MADDEV_NBR_DEVS;	/* number of bare maddev devices */
 module_param(maddev_nbr_devs, int, S_IRUGO);
 
+int mad_pci_devid = MAD_PCI_CHAR_INT_DEVICE_ID;
+module_param(mad_pci_devid, int, S_IRUGO);
+
 MODULE_AUTHOR("H. Thomas Fones");
 MODULE_LICENSE("Dual BSD/GPL");
 
@@ -81,9 +84,9 @@ static struct pci_device_id pci_ids[] =
 MODULE_DEVICE_TABLE(pci, pci_ids);
 //
 //These function prototypes are needed here but are defined in maddrvrdefs.h
-static int maddev_probe(struct pci_dev *pcidev, const struct pci_device_id *ids);
-static void maddev_shutdown(struct pci_dev *pcidev);
-static void maddev_remove(struct pci_dev *pcidev);
+int maddev_probe(struct pci_dev *pcidev, const struct pci_device_id *ids);
+void maddev_shutdown(struct pci_dev *pcidev);
+ void maddev_remove(struct pci_dev *pcidev);
 
 #include "../../include/maddrvrdefs.c"
 
@@ -277,14 +280,15 @@ static int maddev_release(struct inode *inode, struct file *fp)
  * Data management: read and write
  */
 //This is the generic read function
-static ssize_t
+ssize_t
 maddev_read(struct file *fp, char __user *usrbufr, size_t count, loff_t *f_pos)
 {
     struct mad_dev_obj *pmaddevobj = (struct mad_dev_obj*)fp->private_data;
     ssize_t iocount = 0;                                                         
 
-    PINFO("maddev_read... dev#=%d fp=%p count=%ld offset_arg=%ld fppos=%ld\n",
-          (int)pmaddevobj->devnum, fp, (U32)count, (U32)*f_pos, fp->f_pos);
+    PINFO("maddev_read... dev#=%d fp=%px count=%ld offset_arg=%ld fppos=%ld\n",
+          (int)pmaddevobj->devnum, (void *)fp,
+          (long int)count, (unsigned long int)*f_pos, (long int)fp->f_pos);
 
     mutex_lock(&pmaddevobj->devmutex);
 
@@ -301,14 +305,14 @@ maddev_read(struct file *fp, char __user *usrbufr, size_t count, loff_t *f_pos)
 }
 
 //This is the generic write function
-static ssize_t maddev_write(struct file *fp, const char __user *usrbufr, size_t count,
+ssize_t maddev_write(struct file *fp, const char __user *usrbufr, size_t count,
                             loff_t *f_pos)
 {
     PMADDEVOBJ pmaddevobj = (PMADDEVOBJ)fp->private_data;
     ssize_t iocount = 0;                                                         
 
-    PINFO("maddev_write... dev#=%d fp=%p count=%ld offset_arg=%ld fppos=%ld\n",
-          (int)pmaddevobj->devnum, fp, (U32)count, (U32)*f_pos, fp->f_pos);
+    PINFO("maddev_write... dev#=%d fp=%px count=%ld f_pos=%ld fp->pos=%ld\n",
+          (int)pmaddevobj->devnum, (void *)fp, (long int)count, (long int)*f_pos, (long int)fp->f_pos);
 
     mutex_lock(&pmaddevobj->devmutex);
 
@@ -327,7 +331,7 @@ static ssize_t maddev_write(struct file *fp, const char __user *usrbufr, size_t 
 /*
  * The ioctl() implementation
  */
-static long maddev_ioctl(struct file *fp, unsigned int cmd, unsigned long arg)
+long maddev_ioctl(struct file *fp, unsigned int cmd, unsigned long arg)
 {
 	static MADREGS  MadRegs;
 	//
@@ -339,10 +343,10 @@ static long maddev_ioctl(struct file *fp, unsigned int cmd, unsigned long arg)
 	long retval = 0;
 	U32  remains = 0;
     u32 flags1 = 0;
-    U32 flags2 = 0;
+    //U32 flags2 = 0;
 
-	PINFO("maddev_ioctl... dev#=%d fp=%p cmd=x%X arg=x%X\n",
-		  (int)pmaddevobj->devnum, fp, cmd, (int)arg);
+	PINFO("maddev_ioctl... dev#=%d fp=%px cmd=x%X arg=x%X\n",
+		  (int)pmaddevobj->devnum, (void *)fp, cmd, (int)arg);
 
     /* Extract the type and number bitfields, and don't decode
 	 * wrong cmds: return (inappropriate ioctl) before access_ok() */
@@ -468,14 +472,14 @@ static long maddev_ioctl(struct file *fp, unsigned int cmd, unsigned long arg)
  * The "extended" operations -- only seek
  */
 //The random access seek function is not currently used
-static loff_t maddev_llseek(struct file *fp, loff_t off, int whence)
+loff_t maddev_llseek(struct file *fp, loff_t off, int whence)
 {
 	struct mad_dev_obj *pmaddevobj = fp->private_data;
     PMADREGS pmadregs = pmaddevobj->pDevBase; 
 	//
 	loff_t newpos = 0;
    	u32 flags1 = 0;
-    U32 flags2 = 0;
+    //U32 flags2 = 0;
     int rc = 0;
 
 	PINFO("maddev_llseek... dev#=%d lseek=%ld\n",
@@ -593,14 +597,14 @@ static struct vm_operations_struct maddev_remap_vm_ops =
 static int maddev_mmap(struct file *fp, struct vm_area_struct* vma)
 {
 	struct mad_dev_obj *pmaddevobj = fp->private_data;
-	struct inode* inode_str = fp->f_inode;
+	//struct inode* inode_str = fp->f_inode;
     U32    pfn              = phys_to_pfn(pmaddevobj->MadDevPA);
     size_t MapSize          = vma->vm_end - vma->vm_start;
 	//
 	int rc = 0;
 
-	PINFO("maddev_mmap... dev#=%d fp=%px pfn=0x%llX PA=x%llX MapSize=%ld\n",
-          (int)pmaddevobj->devnum, fp, pfn, pmaddevobj->MadDevPA, MapSize);
+	PINFO("maddev_mmap... dev#=%d fp=%px pfn=x%llX PA=x%llX MapSize=%ld\n",
+          (int)pmaddevobj->devnum, (void *)fp, (unsigned long long)pfn, pmaddevobj->MadDevPA, (long int)MapSize);
 
     mutex_lock(&pmaddevobj->devmutex);
 
@@ -624,7 +628,7 @@ static int maddev_mmap(struct file *fp, struct vm_area_struct* vma)
     mutex_unlock(&pmaddevobj->devmutex);
 
     PDEBUG("maddev_mmap:remap_pfn_range... dev#=%d start=%px rc=%d\n",
-           (int)pmaddevobj->devnum, vma->vm_start, rc);
+           (int)pmaddevobj->devnum, (void *)vma->vm_start, rc);
 
     return rc;
 }
@@ -684,16 +688,14 @@ static int maddev_setup_cdev(void* pvoid, int indx)
 
 // This is the driver init function
 // It allocates memory and initializes all static device objects
-static int maddev_init_module(void)
+static int maddevc_init_module(void)
 {
-	int   rc = 0;
-    int   i;
-    dev_t dev = 0;
-	PMADDEVOBJ pmaddevobj = NULL;
+	int    rc = 0;
+    dev_t  dev = 0;
 	U32    devcount = 0;
     U32    len;
-    size_t SetSize = (maddev_max_devs + 1) * PAGE_SIZE;
-    struct pci_dev* pPciDvTmp = NULL;
+    size_t SetSize = (maddev_max_devs+3) * PAGE_SIZE; // Let padding consume a memory error
+    u8 bMSI = (mad_pci_devid == MAD_PCI_CHAR_MSI_DEVICE_ID);
  
 	PINFO("maddev_init_module... mjr=%d mnr=%d\n", maddev_major, maddev_minor);
 
@@ -723,6 +725,7 @@ static int maddev_init_module(void)
 	    }
 
     //Create a class for creating device nodes for hotplug devices
+    //Lop off the trailing X to make a generic class name in /sys/class/<name>
     len = strlen(MadDevNames[0]);
     MadDevNames[0][len-1] = 0x00;
     mad_class = class_create(THIS_MODULE, MadDevNames[0]);
@@ -738,7 +741,7 @@ static int maddev_init_module(void)
 	if (!mad_dev_objects)
 	    {
 		rc = -ENOMEM;
-        PERR("maddev_init_module failing to get memory... rc=-ENOMEM\n");
+        PERR("maddev_init_module kalloc failed... rc=-ENOMEM\n");
 		goto InitFail;  
 	    }
 
@@ -756,21 +759,11 @@ static int maddev_init_module(void)
 
     //mad_kset_create();
 
-    /* Create & initialize each device. */
-	for (i = 1; i <= maddev_nbr_devs; i++)
-	    {
-        pmaddevobj = (PMADDEVOBJ)((u8*)mad_dev_objects + (PAGE_SIZE * i));
-        pmaddevobj->devnum = i;
-        rc = maddev_setup_device(pmaddevobj, &pPciDvTmp, false); 
-        if (rc != 0)
-            {
-            PERR("maddev_init_module:maddev_setup_device... dev#=%d rc=%d - continuing\n",
-                 (int)pmaddevobj->devnum, rc);
-            continue;
-            }
+    /* Create & initialize each static device. */
+    PINFO("maddevc_init_module... #_static_devices=%d\n", maddev_nbr_devs);
 
-        devcount++;
-	    }
+    if (maddev_nbr_devs > 0) //Static devices
+        devcount = maddev_setup_devices(maddev_nbr_devs, false, bMSI); 
 
 #ifdef MADDEVOBJ_DEBUG /* only when debugging */
 	maddev_create_proc();
@@ -791,5 +784,5 @@ InitFail:
 }
 
 //Declare the driver init & driver exit functions
-module_init(maddev_init_module);
+module_init(maddevc_init_module);
 module_exit(maddev_cleanup_module);

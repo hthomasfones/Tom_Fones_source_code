@@ -35,47 +35,62 @@
 #define _SIM_DRIVER_
 #include "madbus.h"
 
-static IoMesgId mbdt_get_programmed_iotype(PMADREGS pMadDevRegs);
-static void mbdt_process_io(PMADBUSOBJ pmadbusobj);
+static IoType mbdt_get_programmed_iotype(PMADREGS pMadDevRegs);
+static void mbdt_process_io(PMADBUSOBJ pmadbusobj, IoType iotype);
+
+void madbus_wait_for_thread_wake(struct task_struct *pThread)
+{
+    while (pThread->state > 2)
+        {schedule();}
+}
 
 //This function creates a one-per-device thread and binds it to a processor
 //
 int madbus_create_thread(PMADBUSOBJ pmadbusobj)
 {
-//static ULONG Flags = (CLONE_FS | CLONE_FILES | CLONE_SIGHAND | SIGCHLD);
 static char ThreadName[] = "mbdthreadX";
 static ULONG TNDX = 9;    //.........^
 static char DevNumStr[] = DEVNUMSTR;
 //
 int rc = 0;
+int pstate = 0;
+struct task_struct *pThread = NULL;
+int devnum;
+int num_cpus = 0;
 
     ASSERT((int)(pmadbusobj != NULL));
+    devnum = pmadbusobj->devnum;
 
-    ThreadName[TNDX] = DevNumStr[pmadbusobj->devnum];
- 
-    pmadbusobj->pThread = 
-    kthread_create(madbus_dev_thread, (void *)pmadbusobj, "%s", ThreadName);
-    //
-    kthread_bind(pmadbusobj->pThread, pmadbusobj->devnum); //assigning cpu=dev#
-    
-    //kthread_bind succeeds even when specifying a nox-existent cpu - go figure
-    if (!IS_ERR(pmadbusobj->pThread))
-        {wake_up_process(pmadbusobj->pThread);}
-
-    PINFO("madbus_create_thread... dev#=%d pmadbusobj=%px pThread=%px\n",
-    	  (int)pmadbusobj->devnum, pmadbusobj, pmadbusobj->pThread);
-
-    //Release quantum for sequencing... so that threads initialize in start order
-    schedule(); 
-
-    if ((pmadbusobj->pThread == NULL) || (IS_ERR(pmadbusobj->pThread)))
+    num_cpus = num_online_cpus();
+    if ((devnum < 1) || (devnum >= num_cpus)) 
         {
-    	rc = -ESRCH; //No such process *!?!*
-    	PERR("madbus:madbus_create_thread failure... error=%ld, rc=-ESRCH\n",
-    		 PTR_ERR(pmadbusobj->pThread));
+    	rc = -EBADSLT; //No such cpu#-bus_slot *!?!*
+    	PERR("madbus:madbus_create_thread error... invalid cpu#(%d) rc=%d\n",
+    		 devnum, rc);
+        return rc;
         }
 
-    return rc;
+    pmadbusobj->pThread = NULL;
+    ThreadName[TNDX] = DevNumStr[pmadbusobj->devnum];
+    pThread = kthread_create(madbus_dev_thread, (void *)pmadbusobj, ThreadName);
+    if ((pThread == NULL) || (IS_ERR(pThread)))
+        {
+    	rc = -ESRCH; //No such process *!?!*
+    	PERR("madbus:madbus_create_thread failure... error=%ld rc=%d\n",
+    		 PTR_ERR(pThread), rc);
+        return rc;
+        }
+
+    kthread_bind(pThread, devnum);
+    schedule();
+    pstate = wake_up_process(pThread);
+
+    //Release quantum for sequencing... so that threads initialize in start order
+    pmadbusobj->pThread = pThread;
+    PINFO("madbus_create_thread... dev#=%d pmadbusobj=%px pThread=%px name:%s\n",
+    	  (int)pmadbusobj->devnum, pmadbusobj, pThread, ThreadName);
+
+    return 0;
 }
 
 //The device-implementing thread itself
@@ -87,28 +102,28 @@ int madbus_dev_thread(void* pvoid)
 PMADBUSOBJ pmadbusobj = (PMADBUSOBJ)pvoid;
 PMADREGS   pmaddevice = pmadbusobj->pmaddevice;
 //
-int bindcpu = get_cpu();
 int cur_cpu = -1;
-IoMesgId mesgid = eNOP;
-//int rc = 0;
+IoType iotype = eNOP;
+int rc = -EADDRNOTAVAIL;
 
     ASSERT((int)(pmaddevice != NULL));
-     
-    PINFO("madbus_dev_thread... dev#=%d cpu=%d pmadbusobj=%px pmaddevice=%px\n",
-    	  (int)pmadbusobj->devnum, bindcpu, pmadbusobj, pmaddevice);
+    cur_cpu = get_cpu();
+
+    PINFO("madbus_dev_thread... dev#=%d cpu=%d pThread=%px madbusobj=%px maddev=%px\n",
+    	  (int)pmadbusobj->devnum, cur_cpu, 
+          (void *)current, (void *)pmadbusobj, (void *)pmaddevice);
  
     //We want to run specifically on cpu# = dev# and leave cpu 0 alone
     //This test only works because kthread_bind(s) to proc_0 when we ask for cpu > (numcpus - 1)
-    // (devnum == numcpus)
-    if (bindcpu != pmadbusobj->devnum)
+    if (cur_cpu != pmadbusobj->devnum)
         {
-        pmadbusobj->pThread = NULL;
-        PERR("MBDT... bindcpu(%d) != devnum(%d); returning -EINVAL\n",
-    		 bindcpu, (int)pmadbusobj->devnum);
-
-        return -EBADSLT; //Invalid bus slot - whatever
+        //pmadbusobj->pThread = NULL;
+        PWARN("MBDT... cur_cpu(%d) != dev#(%d) rc=%d\n", 
+              cur_cpu, (int)pmadbusobj->devnum, rc);
+        return rc; 
         }
 
+    //pmadbusobj->pThread = current;
     //Initialize the device (any non-zero values) before processing begins
     pmaddevice->Status |= MAD_STATUS_CACHE_INIT_MASK;
 
@@ -117,11 +132,11 @@ IoMesgId mesgid = eNOP;
     //
     while (1)
         {
-        mesgid =  mbdt_get_programmed_iotype(pmaddevice);
-     	if (mesgid != eNOP) //We are ready to complete an i/o
+        iotype =  mbdt_get_programmed_iotype(pmaddevice);
+     	if (iotype != eNOP) //We are ready to complete an i/o
     	    {
-            pmaddevice->MesgID = mesgid;
-    	    mbdt_process_io(pmadbusobj);
+            //pmaddevice->MesgID = mesgid; ////////////////////////////////////////
+    	    mbdt_process_io(pmadbusobj, iotype);
 
             //Check for kthread_stop after some work - before releasing our quantum
     		if (kthread_should_stop()) 
@@ -137,13 +152,13 @@ IoMesgId mesgid = eNOP;
 
         //Let's confirm that we maintain processor affinity after releasing our quantum
        	cur_cpu = get_cpu();
-       	if (cur_cpu != bindcpu) //Should not happen after initial check above
-            {PWARN("MBDT... cur_cpu(%d) != bindcpu-devnum(%d)\n",
+       	if (cur_cpu != pmadbusobj->devnum) //Should not happen after initial check above
+            {PWARN("MBDT... cur_cpu(%d) != dev#=%d\n",
                    cur_cpu, (int)pmadbusobj->devnum);}
         }
 
-    PINFO("madbus_dev_thread exiting... pmadbusobj=%px dev#=%d\n",
-    	  pmadbusobj, (int)pmadbusobj->devnum);
+    PINFO("madbus_dev_thread exiting... dev#=%d pmadbusobj=%px\n",
+    	 (int)pmadbusobj->devnum, pmadbusobj);
 
     //Falling through and returning 0 is sufficient
     //exit_kthread(pmadbusobj->pThread);
@@ -151,127 +166,143 @@ IoMesgId mesgid = eNOP;
     return 0;
 }
 
-//Detemine what Io has been programmed and  needs to be completed in this device thread
-static IoMesgId mbdt_get_programmed_iotype(PMADREGS pMadDevRegs)
+static inline IoType mbdt_get_programmed_iotype_worker(PMADREGS pMadDevRegs)
 {
-static u32 dev_iotag = 0;
-static U32 MAD_GO_BITS = (MAD_CONTROL_DMA_GO_BIT | MAD_CONTROL_BUFRD_GO_BIT);
-
-IoMesgId mesgid = eNOP;
 u32 IntEnable = pMadDevRegs->IntEnable;
 
-    if (pMadDevRegs->IntID != 0) //an i/o is in progress
-        {return mesgid;}
-        
-    if (IntEnable == 0) //No i/o is programmed
-        {return mesgid;}
-
-    if ((pMadDevRegs->Control & MAD_GO_BITS) == 0) //No i/o is programmed
-        {return mesgid;}
-        
-    if (dev_iotag != pMadDevRegs->IoTag)
-        {
-        PERR("mbdt_get_progammed_iotype... sequence error; expected=%ld device=%ld\n",
-             dev_iotag, pMadDevRegs->IoTag); 
-        BUG_ON(dev_iotag != pMadDevRegs->IoTag);
-        }
-
     if ((IntEnable & MAD_INT_DMA_OUTPUT_BIT) != 0)
-        {mesgid = eDmaWrite;}    
+        {return eDmaWrite;}    
 
     if ((IntEnable & MAD_INT_DMA_INPUT_BIT) != 0)
-        {mesgid = eDmaRead;}    
+        {return eDmaRead;}    
 
     if ((IntEnable & MAD_INT_ALIGN_OUTPUT_BIT) != 0)
-        {mesgid = eAlignWrCache;}    
+        {return eAlignWrCache;}    
 
     if ((IntEnable & MAD_INT_ALIGN_INPUT_BIT) != 0)
-        {mesgid = eAlignRdCache;}    
+        {return eAlignRdCache;}    
 
     if ((IntEnable & MAD_INT_BUFRD_OUTPUT_BIT) != 0)
         {
         if ((pMadDevRegs->Control & MAD_CONTROL_CACHE_XFER_BIT) != 0)
-            {mesgid = eFlushWrCache;} 
+            {return eFlushWrCache;} 
         else
-            {mesgid = eBufrdWr;}    
+            {return eBufrdWr;}    
         }     
 
     if ((IntEnable & MAD_INT_BUFRD_INPUT_BIT) != 0)
         {
         if ((pMadDevRegs->Control & MAD_CONTROL_CACHE_XFER_BIT) != 0)
-            {mesgid = eLoadRdCache;} 
+            {return eLoadRdCache;} 
         else
-            {mesgid = eBufrdRd;}    
+            {return eBufrdRd;}    
         }     
 
-    if (mesgid != eNOP)
+    return eNOP;
+}
+
+//Detemine what Io has been programmed and  needs to be completed in this device thread
+static IoType mbdt_get_programmed_iotype(PMADREGS pMadDevRegs)
+{
+static u32 dev_iotag = 0;
+static U32 MAD_GO_BITS = (MAD_CONTROL_DMA_GO_BIT | MAD_CONTROL_BUFRD_GO_BIT);
+//
+IoType iotype = eNOP;
+u32 IntEnable = pMadDevRegs->IntEnable;
+
+    if (IntEnable == 0) //No i/o is programmed
+        {return iotype;}
+
+    if ((pMadDevRegs->Control & MAD_GO_BITS) == 0) //No i/o is programmed
+        {return iotype;}
+
+    if (pMadDevRegs->IntID != 0) //an i/o is in progress
+        {return iotype;}
+        
+    if (dev_iotag != pMadDevRegs->IoTag)
+        {
+        PERR("mbdt_get_progammed_iotype... dev#=%ld sequence error; expected=x%lX device=x%lX\n",
+             (long int)pMadDevRegs->Devnum, (long int)dev_iotag, (long int)pMadDevRegs->IoTag); 
+        BUG_ON(dev_iotag != pMadDevRegs->IoTag);
+        }
+
+    iotype = mbdt_get_programmed_iotype_worker(pMadDevRegs);
+    if (iotype != eNOP)
         {dev_iotag++;}
 
-    return mesgid;
+    return iotype;
 }            
 
-static void mbdt_process_io(PMADBUSOBJ pmadbusobj)
+static void mbdt_process_io(PMADBUSOBJ pmadbusobj, IoType iotype)
 {
 	PMADREGS pmaddev = pmadbusobj->pmaddevice;
-	u32      IoType  = pmaddev->MesgID;
+    u32 msidx = 0; //default to legacy-int
+    U8 bMSI = pmadbusobj->pcidev.msi_cap;
 
-	PINFO("mbdthread%d:mbdt_process_io... IoType=%d IntEnable=x%X IntID=x%X\n",
-	   	  (int)pmadbusobj->devnum, (int)IoType, pmaddev->IntEnable, pmaddev->IntID);
+    if (bMSI)
+        {  
+        // Our dumb device assigns msidx's in round-robin fashion
+        msidx = (pmaddev->IoTag % 8) + 1; //0..7 --> 1..8  
+        }
+
+    //{msidx = pmaddevice->MesgID - 1;}
+	PINFO("mbdthread:mbdt_process_io... dev#=%ld iotype=%d IntEnable=x%lX msidx=%d\n",
+	   	  (long int)pmadbusobj->devnum, iotype,
+          (long unsigned int)pmaddev->IntEnable, (int)msidx);
 
     ASSERT((int)(pmaddev->IntEnable != 0));
 
-    switch (IoType)
+    switch (iotype)
         {
         case eBufrdRd: 
-            mbdt_process_bufrd_io(pmadbusobj, false);
+            mbdt_process_bufrd_io(pmadbusobj, false, msidx);
             break;
 
         case eBufrdWr: 
-            mbdt_process_bufrd_io(pmadbusobj, true);
+            mbdt_process_bufrd_io(pmadbusobj, true, msidx);
             break;
 
         case eLoadRdCache: 
-            mbdt_process_cache_io(pmadbusobj, false);
+            mbdt_process_cache_io(pmadbusobj, false, msidx);
             break;
 
         case eFlushWrCache:
-            mbdt_process_cache_io(pmadbusobj, true);
+            mbdt_process_cache_io(pmadbusobj, true, msidx);
             break;
 
         case eAlignRdCache: 
-            mbdt_process_align_cache(pmadbusobj, false);
+            mbdt_process_align_cache(pmadbusobj, false, msidx);
             break;
 
         case eAlignWrCache: 
-            mbdt_process_align_cache(pmadbusobj, true);
+            mbdt_process_align_cache(pmadbusobj, true, msidx);
             break;
 
         case eDmaRead: 
-            mbdt_process_dma_io(pmadbusobj, false);
+            mbdt_process_dma_io(pmadbusobj, false, msidx);
             break;
 
         case eDmaWrite: 
-            mbdt_process_dma_io(pmadbusobj, true);
+            mbdt_process_dma_io(pmadbusobj, true, msidx);
             break;
 
         default:
             PWARN("madbus_dev_thread:mbdt_complete_simulated_io... dev#=%d invalid iotype=%d\n",
-                  (int)pmadbusobj->devnum), IoType;
+                  (int)pmadbusobj->devnum, iotype);
         }
 
-	//pmadbusobj->pmaddevice->MesgID = 0; //So as not to repeat the i/o
-	return;
+    return;
 }
 
 //This function transfers data between the host and the 'device'
 //and updates the appropriate index register
 //Then it invokes the target device driver's Interrupt Service Routine
 //
-static void mbdt_process_bufrd_io(PMADBUSOBJ pmadbusobj, bool bWrite)
+void mbdt_process_bufrd_io(PMADBUSOBJ pmadbusobj, bool bWrite, u32 msidx)
 {
    	PMAD_SIMULATOR_PARMS pSimParms = &pmadbusobj->SimParms;
 	PMADREGS pmaddevice = pmadbusobj->pmaddevice;
-    U8       bMSI = pmadbusobj->pcidev.msi_cap;
+    //U8       bMSI = pmadbusobj->pcidev.msi_cap;
     U32      CountBits =
              ((pmaddevice->Control & MAD_CONTROL_IO_COUNT_MASK) >> MAD_CONTROL_IO_COUNT_SHIFT);
     U8       UnitSzB = ((pmaddevice->Control & MAD_CONTROL_IOSIZE_BYTES_BIT) != 0);      
@@ -279,15 +310,15 @@ static void mbdt_process_bufrd_io(PMADBUSOBJ pmadbusobj, bool bWrite)
     U32      IoCount = (CountBits + 1) * UnitSize;
     //
 	irqreturn_t  isr_rc;
-    U32      msidx = 0;
 
-    PINFO("mbdt_process_bufrd_io... \ndev#=%d CountBits=x%X IoSzf=x%X UnitSz=%ld IoCount=%ld RdIndx=%ld WrIndx=%ld\n",
-          pmadbusobj->devnum, CountBits, UnitSzB, UnitSize, IoCount,
-          pmaddevice->ByteIndxRd, pmaddevice->ByteIndxWr);
+    PINFO("mbdt_process_bufrd_io... \ndev#=%ld CountBits=x%lX IoSzize=%ld UnitSz=%ld IoCount=%ld RdIndx=%ld WrIndx=%ld\n",
+          (long int)pmadbusobj->devnum, CountBits, (long int)UnitSzB, (long int)UnitSize, (long int)IoCount,
+          (long int)pmaddevice->ByteIndxRd, (long int)pmaddevice->ByteIndxWr);
 
     ASSERT((int)((pmaddevice->Control & MAD_CONTROL_CACHE_XFER_BIT) == 0));
-    if (bMSI)
-        {msidx = pmaddevice->MesgID - 1;}
+    //if (bMSI)
+    //    {msidx = pmaddevice->MesgID - 1;}
+    pmaddevice->MesgID = msidx;
 
     //Acquire the target device driver's device spinlock before changing the device state
 	//spin_lock(pSimParms->pdevlock);
@@ -308,7 +339,7 @@ static void mbdt_process_bufrd_io(PMADBUSOBJ pmadbusobj, bool bWrite)
     //Release the target device driver's device spinlock 
 	//spin_unlock(pSimParms->pdevlock);
 
-Invoke_ISR:;
+//Invoke_ISR:;
     //PDEBUG("madbus_dev_thread:mbdt_process_bufrd_io... dev#=%d pmaddev=%px msidx=%d isrfn=%px iocount=%ld\n",
     //       (int)pmadbusobj->devnum, pmaddevice, msidx, pmadbusobj->isrfn[msidx], IoCount);
 
@@ -325,23 +356,21 @@ Invoke_ISR:;
 //and updates the appropriate index register
 //Then it invokes the target device driver's Interrupt Service Routine
 //
-static void mbdt_process_cache_io(PMADBUSOBJ pmadbusobj, bool write)
+void mbdt_process_cache_io(PMADBUSOBJ pmadbusobj, bool write, u32 msidx)
 {
 	PMADREGS pmaddevice = pmadbusobj->pmaddevice;
 	U8*      pDevData   = ((u8*)pmaddevice + MAD_DEVICE_DATA_OFFSET);
 	U8*      pCacheData = (u8*)pmaddevice;
 	PMAD_SIMULATOR_PARMS pSimParms = &pmadbusobj->SimParms;
-    U8       bMSI = pmadbusobj->pcidev.msi_cap;
     //
     irqreturn_t  isr_rc;
-    U32      msidx = 0;
 
     //BUG_ON(!(virt_addr_valid(pHostData)));
 
     //We know that the block-io driver has six MSI-ISRs
     //MesgID 3..8 --> ISR[0..5] ... we just know
-    if (bMSI)
-        {msidx = pmaddevice->MesgID - 3;}
+    //if (bMSI)
+    //    {msidx = pmaddevice->MesgID - 3;}
 
     //Acquire the target device driver's device spinlock before changing
     //the device state
@@ -393,7 +422,7 @@ static void mbdt_process_cache_io(PMADBUSOBJ pmadbusobj, bool write)
     //Release the target device driver's device spinlock 
 	//spin_unlock(pSimParms->pdevlock);
 
-Invoke_ISR:; 
+//Invoke_ISR:; 
     //Call the device driver's ISR
     isr_rc = pmadbusobj->isrfn[msidx](pmadbusobj->irq[msidx], pSimParms->pmaddevobj);
 	if (isr_rc != IRQ_HANDLED)
@@ -407,23 +436,21 @@ Invoke_ISR:;
 //the appropriate index register
 //Then it invokes the target device driver's Interrupt Service Routine
 //
-static void mbdt_process_align_cache(PMADBUSOBJ pmadbusobj, bool bWrite)
+void mbdt_process_align_cache(PMADBUSOBJ pmadbusobj, bool bWrite, u32 msidx)
 {
 	PMADREGS pmaddevice = pmadbusobj->pmaddevice;
 	U8*      pDevData = ((u8*)pmaddevice + MAD_DEVICE_DATA_OFFSET);
 	u32      OffsetBits = 
              (pmaddevice->Control & MAD_CONTROL_IO_OFFSET_MASK);
 	PMAD_SIMULATOR_PARMS pSimParms = &pmadbusobj->SimParms;
-    U8       bMSI = pmadbusobj->pcidev.msi_cap;
 	//
-    U32      msidx = 0;
 	u32          AlignVal;
 	irqreturn_t  isr_rc;
 
     //We know that the block-io driver has six MSI-ISRs
     //MesgID 3..8 --> ISR[0..5] ... we just know
-    if (bMSI)
-        {msidx = pmaddevice->MesgID - 3;}
+    //if (bMSI)
+    //    {msidx = pmaddevice->MesgID - 3;}
 
 	if (bWrite)
         {pDevData += (pmaddevice->CacheIndxWr * MAD_CACHE_SIZE_BYTES);}
@@ -466,7 +493,7 @@ static void mbdt_process_align_cache(PMADBUSOBJ pmadbusobj, bool bWrite)
 
 //This function implements one DMA-Io
 //
-static void mbdt_process_dma_io(PMADBUSOBJ pmadbusobj, bool bWrite)
+void mbdt_process_dma_io(PMADBUSOBJ pmadbusobj, bool bWrite, u32 msidx)
 {
     PMAD_SIMULATOR_PARMS pSimParms = &pmadbusobj->SimParms;
 	PMADREGS pmaddevice = pmadbusobj->pmaddevice;
@@ -475,16 +502,16 @@ static void mbdt_process_dma_io(PMADBUSOBJ pmadbusobj, bool bWrite)
     U8       bSGDMA = ((ControlReg & MAD_CONTROL_CHAINED_DMA_BIT) != 0);
     U32      CountBits =
              ((pmaddevice->Control & MAD_CONTROL_IO_COUNT_MASK) >> MAD_CONTROL_IO_COUNT_SHIFT);
-    U32      UnitSize = MAD_SECTOR_SIZE;
+    //U32      UnitSize = MAD_SECTOR_SIZE;
 	//
-    U32      msidx = 0;
+    //U32      msidx = 0;
 	irqreturn_t  isr_rc;
 
     //We know that the block-io driver has six MSI-ISRs
     //MesgID 3..8 --> ISR[0..5] ... we just know
     //
-    if (pmadbusobj->pcidev.msi_cap != 0)
-        {msidx = pmaddevice->MesgID - 3;}
+    //if (pmadbusobj->pcidev.msi_cap != 0)
+    //    {msidx = pmaddevice->MesgID - 3;}
  
     //Acquire the target device driver's device spinlock before changing
     //the device state
@@ -511,7 +538,7 @@ static void mbdt_process_dma_io(PMADBUSOBJ pmadbusobj, bool bWrite)
             }
         }
 
-Invoke_ISR:; 
+//Invoke_ISR:; 
     //PDEBUG("madbus_dev_thread:mbdt_processs_dma_io... dev#=%d IntID=x%X\n",
     //     (int)pmadbusobj->devnum, pmaddevice->IntID);
     //Release the target device driver's device spinlock 
@@ -526,81 +553,11 @@ Invoke_ISR:;
     return;
 }
 
-#if 0
-// This function implements one Scatter-Gather DMA-Io
-// This 'DMA controller' is modelled on the Tundra Universe-II DMA controller
-// It processes a simple linked-list of physical addresses
-// where the root address comes from a register in the device
-//
-void mbdt_process_sgdma(PMADREGS pmaddevice, bool bWrite)
-{
-    u8*      pDevData = ((u8*)pmaddevice + MAD_DEVICE_DATA_OFFSET);
-    U32        CDPP  = pmaddevice->BCDPP; //Chained-DMA Base Pkt Pntr
-    //
-    struct page* pPgStrDma;
-    struct page* pPgStrHost;
-    PMAD_DMA_CHAIN_ELEMENT  pDmaRootPktPntr = Get_KVA(CDPP, &pPgStrDma);
-    PMAD_DMA_CHAIN_ELEMENT  pDmaPktPntr = pDmaRootPktPntr;
-    U8*        pHostSgBufr;
-    U8*        pDeviceLoc;
-    U32        DXBC; //Data Xfer Byte Count
-    U32        TotlXferLen = 0;
-    U32        ChainLen = 0;
-
-    ASSERT((int)(pDmaRootPktPntr != NULL));
-
-    while (CDPP != MAD_DMA_CDPP_END)
-        {
-		if (pDmaPktPntr == NULL) 
-		    {break;} 
-
-        DXBC = pDmaPktPntr->DXBC;
-        pHostSgBufr = Get_KVA(pDmaPktPntr->HostAddr, &pPgStrHost);
-        BUG_ON(!(virt_addr_valid(pHostSgBufr)));
-        pDeviceLoc = (pDevData + pDmaPktPntr->DevLoclAddr);
-        //
-        if (pDmaPktPntr->DmaCntl & MAD_DMA_CNTL_H2D) //Host-->Device
-            { //Write
-            ASSERT((int)(bWrite == 1));
-            memcpy(pDeviceLoc, pHostSgBufr, DXBC); 
-            }
-        else 
-            { //Read
-            ASSERT((int)(bWrite == 0));
-            memcpy(pHostSgBufr, pDeviceLoc, DXBC); 
-            }
-		//
-        if (pPgStrHost != NULL)
-            kunmap(pPgStrHost);
-
-        TotlXferLen += DXBC;
-		ChainLen++;
-
-        //Get next hardware scatter-gather element physical address
-        CDPP = pDmaPktPntr->CDPP; 
-        
-        //We know that the linked-list of dma pkt pntrs is a packed array...we just know
-        //We need to accomodate the fact that phys-addr CDPPs won't be page aligned
-        // after the 1st one - so we just jump to the next array element
-        //    
-        pDmaPktPntr++;
-        } //end while
-
-    if (pPgStrDma != NULL)
-        kunmap(pPgStrDma);
-
-    pmaddevice->DTBC = TotlXferLen; //Store the final total in the base DTBC
-
-    return;
-}
-#endif
-
 //This function completes one i/o for the implements one device i/o indicated by the non-zero value
 //in the mesg id register (implemented as part of the device)
 void madsim_complete_simulated_io(void* vpmadbusobj, PMADREGS pmadregs)
 {
     PMADBUSOBJ pmadbusobj = (PMADBUSOBJ)vpmadbusobj;
-	u32        IoType    = pmadregs->MesgID;
     u8*        pDevData  = 
                ((u8*)pmadbusobj->pmaddevice + MAD_DEVICE_DATA_OFFSET);
     U8*        pDeviceLoc = (pDevData + pmadregs->DevLoclAddr);
@@ -611,9 +568,8 @@ void madsim_complete_simulated_io(void* vpmadbusobj, PMADREGS pmadregs)
     U32        UnitSize = (UnitSzB) ? MAD_UNITIO_SIZE_BYTES : MAD_SECTOR_SIZE;
     U32        IoCount = (CountBits + 1) * UnitSize;
     bool       bSGDMA = ((pmadregs->Control & MAD_CONTROL_CHAINED_DMA_BIT) != 0);
-
-	//PINFO("madsim_complete_simulated_io... dev#=%d IoType=%d IntID=x%X Control=x%X\n",
-	//   	  (int)pmadbusobj->devnum, (int)IoType, pmadregs->IntID, pmadregs->Control); 
+	IoType     iotype = mbdt_get_programmed_iotype_worker(pmadregs);
+ 
     ASSERT((int)(pmadregs->IntID != 0));
     ASSERT((int)(pmadregs->IntEnable != 0));
 
@@ -623,12 +579,12 @@ void madsim_complete_simulated_io(void* vpmadbusobj, PMADREGS pmadregs)
         return;
         }
 
-    //PINFO("madsim_complete_simulated_io... IoCount=%ld RdIndx=%ld WrIndx=%ld\n",
-    //      IoCount, pIsrState->ByteIndxRd, pIsrState->ByteIndxWr);
+    PINFO("madsim_complete_simulated_io... dev#=%d iotype=%d\n",
+          (int)pmadbusobj->devnum, iotype);
 
     BUG_ON(!(virt_addr_valid(pHostData)));
 
-	switch (IoType)
+	switch (iotype)
 	    {
         case eBufrdRd: 
             //back up the index register because it has been advanced
@@ -652,7 +608,7 @@ void madsim_complete_simulated_io(void* vpmadbusobj, PMADREGS pmadregs)
 	    case eAlignRdCache: 
 	    case eAlignWrCache: 
             PINFO("madsim_complete_simulated_io... dev#=%d cache op: iotype=%d\n",
-                  (int)pmadregs->Devnum, IoType);
+                  (int)pmadregs->Devnum, iotype);
             break;
 
         case eDmaRead: 
@@ -669,23 +625,23 @@ void madsim_complete_simulated_io(void* vpmadbusobj, PMADREGS pmadregs)
 
         default:
 	        PERR("madddev_complete_simulated_io... dev#=%d invalid iotype=%d\n",
-    		     (int)pmadbusobj->devnum, IoType);
+    		     (int)pmadbusobj->devnum, iotype);
 	    }
 
-    PINFO("madsim_complete_simulated_io...\n          dev#=%d IoType=%d IntID=x%X Control=x%X HostPA=x%llX DevLoclAddr=x%lX iocount=%ld\n",
-          (int)pmadbusobj->devnum, (int)IoType, pmadregs->IntID, pmadregs->Control,
-          pmadregs->HostPA, pmadregs->DevLoclAddr, IoCount);
+    PINFO("madsim_complete_simulated_io...\n          dev#=%d IoType=%d IntID=x%lX Control=x%lX HostPA=x%llX DevLoclAddr=x%llX iocount=%ld\n",
+          (int)pmadbusobj->devnum, iotype, pmadregs->IntID, pmadregs->Control,
+          pmadregs->HostPA, pmadregs->DevLoclAddr, (long int)IoCount);
 
     return;
 }
 
-static void madsim_complete_simulated_sgdma(PMADBUSOBJ pmadbusobj, PMADREGS pmadregs)
+void madsim_complete_simulated_sgdma(PMADBUSOBJ pmadbusobj, PMADREGS pmadregs)
 {
     U64        BCDPP     = pmadregs->BCDPP;
     PMAD_DMA_CHAIN_ELEMENT pSgDmaElement = 
                            (PMAD_DMA_CHAIN_ELEMENT)phys_to_virt(BCDPP);
     //
-    U64        CDPP;
+    //U64        CDPP;
     U32        IoCount = 0;
     U32        num_elems = 1;
 
@@ -702,15 +658,15 @@ static void madsim_complete_simulated_sgdma(PMADBUSOBJ pmadbusobj, PMADREGS pmad
 
     pmadbusobj->pmaddevice->DTBC = IoCount;
 
-    PDEBUG("madsim_complete_simulated_sgdma... dev#=%d num_elems=%d iocount=%ld\n",
-           (int)pmadbusobj->devnum, num_elems, IoCount);
+    PDEBUG("madsim_complete_simulated_sgdma... dev#=%d num_elems=%ld iocount=%ld\n",
+           (int)pmadbusobj->devnum, (long int)num_elems, (long int)IoCount);
     return;
 }
 
-static void madsim_complete_xfer_one_dma_element(PMADBUSOBJ pmadbusobj, 
-                                                 PMAD_DMA_CHAIN_ELEMENT pSgDmaElement)
+void madsim_complete_xfer_one_dma_element(PMADBUSOBJ pmadbusobj, 
+                                          PMAD_DMA_CHAIN_ELEMENT pSgDmaElement)
 {
-    u8*        pDevData  = 
+    u8*        pDevData = 
                ((u8*)pmadbusobj->pmaddevice + MAD_DEVICE_DATA_OFFSET);
     U8*        pDeviceLoc = (pDevData + pSgDmaElement->DevLoclAddr);
     U8*        pHostData = phys_to_virt(pSgDmaElement->HostAddr);
@@ -719,6 +675,7 @@ static void madsim_complete_xfer_one_dma_element(PMADBUSOBJ pmadbusobj,
     BUG_ON(!(virt_addr_valid(pHostData)));
     BUG_ON(!(virt_addr_valid(pDeviceLoc)));
     BUG_ON(!((pSgDmaElement->DevLoclAddr % MAD_SECTOR_SIZE) == 0));
+    //
     ASSERT((int)(pSgDmaElement->DXBC != 0));
     ASSERT((int)((pSgDmaElement->DXBC % MAD_SECTOR_SIZE) == 0));
 
@@ -727,4 +684,5 @@ static void madsim_complete_xfer_one_dma_element(PMADBUSOBJ pmadbusobj,
     else
         {memcpy(pHostData, pDeviceLoc, pSgDmaElement->DXBC);}
 }
+
 

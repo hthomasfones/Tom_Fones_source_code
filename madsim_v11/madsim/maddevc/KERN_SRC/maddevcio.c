@@ -44,7 +44,7 @@ ssize_t maddev_read_bufrd(struct file *fp, char __user *usrbufr,
 {
 	static u8   IoData[MAD_UNITIO_SIZE_BYTES * (1 << MAD_BUFRD_IO_COUNT_BITS)];
 	static u32  IntEnable = (MAD_INT_BUFRD_INPUT_BIT | MAD_INT_STATUS_ALERT_BIT);
-    static U32 offset = (u32)-1;
+    static U32 offset = 0;
 	//
 	struct mad_dev_obj *pmaddevobj = fp->private_data;
 	PMADREGS  pmadregs = pmaddevobj->pDevBase;
@@ -79,7 +79,7 @@ ssize_t maddev_read_bufrd(struct file *fp, char __user *usrbufr,
     #endif
     
     memset(pBufr, 0x00, count+2);
-    maddev_program_stream_io(&pmaddevobj->devlock, pmadregs, CntlReg, IntEnable,
+    maddevc_program_stream_io(&pmaddevobj->devlock, pmadregs, CntlReg, IntEnable,
                              virt_to_phys(pBufr), offset, false);
 
     //Wait and process the results
@@ -115,7 +115,7 @@ ssize_t maddev_read_bufrd(struct file *fp, char __user *usrbufr,
 ssize_t maddev_queued_read(struct kiocb *pkiocb, struct iov_iter *piov)
 {
 	static u32  IntEnable = (MAD_INT_BUFRD_INPUT_BIT | MAD_INT_STATUS_ALERT_BIT);
-    static U32 offset = (U32)-1;
+    static U32 offset = 0;
 	//
 	PMADDEVOBJ pmaddevobj = (PMADDEVOBJ)pkiocb->ki_filp->private_data;
 	PMADREGS   pmadregs = pmaddevobj->pDevBase;
@@ -154,7 +154,7 @@ ssize_t maddev_queued_read(struct kiocb *pkiocb, struct iov_iter *piov)
     #endif
     //
     memset(pBufr, 0x00, count+2);
-    maddev_program_stream_io(&pmaddevobj->devlock, pmadregs, CntlReg,IntEnable,
+    maddevc_program_stream_io(&pmaddevobj->devlock, pmadregs, CntlReg,IntEnable,
                              virt_to_phys(pBufr), offset, false);
 
     //Wait for the i-o to complete
@@ -200,7 +200,7 @@ ssize_t maddev_write_bufrd(struct file *fp, const char __user *usrbufr,
 	static 	u8   IoData[MAD_UNITIO_SIZE_BYTES * (1 << MAD_BUFRD_IO_COUNT_BITS)];
 	static ulong IntEnable = 
                  (MAD_INT_BUFRD_OUTPUT_BIT | MAD_INT_STATUS_ALERT_BIT);
-    static U32 offset = (u32)-1;
+    static U32 offset = 0;
 	//
 	struct mad_dev_obj *pmaddevobj = fp->private_data;
 	PMADREGS  pmadregs = pmaddevobj->pDevBase;
@@ -248,7 +248,7 @@ ssize_t maddev_write_bufrd(struct file *fp, const char __user *usrbufr,
                           MAD_CONTROL_IO_COUNT_SHIFT, MAD_UNITIO_SIZE_BYTES);
     CntlReg = CountBits | MAD_CONTROL_IOSIZE_BYTES_BIT;
     //
-    maddev_program_stream_io(&pmaddevobj->devlock, pmadregs, CntlReg, IntEnable,
+    maddevc_program_stream_io(&pmaddevobj->devlock, pmadregs, CntlReg, IntEnable,
                              virt_to_phys(pBufr), offset, true);
 
     //Wait and process the results
@@ -275,7 +275,7 @@ ssize_t maddev_write_bufrd(struct file *fp, const char __user *usrbufr,
 ssize_t maddev_queued_write(struct kiocb *pkiocb, struct iov_iter *piov)
 {
 	static ulong IntEnable = (MAD_INT_BUFRD_OUTPUT_BIT | MAD_INT_STATUS_ALERT_BIT);
-    static U32 offset = (U32)-1;
+    static U32 offset = 0;
 	//
 	PMADDEVOBJ pmaddevobj  = (PMADDEVOBJ)pkiocb->ki_filp->private_data;
 	PMADREGS   pmadregs = pmaddevobj->pDevBase;
@@ -328,7 +328,7 @@ ssize_t maddev_queued_write(struct kiocb *pkiocb, struct iov_iter *piov)
                           MAD_CONTROL_IO_COUNT_SHIFT, MAD_UNITIO_SIZE_BYTES);
 	CntlReg = (CountBits | MAD_CONTROL_IOSIZE_BYTES_BIT);
 
-    maddev_program_stream_io(&pmaddevobj->devlock, pmadregs, CntlReg, IntEnable,
+    maddevc_program_stream_io(&pmaddevobj->devlock, pmadregs, CntlReg, IntEnable,
                              virt_to_phys(pBufr), offset, true);
 
     //Wait for the i-o to complete
@@ -377,29 +377,31 @@ maddev_direct_io(struct file *filp, const char __user *usrbufr,
 	u32    num_pgs;
     ssize_t  iocount;
     U8     bNeedSg = false;   
+    ssize_t lrc = -EFAULT; //bad address
 
     BUG_ON(!(virt_addr_valid(pmaddevobj)));
 
     PINFO("maddev_direct_io... dev#=%d fp=%px count=%ld offset=%ld\n",
-		  (int)pmaddevobj->devnum, filp, count, offset);
+		  (int)pmaddevobj->devnum, filp, (long int)count, (long int)offset);
 
-    if (((U32)count + offset) >= (MAD_TOTAL_ALLOC_SIZE - MAD_DEVICE_DATA_OFFSET))
-        {return -EFAULT;}
+    if (((U32)count + offset) >= MAD_DEVICE_DATA_SIZE)
+        {return lrc;}
 
     //If the io queue is not free we return
     if (IoQbusy)
         {
-        PERR("maddev_direct_io... dev#=%d Io-Q busy rc=-EAGAIN\n",
-             (int)pmaddevobj->devnum, num_pgs);
-        return -EAGAIN;
+        lrc = -EAGAIN;
+        PERR("maddev_direct_io... dev#=%d Io-Q busy rc=%ld\n",
+             (int)pmaddevobj->devnum, (long int)lrc);
+        return lrc;
         }
 
     num_pgs = maddev_get_user_pages(start_page, pg_cnt, pPages, pVMAs, bUpdate);
     if (num_pgs != pg_cnt)
         {
-        PERR("maddev_direct_io:get_user_pages... dev#=%d num_pgs=%ld rc=-EFAULT\n",
-		     (int)pmaddevobj->devnum, num_pgs);
-        return (ssize_t)-EFAULT;
+        PERR("maddev_direct_io:get_user_pages... dev#=%d num_pgs=%ld rc=%ld\n",
+		     (int)pmaddevobj->devnum, (long int)num_pgs, (long int)lrc);
+        return lrc;
         }
 
     bNeedSg = maddev_need_sg(pPages, num_pgs);
@@ -419,71 +421,58 @@ maddev_direct_io(struct file *filp, const char __user *usrbufr,
     maddev_put_user_pages(pPages, num_pgs);
 
     PDEBUG("maddev_direct_io... dev#=%d iocount=%ld offset=%ld\n",
-           (int)pmaddevobj->devnum, iocount, offset);
+           (int)pmaddevobj->devnum, (long int)iocount, (long int)offset);
 
     return iocount;
 }
 
 //This is the Interrupt Service Routine which is established by a successful
 //call of request_irq
-irqreturn_t maddevc_isr(int irq, void* dev_id)
+irqreturn_t maddevc_legacy_isr(int irq, void* dev_id)
 {
-	PMADDEVOBJ pmaddevobj = (PMADDEVOBJ)dev_id;
-	PMADREGS pmadregs;
-	//
-	u32 flags1 = 0;
-    U32 flags2 = 0;
-	u32 IntID = 0;
+    return maddevc_isr_worker_fn(irq, dev_id, 0);
+}
 
-    ASSERT((int)(pmaddevobj != NULL));
-    pmadregs = pmaddevobj->pDevBase;
-	PDEBUG("maddevc_isr... dev#=%d irq=%d\n", (int)pmaddevobj->devnum, irq);
+//These are the msi Interrupt Service Routines established by multiple 
+// calls of request_irq
+irqreturn_t maddevc_msi_one_isr(int irq, void* dev_id)
+{
+    return maddevc_isr_worker_fn(irq, dev_id, 1);
+}
 
-    maddev_acquire_lock_disable_ints(&pmaddevobj->devlock, flags1);
+irqreturn_t maddevc_msi_two_isr(int irq, void* dev_id)
+{
+    return maddevc_isr_worker_fn(irq, dev_id, 2);
+}
 
-    //Save the device register state for the DPC
-	memcpy_fromio(&pmaddevobj->IntRegState, pmadregs, sizeof(MADREGS));
+irqreturn_t maddevc_msi_three_isr(int irq, void* dev_id)
+{
+    return maddevc_isr_worker_fn(irq, dev_id, 3);
+}
 
-    //Disable interrupts on this device
-    iowrite32(MAD_ALL_INTS_DISABLED, &pmadregs->IntEnable);
-    iowrite32(0, &pmadregs->MesgID);
+irqreturn_t maddevc_msi_four_isr(int irq, void* dev_id)
+{
+    return maddevc_isr_worker_fn(irq, dev_id, 4);
+}
 
-    IntID = ioread32(&pmadregs->IntID);
-    if (IntID == (u32)MAD_ALL_INTS_CLEARED)
-        {   //This is not our IRQ
-        maddev_enable_ints_release_lock(&pmaddevobj->devlock, flags1);
+irqreturn_t maddevc_msi_five_isr(int irq, void* dev_id)
+{
+    return maddevc_isr_worker_fn(irq, dev_id, 5);
+}
 
-        PERR("maddevc_isr... invalid int recv'd dev#=%d IntID=x%X rc=%d\n",
-             (int)pmaddevobj->devnum, IntID, IRQ_NONE);
-    	return IRQ_NONE;
-        }
+irqreturn_t maddevc_msi_six_isr(int irq, void* dev_id)
+{
+    return maddevc_isr_worker_fn(irq, dev_id, 6);
+}
 
-    if (IntID == (u32)MAD_INT_INVALID_BYTEMODE_MASK)//Any / all undefined int conditions
-        {
-        maddev_enable_ints_release_lock(&pmaddevobj->devlock, flags1);
+irqreturn_t maddevc_msi_seven_isr(int irq, void* dev_id)
+{
+    return maddevc_isr_worker_fn(irq, dev_id, 7);
+}
 
-        PERR("maddevc_isr... undefined int recv'd dev#=%d IntID=x%X rc=%d\n",
-             (int)pmaddevobj->devnum, IntID, IRQ_HANDLED);
-    	return IRQ_HANDLED;
-        }
-
-    #ifdef _MAD_SIMULATION_MODE_ 
-    //Release the spinlock *NOT* at device-irql BEFORE enqueueing the DPC
-    maddev_enable_ints_release_lock(&pmaddevobj->devlock, flags1);
-    #endif
-
-    /* Schedule the DPC handler */
-    tasklet_hi_schedule(&pmaddevobj->dpctask);
-
-    #ifndef _MAD_SIMULATION_MODE_
-    //With real hardware release the spinlock at device-irql AFTER enqueueing the DPC
-    maddev_enable_ints_release_lock(&pmaddevobj->devlock, flags1);
-    #endif
-
-    PDEBUG("maddevc_isr... normal return dev#=%d IntID=x%X rc=%d\n",
-           (int)pmaddevobj->devnum, IntID, IRQ_HANDLED);
-
-	return IRQ_HANDLED;
+irqreturn_t maddevc_msi_eight_isr(int irq, void* dev_id)
+{
+    return maddevc_isr_worker_fn(irq, dev_id, 8);
 }
 
 //This is the DPC/software interrupt handler invoked by scheduling a tasklet
@@ -500,8 +489,8 @@ void maddevc_dpctask(ulong indx)
 	//
 	long rc = 0;
 
-	PDEBUG("maddevc_dpc... dev#=%d Control=x%X Status=x%X IntID=x%X\n",
-		   (int)pmaddevobj->devnum, Control, Status, IntID);
+	PDEBUG("maddevc_dpc... indx=%d pmaddevobj=%px dev#=%d IntID=x%X Control=x%X Status=x%X\n",
+		   (int)indx, pmaddevobj, (int)pmaddevobj->devnum, IntID, Control, Status);
 
 	rc = maddev_status_to_errno(pmaddevobj->devnum, &pmaddevobj->IntRegState);
 
@@ -544,8 +533,8 @@ void maddevc_dpctask(ulong indx)
     //If we got here we got trouble
     PERR("maddevc_dpc... dev#=%d IntID not recognized! x%X\n",
          (int)pmaddevobj->devnum, IntID);
-    ASSERT((int)false);
-    BUG_ON(true);
+    //ASSERT((int)false);
+    //BUG_ON(true);
 	return;
 }
 

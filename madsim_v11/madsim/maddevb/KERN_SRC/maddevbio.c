@@ -35,175 +35,11 @@
 
 extern struct mad_dev_obj *mad_dev_objects;
 
-static u8   IoDataRd[MAD_UNITIO_SIZE_BYTES * (1 << MAD_BUFRD_IO_COUNT_BITS)];
-static u8   IoDataWr[MAD_UNITIO_SIZE_BYTES * (1 << MAD_BUFRD_IO_COUNT_BITS)];
+//static u8   IoDataRd[MAD_UNITIO_SIZE_BYTES * (1 << MAD_BUFRD_IO_COUNT_BITS)];
+//static u8   IoDataWr[MAD_UNITIO_SIZE_BYTES * (1 << MAD_BUFRD_IO_COUNT_BITS)];
 
 //This function implements a queued read through a kernel io control block
 #if 0
-ssize_t maddev_queued_read(struct kiocb *pkiocb, struct iov_iter *piov)
-{
-	static u32  IntEnable = (MAD_INT_BUFRD_INPUT_BIT | MAD_INT_STATUS_ALERT_BIT);
-	//
-	PMADDEVOBJ pmaddevobj = (PMADDEVOBJ)pkiocb->ki_filp->private_data;
-	PMADREGS   pmadregs = pmaddevobj->pDevBase;
-    size_t     count   = piov->count;
-    u8* __user usrbufr = piov->iov->iov_base;
-    void*      pBufr = IoDataRd;
-    //
-	U32      CntlReg = 0;
-    U32      StatusReg = 0;
-	U32      CountBits = 0;
-	int      rc = 0;
-    ssize_t  rdcount;
-    size_t   remains = 0;
-
-    PNOTICE( "maddev_queued_read... devnum=%d, kiocb=%px, piov=%px, count=%d\n",
-           (int)pmaddevobj->devnum, pkiocb, piov, (int)count);
-
-    //If the read queue is not free we return
-    if (pmaddevobj->read_f != eIoReset)
-        {return -EAGAIN;}
-
-    //Acquire the semaphore for the device context
-    down(&pmaddevobj->devsem);
-
-    //Indicate the read queue is busy
-    pmaddevobj->read_f = eIoPending;
-
-    //Program the i/o
-	CountBits = maddev_set_count_bits(count, MAD_CONTROL_IO_COUNT_MASK,
-			                          MAD_CONTROL_IO_COUNT_SHIFT, MAD_UNITIO_SIZE_BYTES);
-	CntlReg = (CountBits | MAD_CONTROL_IOSIZE_BYTES_BIT);
-
-    #ifdef _MAD_SIMULATION_MODE_ 
-    //Use the kmalloc'd buffer provided by the simulator
-    pBufr = pmaddevobj->pSimParms->pInBufr;
-    ASSERT((int)(pBufr != NULL));
-    #endif
-    //
-    memset(pBufr, 0x00, count+2);
-    maddev_program_stream_io(&pmaddevobj->devlock, pmadregs, 
-                             CntlReg, IntEnable, virt_to_phys(pBufr), (U32)-1,0);
-
-    //Wait for the i-o to complete
-    rc = maddev_get_io_status((int)pmaddevobj->devnum, &pmaddevobj->read_q,
-                              &pmaddevobj->read_f, &pmaddevobj->devlock,
-                              &pmadregs->Status, &StatusReg);
-    if (rc != 0)
-        {//Release the device context semaphore and return the error code
-    	up(&pmaddevobj->devsem);
-    	return rc;
-        }
-
-    rdcount = maddev_get_io_count(StatusReg, MAD_STATUS_READ_COUNT_MASK,
-    		                      MAD_STATUS_READ_COUNT_SHIFT, MAD_UNITIO_SIZE_BYTES);
-
-    //Indicate the read queue is available
-    pmaddevobj->read_f = eIoReset;
-
-    //Release the device context semaphore
-    up(&pmaddevobj->devsem);
-
-    remains =
-    copy_to_user(usrbufr, pBufr, (u32)rdcount); //possibly paged memory 
-    if (remains > 0)
-    {
-    	PDEBUG("maddev_queued_read:copy_to_user returns (%d) bytes remaining... devnum=%d\n",
-               (int)remains, (int)pmaddevobj->devnum);
-    	return -EFAULT;
-    }
-
-    piov->count = rdcount;
-
-	PDEBUG("maddev_queued_read completes... devnum=%d, (%d)bytes\n",
-		   (int)pmaddevobj->devnum, (int)rdcount);
-
-	return rdcount;
-}
-
-//This function implements a queued write through a kernel io control block
-ssize_t maddev_queued_write(struct kiocb *pkiocb, struct iov_iter *piov)
-{
-	static ulong IntEnable = (MAD_INT_BUFRD_OUTPUT_BIT | MAD_INT_STATUS_ALERT_BIT);
-	//
-	PMADDEVOBJ pmaddevobj  = (PMADDEVOBJ)pkiocb->ki_filp->private_data;
-	PMADREGS   pmadregs = pmaddevobj->pDevBase;
-    size_t     count    = piov->count;
-	u8* __user usrbufr  = piov->iov->iov_base;
-    void*      pBufr = IoDataWr;
-	//
-	U32      CntlReg = 0;
-    U32      StatusReg = 0;
-	U32      CountBits  = 0;
-	ssize_t  remains = 0;
-    ssize_t  wrcount = 0;
-    int      rc = 0;
-
-	PNOTICE("maddev_queued_write... devnum=%d, kiocb=%px, piov=%px, count=%d, ub[1.2.3]=%c.%c.%c\n",
-		   (int)pmaddevobj->devnum, pkiocb, piov, (int)count, usrbufr[0], usrbufr[1], usrbufr[2]);
-
-    //If the write queue is not free we return
-    if (pmaddevobj->write_f != eIoReset)
-        {return -EAGAIN;}
-
-    //Xfer the data...
-    //
-    #ifdef _MAD_SIMULATION_MODE_ 
-    //Use the kmalloc'd buffer provided by the simulator
-    pBufr = pmaddevobj->pSimParms->pOutBufr;
-    ASSERT((int)(pBufr != NULL));
-    #endif
-    //
-    memset(pBufr, 0x00, count+2);
-    remains =
-	copy_from_user(pBufr, usrbufr, (u32)count); //possibly paged memory - copy outside of spinlock
-	if (remains > 0)
-	    {
-	    PDEBUG("maddev_queued_write:copy_from_user returns bytes remaining (%d), devnum=%d\n",
-               (int)remains, (int)pmaddevobj->devnum);
-	    return -EFAULT;
-	    }
-
-    //Acquire the semaphore for the device context
-    down(&pmaddevobj->devsem);
-
-    //Indicate the write queue is busy
-    pmaddevobj->write_f = eIoPending;
-
-    //Program the i/o
-	CountBits = maddev_set_count_bits(count, MAD_CONTROL_IO_COUNT_MASK,
-			                          MAD_CONTROL_IO_COUNT_SHIFT, MAD_UNITIO_SIZE_BYTES);
-	CntlReg = (CountBits | MAD_CONTROL_IOSIZE_BYTES_BIT);
-
-    maddev_program_stream_io(&pmaddevobj->devlock, pmadregs, 
-                             CntlReg, IntEnable, virt_to_phys(pBufr), (U32)-1, 1);
-
-    //Wait for the i-o to complete
-    rc = maddev_get_io_status((int)pmaddevobj->devnum, &pmaddevobj->write_q,
-                              &pmaddevobj->write_f, &pmaddevobj->devlock, 
-                              &pmadregs->Status, &StatusReg);
-    if (rc != 0)
-        {//Release the device context semaphore and return the error code
-        up(&pmaddevobj->devsem);
-        return rc;
-        }
-
-    wrcount = 
-    maddev_get_io_count(StatusReg, MAD_STATUS_WRITE_COUNT_MASK,
-                        MAD_STATUS_WRITE_COUNT_SHIFT, MAD_UNITIO_SIZE_BYTES);
-
-    //Indicate the write queue is available
-    pmaddevobj->write_f = eIoReset;
-    piov->count = wrcount;
-
-    //Release the device context semaphore
-    up(&pmaddevobj->devsem);
-
-	PDEBUG("maddev_queued_write completes... devnum=%d, (%d)bytes\n",
-		   (int)pmaddevobj->devnum, (int)wrcount);
-
-    return wrcount;
-}
 #endif
 
 //Do we have one fragmented page of sectors in various bio:bvecs ?
@@ -247,8 +83,8 @@ maddevb_collect_biovecs(struct mad_dev_obj *pmaddevobj, struct bio* pbio,
 
     ASSERT((int)(totl_sectors == nr_sectors));
 
-    PDEBUG("maddevb_collect_biovecs... dev#=%d bio=%px total_bvecs=%d, totl_sctrs=%d\n",
-           pmaddevobj->devnum, pbio, (int)totl_bvecs, (int)totl_sectors);
+    PDEBUG("maddevb_collect_biovecs... dev#=%d bio=%px total_bvecs=%d, totl_sctrs=%ld\n",
+           (int)pmaddevobj->devnum, (void *)pbio, totl_bvecs, (long int)totl_sectors);
 
     return totl_bvecs;
 }
@@ -273,16 +109,16 @@ maddevb_xfer_sgdma_bvecs(PMADDEVOBJ pmaddevobj, struct bio_vec* biovecs,
     size_t  bvlen_totl = 0;
     u32  totl_sectors = 0;
     u32 flags1 = 0; 
-    U32 flags2 = 0;
     U64    CDPP;
     long   iostat;
+    long int lrc = -EADDRNOTAVAIL;
     U32 j;
 
     if (bWr)
         {DmaCntl |= MAD_DMA_CNTL_H2D;} //Write == Host2Disk
 
-    PINFO("maddev_xfer_sgdma_bvecs... dev#=%d nr_bvecs=%d #sectors=%ld wr=%d\n",
-          (int)pmaddevobj->devnum, nr_bvecs, nr_sectors, bWr);
+    PINFO("maddev_xfer_sgdma_bvecs... dev#=%d nr_bvecs=%ld #sectors=%ld wr=%d\n",
+          (int)pmaddevobj->devnum, nr_bvecs, (long int)nr_sectors, bWr);
 
     pmaddevobj->ioctl_f = eIoPending;
 
@@ -295,13 +131,14 @@ maddevb_xfer_sgdma_bvecs(PMADDEVOBJ pmaddevobj, struct bio_vec* biovecs,
 
     for (j=1; j <= nr_bvecs; j++)
         {
-        HostPA = maddev_page_to_dma(pmaddevobj->pdevnode, 
-                                    pbiovect->bv_page, PAGE_SIZE, bWr);
+        HostPA = maddev_dma_map_page(pmaddevobj->pdevnode, 
+                                     pbiovect->bv_page, PAGE_SIZE, 0, bWr);
         if (dma_mapping_error(pmaddevobj->pdevnode, HostPA))
             {
-            PERR("maddev_xfer_sgdma_bvecs... dev#=%d returning -EADDRNOTAVAIL\n",
-                  (int)pmaddevobj->devnum);
-            return -EADDRNOTAVAIL;
+            maddev_enable_ints_release_lock(&pmaddevobj->devlock, flags1);
+            PERR("maddev_xfer_sgdma_bvecs... dev#=%d rc=%ld\n",
+                  (int)pmaddevobj->devnum, lrc);
+            return lrc;
             }
 
         HostPA += pbiovect->bv_offset;
@@ -330,7 +167,7 @@ maddevb_xfer_sgdma_bvecs(PMADDEVOBJ pmaddevobj, struct bio_vec* biovecs,
         pbiovect++;
         }
 
-    //Finally - let's go
+    //Finally - initiate the i/o
     CntlReg |= MAD_CONTROL_DMA_GO_BIT;
     iowrite32(CntlReg, &pmaddevobj->pDevBase->Control);
     //
@@ -340,7 +177,6 @@ maddevb_xfer_sgdma_bvecs(PMADDEVOBJ pmaddevobj, struct bio_vec* biovecs,
     iostat = maddev_get_io_status(pmaddevobj, &pmaddevobj->ioctl_q,
                                   &pmaddevobj->ioctl_f,
                                   &pmaddevobj->devlock);
-
     iocount = (iostat < 0) ? iostat : pmaddevobj->pDevBase->DTBC;
     if (iostat == 0)
         {
@@ -349,9 +185,15 @@ maddevb_xfer_sgdma_bvecs(PMADDEVOBJ pmaddevobj, struct bio_vec* biovecs,
         ASSERT((int)(totl_sectors == nr_sectors));
         }
 
+    for (j=0; j < nr_bvecs; j++)
+        {
+        maddev_dma_unmap_page(pmaddevobj->pdevnode, 
+                              pmaddevobj->SgDmaElements[j].HostAddr, PAGE_SIZE, bWr);
+        }
+
     PDEBUG("maddev_xfer_sgdma_bvecs... dev#=%d #bvecs=%d #sectors=%d iostat=%ld iocount=%ld\n",
            (int)pmaddevobj->devnum, (int)nr_bvecs, (int)nr_sectors,
-           (int)iostat, iocount);
+           iostat, iocount);
     pmaddevobj->ioctl_f = eIoReset;
 
     return iocount;
@@ -359,67 +201,51 @@ maddevb_xfer_sgdma_bvecs(PMADDEVOBJ pmaddevobj, struct bio_vec* biovecs,
 
 //This is the Interrupt Service Routine which is established by a successful
 //call of request_irq
-//
-irqreturn_t maddevb_isr(int irq, void* dev_id)
+irqreturn_t maddevb_legacy_isr(int irq, void* dev_id)
 {
-	PMADDEVOBJ pmaddevobj = (PMADDEVOBJ)dev_id;
-	PMADREGS pmadregs;
-	//
-	u32 flags1 = 0;
-    U32 flags2 = 0;
-	u32 IntID = 0;
+    return maddevb_isr_worker_fn(irq, dev_id, 0);
+}
 
-    ASSERT((int)(pmaddevobj != NULL));
-    pmadregs = pmaddevobj->pDevBase;
-	PDEBUG("maddevb_isr... dev#=%d pmaddevobj=%px irq=%d IntID=x%X\n",
-           (int)pmaddevobj->devnum, pmaddevobj, irq, pmadregs->IntID);
+//These are the msi Interrupt Service Routines established by
+// calls to indx=%drequest_irq
+irqreturn_t maddevb_msi_one_isr(int irq, void* dev_id)
+{
+    return maddevb_isr_worker_fn(irq, dev_id, 1);
+}
 
-    maddev_acquire_lock_disable_ints(&pmaddevobj->devlock, flags1);
+irqreturn_t maddevb_msi_two_isr(int irq, void* dev_id)
+{
+    return maddevb_isr_worker_fn(irq, dev_id, 2);
+}
 
-    //Copy the device register state for the DPC
-    memcpy_fromio(&pmaddevobj->IntRegState, pmadregs, sizeof(MADREGS));
+irqreturn_t maddevb_msi_three_isr(int irq, void* dev_id)
+{
+    return maddevb_isr_worker_fn(irq, dev_id, 3);
+}
 
-    //Disable interrupts on this device
-    iowrite32(MAD_ALL_INTS_DISABLED, &pmadregs->IntEnable);
-    iowrite32(0, &pmadregs->MesgID);
+irqreturn_t maddevb_msi_four_isr(int irq, void* dev_id)
+{
+    return maddevb_isr_worker_fn(irq, dev_id, 4);
+}
 
-    IntID = ioread32(&pmadregs->IntID);
-    if (IntID == (u32)MAD_ALL_INTS_CLEARED)
-        {   //This is not our IRQ
-        maddev_enable_ints_release_lock(&pmaddevobj->devlock, flags1);
+irqreturn_t maddevb_msi_five_isr(int irq, void* dev_id)
+{
+    return maddevb_isr_worker_fn(irq, dev_id, 5);
+}
 
-        PERR("maddevb_isr... invalid int recv'd dev#=%d IntID=x%X\n",
-             (int)pmaddevobj->devnum, IntID);
-    	return IRQ_NONE;
-        }
+irqreturn_t maddevb_msi_six_isr(int irq, void* dev_id)
+{
+    return maddevb_isr_worker_fn(irq, dev_id, 6);
+}
 
-    if (IntID == (u32)MAD_INT_INVALID_BYTEMODE_MASK)//Any / all undefined int conditions
-        {
-        maddev_enable_ints_release_lock(&pmaddevobj->devlock, flags1);
+irqreturn_t maddevb_msi_seven_isr(int irq, void* dev_id)
+{
+    return maddevb_isr_worker_fn(irq, dev_id, 7);
+}
 
-        PERR("maddevb_isr... undefined int-id from device dev#=%d IntID=x%X\n",
-             (int)pmaddevobj->devnum, IntID);
-    	return IRQ_HANDLED;
-        }
-
-	/* Invoke the DPC handler */
-    #ifdef _MAD_SIMULATION_MODE_ 
-    //Release the spinlock *NOT* at device-irql BEFORE enqueueing the DPC
-    maddev_enable_ints_release_lock(&pmaddevobj->devlock, flags1);
-    #endif
-
-    /* Invoke the DPC handler */
-    tasklet_hi_schedule(&pmaddevobj->dpctask);
-
-    #ifndef _MAD_SIMULATION_MODE_(real hardware)
-    //With real hardware release the spinlock at device-irql  AFTER enqueueing the DPC
-    maddev_enable_ints_release_lock(&pmaddevobj->devlock, flags1);
-    #endif
-
-    PDEBUG("maddevc_isr... normal return dev#=%d IntID=x%X rc=%d\n",
-           (int)pmaddevobj->devnum, IntID, IRQ_HANDLED);
-
-	return IRQ_HANDLED;
+irqreturn_t maddevb_msi_eight_isr(int irq, void* dev_id)
+{
+    return maddevb_isr_worker_fn(irq, dev_id, 8);
 }
 
 //This is the DPC/software interrupt handler invoked by scheduling a tasklet
@@ -431,14 +257,14 @@ void maddevb_dpctask(ulong indx)
                 (PMADDEVOBJ)((U8*)mad_dev_objects + (PAGE_SIZE * indx)); 
 	PMADREGS    pmadregs   = pmaddevobj->pDevBase;
 	u32 IntID     = pmaddevobj->IntRegState.IntID;
-    u32 IntEnable = pmaddevobj->IntRegState.IntEnable;
 	u32 Status    = pmaddevobj->IntRegState.Status & MAD_STATUS_ERROR_MASK;
 	u32 Control   = pmaddevobj->IntRegState.Control;
 	//
 	long rc = 0;
 
-	PINFO("maddevb_dpc... dev#=%d pmaddevobj=%px Control=x%X Status=x%X IntEnable=x%X IntID=x%X\n",
-		  (int)pmaddevobj->devnum, pmaddevobj, Control, Status, IntEnable, IntID);
+	PINFO("maddevb_dpc... indx=%d pmaddevobj=%px dev#=%d IntID=x%lX Control=x%lX Status=x%lX\n",
+		  (int)indx, (void *)pmaddevobj, (int)pmaddevobj->devnum,
+          (unsigned long)IntID, (unsigned long)Control, (unsigned long)Status);
 
 	rc = maddev_status_to_errno(pmaddevobj->devnum, &pmaddevobj->IntRegState);
 
@@ -455,7 +281,7 @@ void maddevb_dpctask(ulong indx)
         else
             {
             PWARN("maddevb_dpc... dev#=%d Int unexpected! ioctl_f=%d\n",
-                  (int)pmaddevobj->devnum, pmaddevobj->ioctl_f);
+                  (int)pmaddevobj->devnum, (int)pmaddevobj->ioctl_f);
             ASSERT((int)false);
             }
         return;

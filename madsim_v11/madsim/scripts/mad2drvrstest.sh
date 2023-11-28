@@ -8,7 +8,7 @@
 #/*                                                                             
 #/*****************************************************************************
 #/*                                                                            
-#/*  Module NAME : madmsitest.sh                                                  
+#/*  Module NAME : mad2drvrstest.sh                                                  
 ##/*                                                                            
 #/*  DESCRIPTION : A BASH script for one test of the Mad simulation testware  
 #/*                This script exercises hotplug with multiple device drivers           
@@ -25,11 +25,13 @@
 #/* HTF Consulting assumes no responsibility for errors or fitness of use      
 #/*                                                                            
 #/*                                                                            
-#/* $Id: madmsitest.sh, v 1.0 2021/01/01 00:00:00 htf $ 
+#/* $Id: mad2drvrstest.sh, v 1.0 2021/01/01 00:00:00 htf $ 
                           
 #Set up script environment variables
+bdev=0 #Char-mode device 1st - then a block-mode on the 2nd driver
 source madenv.sh
 
+#Clear the console; hide executing commands
 clear
 set -x
 
@@ -65,7 +67,7 @@ printf "\n Multiple driver/device-type tests\n"
 $simapp_path$simapp 1 hpl 1005
 sleep 3
 $simapp_path$simapp 1 hpl 1001 
-$simapp_path$simapp 2 hpl 1001
+$simapp_path$simapp 2 hpl 2001
 #tree /sys/devices/$busdevname/
 sleep 10
 #
@@ -75,8 +77,8 @@ $simapp_path$simapp 2 hun
 sleep 10
 #rmmod maddevc.ko
 #
-$simapp_path$simapp 1 hpl 1003 
-$simapp_path$simapp 2 hpl 1002
+$simapp_path$simapp 1 hpl 1002 
+$simapp_path$simapp 2 hpl 2002
 #tree /sys/devices/$busdevname/
 sleep 10
 #
@@ -85,8 +87,8 @@ $simapp_path$simapp 2 hun
 #tree /sys/devices/$busdevname/
 sleep 10
 #
-$simapp_path$simapp 1 hpl 1002 
-$simapp_path$simapp 2 hpl 1003
+#$simapp_path$simapp 1 hpl 1002 
+#$simapp_path$simapp 2 hpl 1003
 #tree /sys/devices/$busdevname/
 sleep 10
 #
@@ -100,7 +102,7 @@ rmmod $madmodule
 rmmod $busmodule
 lsmod | grep "mad"
 
-echo "=== madmsitest.sh fini ==================="
+echo "=== mad2drvrstest.sh fini ==================="
 
 
 

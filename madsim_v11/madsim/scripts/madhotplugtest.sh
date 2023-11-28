@@ -1,7 +1,7 @@
 #!/bin/sh
 #/*                                                                            
 #/*  PRODUCT      : MAD Device Simulation Framework                            
-#/*  COPYRIGHT    : (c) 2022 HTF Consulting                                    
+#/*  COPYRIGHT    : (c) 2021 HTF Consulting                                    
 #/*                                                                            
 #/* This source code is provided by Dual/GPL license to the Linux open source   
 #/* community                                                                  
@@ -28,10 +28,14 @@
 #/* $Id: madhotplugtest.sh, v 1.0 2021/01/01 00:00:00 htf $ 
                           
 #Set up script environment variables
+bdev=0
 source madenv.sh
 
+#Clear the console; hide executing commands
 clear
 set -x
+
+tree /sys/devices/$busdevname/
 
 #Load the simulation & target drivers
 number_static_devs=0
@@ -44,32 +48,32 @@ cd $appbasepath
 #source madappintro.sh
 
 #printf "\nHotplug tests\n"
-for (( dn=1; dn<=$number_bus_slots; dn++ ))
-do
-    $simapp_path$simapp $dn hun 
-done
-tree /sys/devices/$busdevname/
-
-for (( dn=1; dn<=$number_bus_slots; dn++ ))
-do
-    $simapp_path$simapp $dn hpl 1001
-done
-tree /sys/devices/$busdevname/
-
-#$simapp_path$simapp 2 hpl 1001 
+#for (( dn=1; dn<=$number_bus_slots; dn++ ))
+#do
+    $simapp_path$simapp 1 hun 
+    sleep 1
+#done
 #tree /sys/devices/$busdevname/
 
+#for (( dn=1; dn<=$number_bus_slots; dn++ ))
+#do
+    $simapp_path$simapp 1 hpl 1001
+    sleep 1
+    $simapp_path$simapp 1 hun
+    sleep 1
+    #$simapp_path$simapp 1 hpl 1002
+    #sleep 1
+    #$simapp_path$simapp 1 hpl 1001
+#done
+set +x ; printf "\nPresenting the sysfs tree for the bus... ($busmodule)\n" ; set -x
+tree /sys/bus/$busmodule/
+tree /sys/devices/$busdevname/
+sleep 1
+#
+$simapp_path$simapp 1 hun 
+$simapp_path$simapp 2 hun 
 rmmod $madmodule
 rmmod $busmodule
-lsmod | grep "mad"
+#lsmod | grep "mad"
 echo "=== madhotplugtest.sh fini ==================="
-
-
-
-
-
-
-
-
-
 

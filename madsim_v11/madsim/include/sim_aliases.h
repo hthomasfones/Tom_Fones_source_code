@@ -75,7 +75,7 @@
 //and should be found in the bus drivers Module.symvers file
 extern int    pcisim_register_driver(struct pci_driver *pcidrvr);
 extern void   pcisim_unregister_driver(struct pci_driver *pcidrvr);
-extern int    sim_register_device(struct device* pDevice);
+extern int    sim_register_device(struct device* pDevice, u32 devnum);
 extern void   sim_unregister_device(struct device* pDevice);
 extern int    pcisim_enable_device(struct pci_dev* pcidev);
 extern int    pcisim_disable_device(struct pci_dev* pcidev);

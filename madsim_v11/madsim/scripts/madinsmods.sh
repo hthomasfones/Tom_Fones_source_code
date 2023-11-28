@@ -28,12 +28,18 @@
 #/*                                                                            
 
 echo "Remove the (existing?) driver stack.."
+#Show executing commands
 set -x
 rmmod $madmodule.ko
+sleep .5
 rmmod $madmodule2.ko
+sleep .5
 rmmod $busmodule.ko
+sleep .5
 lsmod | grep "mad"
+#Clear the dmesg buffer
 dmesg -C
+#Hide executing commands
 set +x
 
 ## Assign device-class specific major number
@@ -77,6 +83,7 @@ cd $busdrvrpath
 /sbin/insmod ./$busmodule.ko madbus_major=$madbus_major madbus_nbr_slots=$number_bus_slots $* || exit 1
 
 set +x ; printf "\nCreate symbolic links between... \n" ; set -x
+#Create symbolic link: soft, force, verbose
 ln -sfv ${busdevobj} /dev/${busdevobj}
 #
 set +x ; printf "\nChange permission modes for all nodes to $mode \n" ; set -x
@@ -89,10 +96,11 @@ sleep 1
 set +x ;  printf "\nLoad the target device driver... $madmodule.ko\n" ; set -x
 cd ..
 cd $trgtdrvrpath
-
+#exit
 ### invoke insmod including driver-pathname with all the input arguments 
 /sbin/insmod ./$madmodule.ko maddev_max_devs=$number_bus_slots  \
-                             maddev_nbr_devs=$number_static_devs $* || exit 1
+                             maddev_nbr_devs=$number_static_devs \
+                             mad_pci_devid=8194                 $* || exit 1
 
 if [ $maddev_major -eq 0 ]
 then
@@ -110,8 +118,8 @@ set +x ; printf "\nCreate symbolic links between... \n" ; set -x
 ln -sfv ${maddevobj} /dev/${maddevobj}
 
 set +x ; printf "\nChange permission modes for all nodes to $mode \n" ; set -x
-#chgrp $group /dev/${maddevobj}[0-$number_static_devs] 
-chmod -v $mode  /dev/${maddevobj}[0-$number_static_devs]
+#chgrp $group /dev/${maddevobj}[0-$number_bus_slots] 
+chmod -v $mode  /dev/${maddevobj}[0-$number_bus_slots]
 
 set +x
 printf "\nSome integrity checks... \n"
