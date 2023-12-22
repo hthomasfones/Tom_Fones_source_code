@@ -85,7 +85,7 @@ struct mad_simulator_parms
     //
 	spinlock_t* pdevlock;
 	void*       pmaddevobj;
-    struct      pci_dev*  pPciDev;
+    struct      pci_dev*  pPcidev;
     PMADREGS    pmadregs;
 };
 //
@@ -95,6 +95,7 @@ typedef struct mad_simulator_parms *PMAD_SIMULATOR_PARMS;
 struct madbus_object
 {
 	U32        devnum;
+    u32        dev_iotag;
     U32        junk; //8-byte align below
     char       PciConfig[MAD_PCI_CFG_SPACE_SIZE];
 

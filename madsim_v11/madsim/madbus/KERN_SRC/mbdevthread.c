@@ -35,14 +35,8 @@
 #define _SIM_DRIVER_
 #include "madbus.h"
 
-static IoType mbdt_get_programmed_iotype(PMADREGS pMadDevRegs);
+static IoType mbdt_get_programmed_iotype(PMADREGS pMadDevRegs, u32* iotag);
 static void mbdt_process_io(PMADBUSOBJ pmadbusobj, IoType iotype);
-
-void madbus_wait_for_thread_wake(struct task_struct *pThread)
-{
-    while (pThread->state > 2)
-        {schedule();}
-}
 
 //This function creates a one-per-device thread and binds it to a processor
 //
@@ -82,10 +76,11 @@ int num_cpus = 0;
         }
 
     kthread_bind(pThread, devnum);
-    schedule();
     pstate = wake_up_process(pThread);
 
-    //Release quantum for sequencing... so that threads initialize in start order
+    //Release quantum so that threads initialize in start order
+    schedule();
+
     pmadbusobj->pThread = pThread;
     PINFO("madbus_create_thread... dev#=%d pmadbusobj=%px pThread=%px name:%s\n",
     	  (int)pmadbusobj->devnum, pmadbusobj, pThread, ThreadName);
@@ -132,7 +127,7 @@ int rc = -EADDRNOTAVAIL;
     //
     while (1)
         {
-        iotype =  mbdt_get_programmed_iotype(pmaddevice);
+        iotype =  mbdt_get_programmed_iotype(pmaddevice, &pmadbusobj->dev_iotag);
      	if (iotype != eNOP) //We are ready to complete an i/o
     	    {
             //pmaddevice->MesgID = mesgid; ////////////////////////////////////////
@@ -202,9 +197,8 @@ u32 IntEnable = pMadDevRegs->IntEnable;
 }
 
 //Detemine what Io has been programmed and  needs to be completed in this device thread
-static IoType mbdt_get_programmed_iotype(PMADREGS pMadDevRegs)
+static IoType mbdt_get_programmed_iotype(PMADREGS pMadDevRegs, u32* pIotag)
 {
-static u32 dev_iotag = 0;
 static U32 MAD_GO_BITS = (MAD_CONTROL_DMA_GO_BIT | MAD_CONTROL_BUFRD_GO_BIT);
 //
 IoType iotype = eNOP;
@@ -219,16 +213,16 @@ u32 IntEnable = pMadDevRegs->IntEnable;
     if (pMadDevRegs->IntID != 0) //an i/o is in progress
         {return iotype;}
         
-    if (dev_iotag != pMadDevRegs->IoTag)
+    if (*pIotag != pMadDevRegs->IoTag)
         {
-        PERR("mbdt_get_progammed_iotype... dev#=%ld sequence error; expected=x%lX device=x%lX\n",
-             (long int)pMadDevRegs->Devnum, (long int)dev_iotag, (long int)pMadDevRegs->IoTag); 
-        BUG_ON(dev_iotag != pMadDevRegs->IoTag);
-        }
+        PERR("mbdt_get_progammed_iotype... dev#=%ld sequence error; expected=x%lX iotag=x%lX\n",
+             (long int)pMadDevRegs->Devnum, (long int)*pIotag, (long int)pMadDevRegs->IoTag); 
+        BUG_ON(*pIotag != pMadDevRegs->IoTag);
+        } /* */
 
     iotype = mbdt_get_programmed_iotype_worker(pMadDevRegs);
-    if (iotype != eNOP)
-        {dev_iotag++;}
+    if (iotype != eNOP) //We have a valid programmed-io to complete
+        {(*pIotag)++;}
 
     return iotype;
 }            
