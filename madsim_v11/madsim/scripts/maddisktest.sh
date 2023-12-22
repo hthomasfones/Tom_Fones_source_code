@@ -57,17 +57,17 @@ ls -l $madblockdevpath*
 
 set +x ; printf "\nList initial parameters of our disk(s)\n" ; set -x
 lsblk -o NAME,KNAME,PATH,FSAVAIL,FSSIZE,FSTYPE,FSAVAIL "$madblockdevpath$dx"
-sleep 1
+sleep $delay
 #
 fdisk -l $madblockdevpath$dx
-sleep 1
+sleep $delay
 #if [ ! -f "$madblockdevpath$dx""p1" ];
 #then
 #    echo "Disk "$madblockdevpath$dx"p1 missing!"
 #    exit 9
 #fi    
 #
-#sleep 1
+#sleep $delay
 set  +x ; echo "" ; set -x
 rm -r "$mountpath""/"
 #
@@ -79,23 +79,22 @@ then
 fi    
 
 #
-sleep 1
+sleep $delay
 #Make a file system on our block device
 mkfs.msdos -I -F 12 -R 1 -s 16 -S 512 -i "DEADFACE" -n maddisk$dx -v $partpath 
 #
-sleep 1
+sleep $delay
 set  +x ; echo "" ; set -x
 #
 #Check the new file system on our block device
 dosfsck -v -a -w $partpath
 set  +x ; echo "" ; set -x
 #
-sleep 1
+sleep $delay
 #Mount the new device to a mount path and verify
 mount -v -t msdos $partpath $mountpath
 findmnt $partpath
-sleep 1
-#
+sleep $delay
 set  +x 
 echo "" 
 #
@@ -107,45 +106,52 @@ lsblk -o NAME,KNAME,PATH,FSAVAIL,FSSIZE,FSTYPE,FSAVAIL "$partpath"
 cd $mountpath
 pwd
 cp /boot/grub/grub.cfg  grub1.cfg
-sleep 1
+sleep $delay
 ls -l
-sleep .5
-cat grub1.cfg
-
+#sleep $delay
+#cat grub1.cfg
 set  +x ; echo "" ; set -x
 
 #Exercise the disk through fio
 fio --filename=$mountpath"/fiotest" --size=100kb --rw=randrw --bs=32k --time_based --runtime=10         --numjobs=1 --name=madjob1
-sleep 1
+sleep $delay
 #
 #Make another new file to show in the directory
 cd $mountpath
 pwd
 cp /boot/grub/grub.cfg  grub2.cfg
-sleep 1
+sleep $delay
+sync
+sleep $delay
 #
 ls -l
-sleep .5
-cat grub2.cfg
+sleep $delay
+#cat grub2.cfg
 set  +x ; echo "" ; set -x
 #
 cd ~
 #
-sleep 2
+sleep $delay
 #Save the disk to a file
 dd if=$partpath  of="devfd"$dx
 #
-sleep 1
+sleep $delay
 umount $mountpath
 umount $madblockdevpath$dx
- 
+sleep $delay
+rmmod $madmodule
+rmmod $busmodule
+lsmod | grep "mad"
+
 #Dump the device-file in hex
 #The MBR and directory should appear at the beginning
 #The copy of grub.cfg is near the bottom - after the random fio data 
+printf "\nLets look for an MBR, a directory, data file(s) and binary FIO data\n\n"
+
 xxd "devfd"$dx | more 
 
-#rmmod $madmodule
-#rmmod $busmodule
+rmmod $madmodule
+rmmod $busmodule
 lsmod | grep "mad"
 
 set  +x
