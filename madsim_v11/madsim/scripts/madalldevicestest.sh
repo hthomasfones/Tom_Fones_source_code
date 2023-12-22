@@ -30,6 +30,8 @@
 #Set up script environment variables
 bdev=0 #We will setup char-mode device(s)
 source madenv.sh
+number_bus_slots=3
+number_static_devs=$number_bus_slots
 
 #Clear the console; hide executing commands
 clear
@@ -40,7 +42,8 @@ source madinsmods.sh
 
 #Check for help from the test app & sim-ui
 cd $currdir
-source madappintro.sh
+#source madappintro.sh
+cd $appbasepath 
 
 ### Customized tests: Buffered i/o
 #
@@ -56,25 +59,25 @@ do
 
     printf "\nBuffered I/O tests  =================\n"
     printf "First some writes \n"
-    $testapp_path$testapp $dn wb 33 abcdefghijklmnop &
+    $testapp_path$testapp $dn wb 33 0 abcdefghijklmnop
     sleep $delay
-    $simapp_path$simapp $dn cbw
+    #$simapp_path$simapp $dn cbw
     sleep $delay
 
-    $testapp_path$testapp $dn wba 17 0123456789ABCDEF &
+    $testapp_path$testapp $dn wba 17 0 0123456789ABCDEF
     sleep $delay
-    $simapp_path$simapp $dn cbw
+    #$simapp_path$simapp $dn cbw
     sleep $delay
 
     printf "\nNow some reads\n"
-    $testapp_path$testapp $dn rb 50 &
+    $testapp_path$testapp $dn rb 50
     sleep $delay
-    $simapp_path$simapp $dn cbr
+    #$simapp_path$simapp $dn cbr
     sleep $delay
 
-    $testapp_path$testapp $dn rba 50 &
+    $testapp_path$testapp $dn rba 50
     sleep $delay
-    $simapp_path$simapp $dn cbr
+    #$simapp_path$simapp $dn cbr
     sleep $delay
 
     $testapp_path$testapp $dn get
