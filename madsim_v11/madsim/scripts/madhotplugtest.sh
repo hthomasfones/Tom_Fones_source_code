@@ -30,6 +30,8 @@
 #Set up script environment variables
 bdev=0
 source madenv.sh
+number_bus_slots=3
+number_static_devs=0
 
 #Clear the console; hide executing commands
 clear
@@ -38,7 +40,6 @@ set -x
 tree /sys/devices/$busdevname/
 
 #Load the simulation & target drivers
-number_static_devs=0
 source madinsmods.sh
 
 #Check for help from the test app & sim-ui
@@ -51,29 +52,35 @@ cd $appbasepath
 #for (( dn=1; dn<=$number_bus_slots; dn++ ))
 #do
     $simapp_path$simapp 1 hun 
-    sleep 1
+    sleep $delay
 #done
 #tree /sys/devices/$busdevname/
 
-#for (( dn=1; dn<=$number_bus_slots; dn++ ))
-#do
-    $simapp_path$simapp 1 hpl 1001
-    sleep 1
-    $simapp_path$simapp 1 hun
-    sleep 1
-    #$simapp_path$simapp 1 hpl 1002
-    #sleep 1
-    #$simapp_path$simapp 1 hpl 1001
-#done
-set +x ; printf "\nPresenting the sysfs tree for the bus... ($busmodule)\n" ; set -x
+for (( dn=1; dn<=$number_bus_slots; dn++ ))
+do
+    $simapp_path$simapp $dn hpl 1001
+done
+
+set +x ; printf "\nThe sysfs tree for the bus:bus-device $busmodule : $busdevname should be populated\n" ; set -x
+sleep $delay
 tree /sys/bus/$busmodule/
 tree /sys/devices/$busdevname/
-sleep 1
+sleep $delay
 #
 $simapp_path$simapp 1 hun 
 $simapp_path$simapp 2 hun 
+$simapp_path$simapp 3 hun 
+$simapp_path$simapp 1 hun 
+
+set +x ; printf "\nThe sysfs tree for the bus:bus-device $busmodule : $busdevname should be empty\n" ; set -x
+sleep $delay
+tree /sys/bus/$busmodule/
+tree /sys/devices/$busdevname/
+sleep $delay
+
 rmmod $madmodule
 rmmod $busmodule
-#lsmod | grep "mad"
+lsmod | grep "mad"
+pause
 echo "=== madhotplugtest.sh fini ==================="
 

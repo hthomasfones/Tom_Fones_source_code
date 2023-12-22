@@ -230,15 +230,35 @@ EXPORT_SYMBOL(pcisim_unregister_driver);
 static struct klist maddev_klist;
 //static struct list_head empty_list = {&empty_list, &empty_list};
 
-static struct device_private maddev_priv_data = 
+static struct device_private maddev_priv_data1 = 
 {
     .knode_driver   = {.n_klist = &maddev_klist,}, //avoid a null-pntr at unregister
 
     //set the list to empty by pointers to itself next,prev
-    .deferred_probe = {&maddev_priv_data.deferred_probe,
-                       &maddev_priv_data.deferred_probe,},
+    .deferred_probe = {&maddev_priv_data1.deferred_probe,
+                       &maddev_priv_data1.deferred_probe,},
     .dead = 0,
 };
+static struct device_private maddev_priv_data2 = 
+{
+    .knode_driver   = {.n_klist = &maddev_klist,}, //avoid a null-pntr at unregister
+
+    //set the list to empty by pointers to itself next,prev
+    .deferred_probe = {&maddev_priv_data2.deferred_probe,
+                       &maddev_priv_data2.deferred_probe,},
+    .dead = 0,
+};
+static struct device_private maddev_priv_data3 = 
+{
+    .knode_driver   = {.n_klist = &maddev_klist,}, //avoid a null-pntr at unregister
+
+    //set the list to empty by pointers to itself next,prev
+    .deferred_probe = {&maddev_priv_data3.deferred_probe,
+                       &maddev_priv_data3.deferred_probe,},
+    .dead = 0,
+};
+struct device_private* maddev_priv_data[4] = 
+       {NULL, &maddev_priv_data1, &maddev_priv_data2, &maddev_priv_data3};
 
 //The simulator replacement for register_device
 //Nothing to do except register the device with sysfs
@@ -247,7 +267,7 @@ int sim_register_device(struct device* pDevice, u32 devnum)
     PMADBUSOBJ pmadbusobj = &madbus_objects[devnum];
     int rc = 0;
 
-    PINFO("sim_register_device... pDevice=%px dev#=%d\n", pDevice, (int)devnum);
+    PINFO("sim_register_device... dev#=%d pDevice=%px\n", (int)devnum, pDevice);
 
     if (!pmadbusobj->bRegstrd)
         {
@@ -261,9 +281,9 @@ int sim_register_device(struct device* pDevice, u32 devnum)
     pDevice->bus     = &madbus_type;
     pDevice->parent  = &pmadbusobj->sysfs_dev;
     pDevice->release = madbus_release;
-    pDevice->p       = &maddev_priv_data;
+    pDevice->p       = maddev_priv_data[devnum];
     // 
-    //rc = device_register(pDevice);
+    rc = device_register(pDevice);
     if (rc != 0)
         {
         PWARN("sim_register_device:device_register... dev#=%d rc=%d\n",
@@ -275,7 +295,7 @@ int sim_register_device(struct device* pDevice, u32 devnum)
 //
 static void sim_device_unregister(struct device* pDevice)
 {
-    PINFO("sim_device_unregister... pDevice=%px\n", pDevice);
+    PINFO("sim_device_unregister... pDevice=%px not implemented\n", pDevice);
     //device_del(pDevice);
     //put_device(NULL);
     //device_unregister(pDevice);
@@ -329,17 +349,17 @@ pcisim_get_device(unsigned int vendor, unsigned int pci_devid, struct pci_dev *s
 EXPORT_SYMBOL(pcisim_get_device);
 
 //This function implements a simulation of the equivalent pci function
-int pcisim_enable_device(struct pci_dev* pPciDev)
+int pcisim_enable_device(struct pci_dev* pPcidev)
 {
    	struct madbus_object *mbobj = NULL;
 
-    if (pPciDev == NULL)
+    if (pPcidev == NULL)
         {return -ENODEV;}
 
-    mbobj = container_of(pPciDev, struct madbus_object, pcidev);
+    mbobj = container_of(pPcidev, struct madbus_object, pcidev);
 
     PINFO("pcisim_enable_device... dev#=%d mbobj=%px pcidev=%px base_irq=%d isrfn_0=%px\n",
-		  (int)mbobj->devnum, mbobj, &mbobj->pcidev, pPciDev->irq, mbobj->isrfn[0]);
+		  (int)mbobj->devnum, mbobj, &mbobj->pcidev, pPcidev->irq, mbobj->isrfn[0]);
 
     return 0;
 }
@@ -347,14 +367,14 @@ int pcisim_enable_device(struct pci_dev* pPciDev)
 EXPORT_SYMBOL(pcisim_enable_device);
 
 //This function implements a simulation of the equivalent pci function
-int pcisim_disable_device(struct pci_dev* pPciDev)
+int pcisim_disable_device(struct pci_dev* pPcidev)
 {
    	struct madbus_object *mbobj;
 
-    if (pPciDev == NULL)
+    if (pPcidev == NULL)
         {return -ENODEV;}
 
-    mbobj = container_of(pPciDev, struct madbus_object, pcidev);
+    mbobj = container_of(pPcidev, struct madbus_object, pcidev);
     PINFO("pcisim_disable_device... dev#=%d mbobj=%px pcidev=%px\n",
 		  (int)mbobj->devnum, mbobj, &mbobj->pcidev);
 
@@ -364,18 +384,18 @@ int pcisim_disable_device(struct pci_dev* pPciDev)
 EXPORT_SYMBOL(pcisim_disable_device);
 
 //This function implements a simulation of the equivalent pci function
-int pcisim_enable_msi_block(struct pci_dev* pPciDev, int num)
+int pcisim_enable_msi_block(struct pci_dev* pPcidev, int num)
 {
    	struct madbus_object *mbobj;
 
-   if (pPciDev == NULL)
+   if (pPcidev == NULL)
         {return -ENODEV;}
 
    // All MSIs plus one legacy-int - this is a little sloppy
    if (num > (MAD_NUM_MSI_IRQS+1))
        {return -EINVAL;}
 
-    mbobj = container_of(pPciDev, struct madbus_object, pcidev);
+    mbobj = container_of(pPcidev, struct madbus_object, pcidev);
     PINFO("pcisim_enable_msi_block... dev#=%d mbobj=%px pcidev=%px rc=0\n",
 		  (int)mbobj->devnum, mbobj, &mbobj->pcidev);
 
@@ -385,14 +405,14 @@ int pcisim_enable_msi_block(struct pci_dev* pPciDev, int num)
 EXPORT_SYMBOL(pcisim_enable_msi_block);
 
 //This function implements a simulation of the equivalent pci function
-void pcisim_disable_msi(struct pci_dev* pPciDev)
+void pcisim_disable_msi(struct pci_dev* pPcidev)
 {
    	struct madbus_object *mbobj;
 
-   if (pPciDev == NULL)
+   if (pPcidev == NULL)
         {return;}
 
-    mbobj = container_of(pPciDev, struct madbus_object, pcidev);
+    mbobj = container_of(pPcidev, struct madbus_object, pcidev);
     PINFO("pcisim_disable_msi... dev#=%d mbobj=%px pcidev=%px\n",
 		  (int)mbobj->devnum, mbobj, &mbobj->pcidev);
 
@@ -402,9 +422,9 @@ void pcisim_disable_msi(struct pci_dev* pPciDev)
 EXPORT_SYMBOL(pcisim_disable_msi);
 
 //This function implements a simulation of the equivalent pci function
-int pcisim_read_config_byte(const struct pci_dev* pPciDev, int where, u8 *val)
+int pcisim_read_config_byte(const struct pci_dev* pPcidev, int where, u8 *val)
 {
-	struct madbus_object *mbobj = container_of(pPciDev, struct madbus_object, pcidev);
+	struct madbus_object *mbobj = container_of(pPcidev, struct madbus_object, pcidev);
 	U8*        pPciConfig;
 
 	if (mbobj == NULL)
@@ -423,9 +443,9 @@ int pcisim_read_config_byte(const struct pci_dev* pPciDev, int where, u8 *val)
 }
 
 //This function implements a simulation of the equivalent pci function
-int pcisim_read_config_word(const struct pci_dev* pPciDev, int where, u16 *val)
+int pcisim_read_config_word(const struct pci_dev* pPcidev, int where, u16 *val)
 {
-	struct madbus_object *mbobj = container_of(pPciDev, struct madbus_object, pcidev);
+	struct madbus_object *mbobj = container_of(pPcidev, struct madbus_object, pcidev);
 	U8*        pPciConfig;
     u16*       pPciCnfg16;
 
@@ -446,10 +466,10 @@ int pcisim_read_config_word(const struct pci_dev* pPciDev, int where, u16 *val)
 }
 
 //This function implements a simulation of the equivalent pci function
-int pcisim_read_config_dword(const struct pci_dev *pPciDev, int offset, U32 *val)
+int pcisim_read_config_dword(const struct pci_dev *pPcidev, int offset, U32 *val)
 {
 	struct madbus_object *mbobj = 
-    container_of(pPciDev, struct madbus_object, pcidev);
+    container_of(pPcidev, struct madbus_object, pcidev);
 	U8*        pPciConfig;
     U32*       pPciCnfg32;
 
@@ -625,7 +645,7 @@ PMAD_SIMULATOR_PARMS madbus_exchange_parms(int num)
     pmadbusobj->SimParms.pmadbusobj = pmadbusobj;
 
     //The simulator's device object contains the pcidev struct
-    pmadbusobj->SimParms.pPciDev = &pmadbusobj->pcidev;
+    pmadbusobj->SimParms.pPcidev = &pmadbusobj->pcidev;
     pmadbusobj->SimParms.pcomplete_simulated_io = madsim_complete_simulated_io;
 
     PDEBUG("madbus_exchange_parms... dev#=%d pmbobj=%px pCmpltSimIo=%px\n",
@@ -644,7 +664,7 @@ int madbus_hotplug(U32 indx, U16 pci_devid)
     //
     PMADBUSOBJ pmbobj_hpl;
     struct pci_driver* pPciDrvr;
-    struct pci_dev*    pPciDev = NULL;
+    struct pci_dev*    pPcidev = NULL;
     int                rc = -EUNATCH; //No 'protocol' driver attached until we find one
 
     PINFO("madbus_hotplug... dev#=%d pci_devid=x%X\n", (int)indx, pci_devid);
@@ -656,11 +676,11 @@ int madbus_hotplug(U32 indx, U16 pci_devid)
     if (pmbobj_hpl->pci_devid != 0)
        {return -EEXIST;} //This bus slot is in use;
 
-    pPciDev = madbus_setup_pci_device(indx, pci_devid);
-    if ((pPciDev == NULL) || (IS_ERR(pPciDev)))
+    pPcidev = madbus_setup_pci_device(indx, pci_devid);
+    if ((pPcidev == NULL) || (IS_ERR(pPcidev)))
         {return -EFAULT;}
 
-    ASSERT((int)(pPciDev == &pmbobj_hpl->pcidev));
+    ASSERT((int)(pPcidev == &pmbobj_hpl->pcidev));
 
     //Find the correct device driver from the set of known client drivers
     //Calling every drivers' probe function until a match or error/no match
@@ -899,38 +919,38 @@ int madbus_set_pci_config(PMADBUSOBJ pmadbusobj)
 //This function creates a pci dev struct to provide to the pci device driver
 void madbus_init_pcidev(PMADBUSOBJ pmadbusobj)
 {
-    struct pci_dev* pPciDev; 
+    struct pci_dev* pPcidev; 
 	U8*        pPciCnfgParm; 
 
     ASSERT((int)(pmadbusobj != NULL));
-    pPciDev = &pmadbusobj->pcidev;
+    pPcidev = &pmadbusobj->pcidev;
 
     PINFO("madbus_init_pcidev... dev#=%d mbobj=%px\n",
           (int)pmadbusobj->devnum, pmadbusobj);
 
     pPciCnfgParm = &(pmadbusobj->PciConfig[PCI_VENDOR_ID]);
-    pPciDev->vendor = *(U16*)pPciCnfgParm;
+    pPcidev->vendor = *(U16*)pPciCnfgParm;
 
     pPciCnfgParm = &(pmadbusobj->PciConfig[PCI_DEVICE_ID]);
-    pPciDev->device = *(U16*)pPciCnfgParm;
+    pPcidev->device = *(U16*)pPciCnfgParm;
 
     pPciCnfgParm = &(pmadbusobj->PciConfig[PCI_SUBSYSTEM_VENDOR_ID]);
-    pPciDev->subsystem_vendor = *(U16*)pPciCnfgParm;
+    pPcidev->subsystem_vendor = *(U16*)pPciCnfgParm;
 
     pPciCnfgParm = &(pmadbusobj->PciConfig[PCI_SUBSYSTEM_ID]);
-    pPciDev->subsystem_device = *(U16*)pPciCnfgParm;
+    pPcidev->subsystem_device = *(U16*)pPciCnfgParm;
 
-    pPciDev->cfg_size = MAD_PCI_CFG_SPACE_SIZE;
+    pPcidev->cfg_size = MAD_PCI_CFG_SPACE_SIZE;
 
     pPciCnfgParm = &(pmadbusobj->PciConfig[PCI_INTERRUPT_LINE]);
-    //pPciDev->irq = pmadbusobj->base_irq; //(int)*pPciCnfgParm;
+    //pPcidev->irq = pmadbusobj->base_irq; //(int)*pPciCnfgParm;
 
-    pPciDev->msi_cap = pmadbusobj->PciConfig[PCI_CAPABILITY_LIST + PCI_CAP_ID_MSI];
+    pPcidev->msi_cap = pmadbusobj->PciConfig[PCI_CAPABILITY_LIST + PCI_CAP_ID_MSI];
 
     //We don't populate the pci slot struct - just use the pntr as a slot#
-    pPciDev->slot = (struct pci_slot *)pmadbusobj->devnum;
+    pPcidev->slot = (struct pci_slot *)pmadbusobj->devnum;
 
-    pPciDev->driver = NULL;//Should be assigned by the claiming device driver 
+    pPcidev->driver = NULL;//Should be assigned by the claiming device driver 
 
     return;
 }
