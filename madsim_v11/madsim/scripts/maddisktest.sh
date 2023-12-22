@@ -31,7 +31,9 @@
                           
 #Set up script environment variables
 bdev=1  #we will load and exercise the block-mode device driver
+pcidev=8193 # x2001 block device; legacy int (non-msi)
 source madenv.sh
+pcidev=8193 # x2001 block device; legacy int (non-msi)
 #
 dx=$devnum
 mountpath="/mnt/maddisk$dx"
@@ -107,6 +109,9 @@ pwd
 cp /boot/grub/grub.cfg  grub1.cfg
 sleep 1
 ls -l
+sleep .5
+cat grub1.cfg
+
 set  +x ; echo "" ; set -x
 
 #Exercise the disk through fio
@@ -120,6 +125,8 @@ cp /boot/grub/grub.cfg  grub2.cfg
 sleep 1
 #
 ls -l
+sleep .5
+cat grub2.cfg
 set  +x ; echo "" ; set -x
 #
 cd ~

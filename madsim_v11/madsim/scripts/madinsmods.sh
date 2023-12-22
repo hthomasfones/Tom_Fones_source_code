@@ -100,7 +100,7 @@ cd $trgtdrvrpath
 ### invoke insmod including driver-pathname with all the input arguments 
 /sbin/insmod ./$madmodule.ko maddev_max_devs=$number_bus_slots  \
                              maddev_nbr_devs=$number_static_devs \
-                             mad_pci_devid=8194                 $* || exit 1
+                             mad_pci_devid=$pcidev              $* || exit 1
 
 if [ $maddev_major -eq 0 ]
 then
