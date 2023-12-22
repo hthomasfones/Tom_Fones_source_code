@@ -30,6 +30,8 @@
 #Set up script environment variables
 bdev=0 #Char-mode device 1st - then a block-mode on the 2nd driver
 source madenv.sh
+number_bus_slots=2
+number_static_devs=$number_bus_slots
 
 #Clear the console; hide executing commands
 clear
@@ -69,33 +71,33 @@ sleep 3
 $simapp_path$simapp 1 hpl 1001 
 $simapp_path$simapp 2 hpl 2001
 #tree /sys/devices/$busdevname/
-sleep 10
+sleep $delay
 #
 $simapp_path$simapp 1 hun  
 $simapp_path$simapp 2 hun 
 #tree /sys/devices/$busdevname/
-sleep 10
+sleep $delay
 #rmmod maddevc.ko
 #
 $simapp_path$simapp 1 hpl 1002 
 $simapp_path$simapp 2 hpl 2002
 #tree /sys/devices/$busdevname/
-sleep 10
+sleep $delay
 #
 $simapp_path$simapp 1 hun  
 $simapp_path$simapp 2 hun 
 #tree /sys/devices/$busdevname/
-sleep 10
+sleep $delay
 #
 #$simapp_path$simapp 1 hpl 1002 
 #$simapp_path$simapp 2 hpl 1003
 #tree /sys/devices/$busdevname/
-sleep 10
+sleep $delay
 #
 #$simapp_path$simapp 1 hun  
 #$simapp_path$simapp 2 hun 
 #tree /sys/devices/$busdevname/
-#sleep 10
+#sleep $delay
 #
 rmmod ${madmodule2} 
 rmmod $madmodule
