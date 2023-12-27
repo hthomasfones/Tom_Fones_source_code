@@ -417,11 +417,11 @@ void mbdt_process_cache_io(PMADBUSOBJ pmadbusobj, bool write, u32 msidx)
 	//spin_unlock(pSimParms->pdevlock);
 
 //Invoke_ISR:; 
-    //Call the device driver's ISR
-    isr_rc = pmadbusobj->isrfn[msidx](pmadbusobj->irq[msidx], pSimParms->pmaddevobj);
-	if (isr_rc != IRQ_HANDLED)
-        {PERR("madbus_dev_thread:mbdt_process_cache_io... devnum=%d isr_rc=(%d)\n",
-              (int)pmadbusobj->devnum, (int)isr_rc);}
+    //Let the cache i/o complete synchronously
+    //isr_rc = pmadbusobj->isrfn[msidx](pmadbusobj->irq[msidx], pSimParms->pmaddevobj);
+	//if (isr_rc != IRQ_HANDLED)
+    //    {PERR("madbus_dev_thread:mbdt_process_cache_io... devnum=%d isr_rc=(%d)\n",
+    //          (int)pmadbusobj->devnum, (int)isr_rc);}
 
     return;
 }
@@ -476,11 +476,11 @@ void mbdt_process_align_cache(PMADBUSOBJ pmadbusobj, bool bWrite, u32 msidx)
     //Release the target device driver's device spinlock 
 	//spin_unlock(pSimParms->pdevlock);
 
-    //Call the device driver's ISR
-	isr_rc = pmadbusobj->isrfn[msidx](pmadbusobj->irq[msidx], pSimParms->pmaddevobj);
-    if (isr_rc != IRQ_HANDLED)
-        {PERR("madbus_dev_thread:mbdt_processs_Align_Cache... devnum=%d, isr_rc=(%d)\n",
-              (int)pmadbusobj->devnum, (int)isr_rc);}
+    //Let the cache i/o complete synchronously
+	//isr_rc = pmadbusobj->isrfn[msidx](pmadbusobj->irq[msidx], pSimParms->pmaddevobj);
+    //if (isr_rc != IRQ_HANDLED)
+    //    {PERR("madbus_dev_thread:mbdt_processs_Align_Cache... devnum=%d, isr_rc=(%d)\n",
+    //          (int)pmadbusobj->devnum, (int)isr_rc);}
 
     return;
 }

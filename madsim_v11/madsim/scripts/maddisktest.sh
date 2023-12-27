@@ -43,7 +43,13 @@ clear
 
 #Load the simulation & target drivers
 source madinsmods.sh
-
+sleep $delay
+ls -l /dev | grep "fd"
+#
+cd $appbasepath"/scripts"
+source madrawblk.sh
+sleep $delay
+#
 cd $appbasepath 
 #
 set +x ; printf "\nList all floppy disks\n" ; set -x
@@ -113,7 +119,7 @@ ls -l
 set  +x ; echo "" ; set -x
 
 #Exercise the disk through fio
-fio --filename=$mountpath"/fiotest" --size=100kb --rw=randrw --bs=32k --time_based --runtime=10         --numjobs=1 --name=madjob1
+fio --filename=$mountpath"/fiotest" --size=100kb --rw=randrw --bs=32k --time_based --runtime=10 --numjobs=1 --name=madjob1
 sleep $delay
 #
 #Make another new file to show in the directory
