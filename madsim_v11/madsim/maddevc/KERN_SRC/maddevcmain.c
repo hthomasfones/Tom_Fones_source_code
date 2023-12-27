@@ -452,8 +452,8 @@ long maddev_ioctl(struct file *fp, unsigned int cmd, unsigned long arg)
         //Not implemented
 	    case MADDEVOBJ_IOC_GET_ENABLE:
 	    case MADDEVOBJ_IOC_GET_CONTROL:
-        case MADDEVOBJ_IOC_ALIGN_READ_CACHE:
-        case MADDEVOBJ_IOC_ALIGN_WRITE_CACHE:
+        //case MADDEVOBJ_IOC_ALIGN_READ_CACHE:
+        //case MADDEVOBJ_IOC_ALIGN_WRITE_CACHE:
 	        retval = -ENOSYS; 
             break;
 
@@ -535,21 +535,7 @@ loff_t maddev_llseek(struct file *fp, loff_t off, int whence)
 	return newpos;
 }
 
-//This is the open function for the virtual memory area struct
-static void maddev_vma_open(struct vm_area_struct* vma)
-{
-	struct mad_dev_obj *pmaddevobj = vma->vm_private_data;
 
-	PDEBUG( "maddev_vma_open... dev#=%d\n", (int)pmaddevobj->devnum);
-}
-
-//This is the close function for the virtual memory area struct
-static void maddev_vma_close(struct vm_area_struct* vma)
-{
-	struct mad_dev_obj *pmaddevobj = vma->vm_private_data;
-
-	PDEBUG( "maddev_vma_close... dev#=%d\n", (int)pmaddevobj->devnum);
-}
 //
 #if 0
 static int maddev_vma_fault(struct vm_fault *vmf)
@@ -584,55 +570,6 @@ static int maddev_vma_fault(struct vm_fault *vmf)
 } 
 #endif
   
-//This table specifies the entry points for VM mapping operations
-static struct vm_operations_struct maddev_remap_vm_ops =
-{
-		.open  = maddev_vma_open,
-		.close = maddev_vma_close,
-		//.fault = maddev_vma_fault,
-};
-
-//This is the function invoked when an application calls the mmap function
-//on the device. It returns a virtual mode address for the memory-mapped device
-static int maddev_mmap(struct file *fp, struct vm_area_struct* vma)
-{
-	struct mad_dev_obj *pmaddevobj = fp->private_data;
-	//struct inode* inode_str = fp->f_inode;
-    U32    pfn              = phys_to_pfn(pmaddevobj->MadDevPA);
-    size_t MapSize          = vma->vm_end - vma->vm_start;
-	//
-	int rc = 0;
-
-	PINFO("maddev_mmap... dev#=%d fp=%px pfn=x%llX PA=x%llX MapSize=%ld\n",
-          (int)pmaddevobj->devnum, (void *)fp, (unsigned long long)pfn, pmaddevobj->MadDevPA, (long int)MapSize);
-
-    mutex_lock(&pmaddevobj->devmutex);
-
-    //Map/remap the Page Frame Number of the phys addr of the device into
-    //user mode virtual addr. space
-    rc = remap_pfn_range(vma, vma->vm_start, pfn, MapSize, vma->vm_page_prot);
-    if (rc != 0)
-        {
-        mutex_unlock(&pmaddevobj->devmutex);
-        PERR("maddev_mmap:remap_pfn_range... dev#=%d rc=%d\n",
-             (int)pmaddevobj->devnum, rc);
-        return rc;
-        }
-
-	vma->vm_ops = &maddev_remap_vm_ops;
-	vma->vm_flags |= VM_IO; //RESERVED;
-	vma->vm_private_data = fp->private_data;
-
-    //Increment the reference count on first use
-	maddev_vma_open(vma);
-    mutex_unlock(&pmaddevobj->devmutex);
-
-    PDEBUG("maddev_mmap:remap_pfn_range... dev#=%d start=%px rc=%d\n",
-           (int)pmaddevobj->devnum, (void *)vma->vm_start, rc);
-
-    return rc;
-}
-
 //This is the table of entry points for device i/o operations
 static struct file_operations maddev_fops = 
 {
@@ -694,7 +631,7 @@ static int maddevc_init_module(void)
     dev_t  dev = 0;
 	U32    devcount = 0;
     U32    len;
-    size_t SetSize = (maddev_max_devs+3) * PAGE_SIZE; // Let padding consume a memory error
+    size_t SetSize = (maddev_max_devs+3) * PAGE_SIZE; //Add padding to paint over a memory error
     u8 bMSI = (mad_pci_devid == MAD_PCI_CHAR_MSI_DEVICE_ID);
  
 	PINFO("maddev_init_module... mjr=%d mnr=%d\n", maddev_major, maddev_minor);

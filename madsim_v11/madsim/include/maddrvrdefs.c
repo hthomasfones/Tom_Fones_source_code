@@ -143,6 +143,70 @@ static struct kobj_type mad_ktype =
     .default_attrs = NULL,
 };
 
+//This is the open function for the virtual memory area struct
+void maddev_vma_open(struct vm_area_struct* vma)
+{
+	struct mad_dev_obj *pmaddevobj = vma->vm_private_data;
+
+	PDEBUG( "maddev_vma_open... dev#=%d\n", (int)pmaddevobj->devnum);
+}
+
+//This is the close function for the virtual memory area struct
+void maddev_vma_close(struct vm_area_struct* vma)
+{
+	struct mad_dev_obj *pmaddevobj = vma->vm_private_data;
+
+	PDEBUG( "maddev_vma_close... dev#=%d\n", (int)pmaddevobj->devnum);
+}
+//This table specifies the entry points for VM mapping operations
+struct vm_operations_struct maddev_remap_vm_ops =
+{
+		.open  = maddev_vma_open,
+		.close = maddev_vma_close,
+		//.fault = maddev_vma_fault,
+};
+
+//This is the function invoked when an application calls the mmap function
+//on the device. It returns a virtual mode address for the memory-mapped device
+int maddev_mmap(struct file *fp, struct vm_area_struct* vma)
+{
+	struct mad_dev_obj *pmaddevobj = fp->private_data;
+	//struct inode* inode_str = fp->f_inode;
+    U32    pfn              = phys_to_pfn(pmaddevobj->MadDevPA);
+    size_t MapSize          = vma->vm_end - vma->vm_start;
+	//
+	int rc = 0;
+
+	PINFO("maddev_mmap... dev#=%d fp=%px pfn=x%llX PA=x%llX MapSize=%ld\n",
+          (int)pmaddevobj->devnum, (void *)fp, (unsigned long long)pfn, 
+          pmaddevobj->MadDevPA, (long int)MapSize);
+
+    mutex_lock(&pmaddevobj->devmutex);
+
+    //Map/remap the Page Frame Number of the phys addr of the device into
+    //user mode virtual addr. space
+    rc = remap_pfn_range(vma, vma->vm_start, pfn, MapSize, vma->vm_page_prot);
+    if (rc != 0)
+        {
+        mutex_unlock(&pmaddevobj->devmutex);
+        PERR("maddev_mmap:remap_pfn_range... dev#=%d rc=%d\n",
+             (int)pmaddevobj->devnum, rc);
+        return rc;
+        }
+
+	vma->vm_ops = &maddev_remap_vm_ops;
+	vma->vm_flags |= VM_IO; //RESERVED;
+	vma->vm_private_data = fp->private_data;
+
+    //Increment the reference count on first use
+	maddev_vma_open(vma);
+    mutex_unlock(&pmaddevobj->devmutex);
+
+    PDEBUG("maddev_mmap:remap_pfn_range... dev#=%d start=%px rc=%d\n",
+           (int)pmaddevobj->devnum, (void *)vma->vm_start, rc);
+
+    return rc;
+}
 
 //This function sets up one pci device object
 int maddev_setup_device(PMADDEVOBJ pmaddevobj, struct pci_dev** ppPcidevTmp, U8 bHPL, u8 bMSI)

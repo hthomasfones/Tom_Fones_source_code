@@ -73,7 +73,7 @@ struct mad_dev_obj
     int                base_irq;
     struct mutex       devmutex;     
 	spinlock_t         devlock;
-    struct pci_dev*    pPciDev;
+    struct pci_dev*    pPcidev;
     struct device*     pdevnode;
     U32                bReady;
     U32                bDevRegstrd;
@@ -136,6 +136,7 @@ int  maddev_setup_device(PMADDEVOBJ pmaddevobj,
                          struct pci_dev** ppPciDvTmp, U8 HPL, u8 bMSI);
 void maddev_remove_device(PMADDEVOBJ pmaddevobj);
 loff_t  maddev_llseek(struct file *filp, loff_t off, int whence);
+int maddev_mmap(struct file *fp, struct vm_area_struct* vma);
 bool  maddev_need_sg(struct page* pPages[], u32 num_pgs);
 void maddevc_program_stream_io(spinlock_t *splock, PMADREGS pmadregs,
 		                     U32 ControlReg, U32 IntEnableReg,
@@ -145,10 +146,10 @@ int maddev_status_to_errno(int devnum, PMADREGS pmadregs);
 long maddev_get_io_status(struct mad_dev_obj *pmaddev, wait_queue_head_t* io_q,
                           long* io_f, spinlock_t* plock0); 
 void maddev_get_pciconfig_sim(void* pPciCnfg, U32 Len);
-int  maddev_claim_pci_resrcs(struct pci_dev* pPciDev, 
+int  maddev_claim_pci_resrcs(struct pci_dev* pPcidev, 
                              PMADDEVOBJ pmaddevobj, char* Devname, U16 NumIrqs);
 int maddev_release_pci_resrcs(PMADDEVOBJ pmaddevobj);
-int  maddev_exchange_sim_parms(struct pci_dev** ppPciDev, PMADDEVOBJ pmaddevobj);
+int  maddev_exchange_sim_parms(struct pci_dev** ppPcidev, PMADDEVOBJ pmaddevobj);
 void maddev_init_io_parms(PMADDEVOBJ pmaddevobj, U32 indx);
 void* maddev_getkva(phys_addr_t PhysAddr, struct page** ppPgStr);
 void mad_putkva(struct page* pPgStr);
