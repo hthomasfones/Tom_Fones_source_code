@@ -31,7 +31,7 @@
 bdev=0
 source madenv.sh
 number_bus_slots=3
-number_static_devs=0
+number_static_devs=0 #override the general environment setting
 
 #Clear the console; hide executing commands
 clear
@@ -41,6 +41,7 @@ tree /sys/devices/$busdevname/
 
 #Load the simulation & target drivers
 source madinsmods.sh
+sleep $delay
 
 #Check for help from the test app & sim-ui
 cd $currdir
@@ -51,10 +52,11 @@ cd $appbasepath
 #printf "\nHotplug tests\n"
 #for (( dn=1; dn<=$number_bus_slots; dn++ ))
 #do
-    $simapp_path$simapp 1 hun 
+    $simapp_path$simapp 1 hun # hot-unplug to an empty slot
+    sleep $delay
+    $simapp_path$simapp $dn hpl 1005 #hotplu an unknown pci-device-id
     sleep $delay
 #done
-#tree /sys/devices/$busdevname/
 
 for (( dn=1; dn<=$number_bus_slots; dn++ ))
 do
@@ -65,6 +67,10 @@ set +x ; printf "\nThe sysfs tree for the bus:bus-device $busmodule : $busdevnam
 sleep $delay
 tree /sys/bus/$busmodule/
 tree /sys/devices/$busdevname/
+sleep $delay
+#
+set +x ; printf "\nLet's confirm that we can open a device\n" ; set -x
+$testapp_path$testapp 1 get 
 sleep $delay
 #
 $simapp_path$simapp 1 hun 
@@ -81,6 +87,6 @@ sleep $delay
 rmmod $madmodule
 rmmod $busmodule
 lsmod | grep "mad"
-pause
-echo "=== madhotplugtest.sh fini ==================="
+sleep 1
+set +x ; printf "\n=== madhotplugtest.sh fini ===================\n" ; set -x
 

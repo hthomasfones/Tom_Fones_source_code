@@ -1,5 +1,5 @@
 #!/bin/sh
-#/*                                                                            
+##/*                                                                            
 #/*  PRODUCT      : MAD Device Simulation Framework                            
 #/*  COPYRIGHT    : (c) 2021 HTF Consulting                                    
 #/*                                                                            
@@ -27,6 +27,7 @@
 #/*                                                                            
 #/* $Id: madenv.sh, v 1.0 2021/01/01 00:00:00 htf $                            
 #/*                                                                          
+delay=0.25
 
 busdrvrpath="../madbus/KERN_SRC"
 busmodule="madbus"
@@ -40,14 +41,16 @@ then
     maddevobj="maddevb_obj"
     madmodule2="maddevc"
     devtype='b'
+    pcidev=8193 #x2001
 else
     echo "Configuring for the char-dev driver stack"
     madmodule="maddevc"
     maddevobj="maddevc_obj"
     madmodule2="maddevb"
     devtype='c'
+    pcidev=4097 #x1001
 fi    
-sleep 1
+sleep $delay
 trgtdrvrpath="../$madmodule/KERN_SRC"
 
 # number of devices 
@@ -62,6 +65,7 @@ maddev_major=0
 mode="664"
 #
 appbasepath="/home/htfones/eclipse-wkspc/madsim"
+scriptpath="../../scripts"
 simapp_path="madsimui/Debug/"
 simapp="madsimui"
 #
@@ -76,12 +80,11 @@ testappbio="madtestb"
 madblockdevpath="/dev/fd"
 
 dumpsize=1000
-delay=0.25
 currdir=$(pwd) #where are we
 
 echo "Let's user-id and timestamp this execution"
 echo "Hello... $(whoami). The local time is: $(date)"
-sleep 1
+sleep $delay
 # Group: since distributions do it differently, look for wheel or use staff
 if grep -q '^staff:' /etc/group;
 then

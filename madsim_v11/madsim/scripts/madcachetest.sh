@@ -44,9 +44,9 @@ dx=$devnum
 #
 sleep $delay
 cd $appbasepath"/scripts"
-source madrawblk.sh
+#source madrawblk.sh
 sleep $delay
-
+#exit
 #Check help for the testware
 cd $currdir
 cd $appbasepath 
@@ -55,7 +55,7 @@ cd $appbasepath
 #
 cd $appbasepath 
 set +x ; printf "\nCache & Programmed i/o test\n" ; set -x ;
-$testappbio_path$testappbio $devnum rst
+$testappbio_path$testappbio $devnum ini
 #exit
 #$testappbio_path$testappbio $devnum get
 #$simappbio_path$simappbio $devnum get
@@ -69,8 +69,11 @@ set +x ; printf "\nLet's do some programmed i/o =================\n" ; set -x ;
 #$testappbio_path$testappbio $devnum pir 50
 #exit
 set +x ; printf "\nPopulate device sectors through the write cache =================\n" ; set -x ;
-$testappbio_path$testappbio $devnum awc 1  #Align the write cache
+#$testappbio_path$testappbio $devnum apwc ##Align the write cache
+$testappbio_path$testappbio $devnum pwc Sector_zero_000 #Program the write cache
 sleep $delay
+$testappbio_path$testappbio $simappbio_path$simappbio $devnum get
+exit
 $testappbio_path$testappbio $devnum pwc Sector_zero_000 #Program the write cache
 sleep $delay
 $testappbio_path$testappbio $devnum prc 

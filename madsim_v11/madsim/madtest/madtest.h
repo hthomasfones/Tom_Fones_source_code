@@ -55,11 +55,14 @@
 #include "../include/maddevioctls.h"
 
 #ifdef BIO //Block-mode device
-#define  MADDEVNAME      "maddevb_objX"
+    //#define  MADDEVNAME         "raw/rawX"
+    //#define  MADDEVNUMDX        7 //....^
+    #define  MADDEVNAME         "maddevb_objX"
+    #define  MADDEVNUMDX        11 //.......^
 #else //Char-mode device
-#define  MADDEVNAME      "maddevc_objX"
+    #define  MADDEVNAME      "maddevc_objX"
+    #define  MADDEVNUMDX     11 //.......^
 #endif
-#define  MADDEVNUMDX     11 //.......^
 
 typedef PMADREGS* PPMADREGS; //just an env test
 

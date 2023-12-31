@@ -52,7 +52,7 @@ ln -sfv ${maddevobj} /dev/${maddevobj}
 cd ../../
 cd $madmodule2/KERN_SRC
 /sbin/insmod ./$madmodule2.ko maddev_major=$maddev_major maddev_max_devs=$number_bus_slots maddev_nbr_devs=0 || exit 1
-lsmod
+lsmod | grep "mad"
 
 printf "\nChange permission modes for all nodes... \n"
 #chgrp $group /dev/${maddevobj}[0-$number_static_devs] 
@@ -63,47 +63,36 @@ cd $currdir
 cd $appbasepath 
 
 printf "\n Multiple driver/device-type tests\n"
-#$simapp_path$simapp 1 hun 
-#$simapp_path$simapp 2 hun
-#
-$simapp_path$simapp 1 hpl 1005
-sleep 3
 $simapp_path$simapp 1 hpl 1001 
+sleep $delay
 $simapp_path$simapp 2 hpl 2001
-#tree /sys/devices/$busdevname/
+tree /sys/devices/$busdevname/
 sleep $delay
 #
 $simapp_path$simapp 1 hun  
-$simapp_path$simapp 2 hun 
-#tree /sys/devices/$busdevname/
 sleep $delay
-#rmmod maddevc.ko
-#
-$simapp_path$simapp 1 hpl 1002 
-$simapp_path$simapp 2 hpl 2002
-#tree /sys/devices/$busdevname/
-sleep $delay
-#
-$simapp_path$simapp 1 hun  
 $simapp_path$simapp 2 hun 
-#tree /sys/devices/$busdevname/
+sleep $delay
+#exit
+tree /sys/devices/$busdevname/
 sleep $delay
 #
 #$simapp_path$simapp 1 hpl 1002 
-#$simapp_path$simapp 2 hpl 1003
+#sleep $delay
+#$simapp_path$simapp 2 hpl 2002
+#sleep $delay
 #tree /sys/devices/$busdevname/
-sleep $delay
 #
 #$simapp_path$simapp 1 hun  
 #$simapp_path$simapp 2 hun 
 #tree /sys/devices/$busdevname/
 #sleep $delay
 #
+#exit
 rmmod ${madmodule2} 
 rmmod $madmodule
 rmmod $busmodule
 lsmod | grep "mad"
-
 echo "=== mad2drvrstest.sh fini ==================="
 
 

@@ -147,7 +147,6 @@ static struct kobj_type mad_ktype =
 void maddev_vma_open(struct vm_area_struct* vma)
 {
 	struct mad_dev_obj *pmaddevobj = vma->vm_private_data;
-
 	PDEBUG( "maddev_vma_open... dev#=%d\n", (int)pmaddevobj->devnum);
 }
 
@@ -155,7 +154,6 @@ void maddev_vma_open(struct vm_area_struct* vma)
 void maddev_vma_close(struct vm_area_struct* vma)
 {
 	struct mad_dev_obj *pmaddevobj = vma->vm_private_data;
-
 	PDEBUG( "maddev_vma_close... dev#=%d\n", (int)pmaddevobj->devnum);
 }
 //This table specifies the entry points for VM mapping operations
@@ -165,6 +163,74 @@ struct vm_operations_struct maddev_remap_vm_ops =
 		.close = maddev_vma_close,
 		//.fault = maddev_vma_fault,
 };
+
+
+/*
+ * The "extended" operations -- only seek
+ */
+//The random access seek function is not currently used
+loff_t maddev_llseek(struct file *fp, loff_t off, int whence)
+{
+	struct mad_dev_obj *pmaddevobj = fp->private_data;
+    PMADREGS pmadregs = pmaddevobj->pDevBase; 
+	//
+	loff_t newpos = 0;
+   	u32 flags1 = 0;
+    //U32 flags2 = 0;
+    int rc = 0;
+
+	PINFO("maddev_llseek... dev#=%d lseek=%ld\n",
+          (int)pmaddevobj->devnum, (ulong)off);
+
+    mutex_lock(&pmaddevobj->devmutex);
+    switch(whence)
+        {
+	    case 0: /* SEEK_SET */
+		    newpos = off;
+		    break;
+
+	    case 1: /* SEEK_CUR */
+		    newpos = fp->f_pos + off;
+		    break;
+
+	    case 2: /* SEEK_END */
+		    //newpos = pmaddevobj->size + off;
+		    break;
+
+	    default: /* can't happen */
+		    rc = -EINVAL;
+	    }
+
+	if (newpos < 0) 
+        {rc = -EINVAL;}
+
+    if (rc == -EINVAL)
+        {
+        mutex_unlock(&pmaddevobj->devmutex);
+        PWARN("maddev_llseek... dev#=%d rc=-EINVAL\n",
+              (int)pmaddevobj->devnum);
+        return rc;
+        }
+
+    //Align to unit-io size
+    newpos = (newpos / MAD_UNITIO_SIZE_BYTES);
+    newpos = (newpos * MAD_UNITIO_SIZE_BYTES);
+
+    //Update the device registers
+    maddev_acquire_lock_disable_ints(&pmaddevobj->devlock, flags1);
+    iowrite32(newpos, &pmadregs->ByteIndxRd);
+    iowrite32(newpos, &pmadregs->ByteIndxWr);
+    maddev_enable_ints_release_lock(&pmaddevobj->devlock, flags1);
+
+    //Sets the file_pos for the next read/write 
+    fp->f_pos = newpos;
+    mutex_unlock(&pmaddevobj->devmutex);
+
+    PINFO("maddev_llseek... dev#=%d location=%ld fpos=%ld\n",
+          (int)pmaddevobj->devnum, (ulong)newpos, (ulong)fp->f_pos);
+
+	return newpos;
+}
 
 //This is the function invoked when an application calls the mmap function
 //on the device. It returns a virtual mode address for the memory-mapped device
@@ -197,12 +263,13 @@ int maddev_mmap(struct file *fp, struct vm_area_struct* vma)
 	vma->vm_ops = &maddev_remap_vm_ops;
 	vma->vm_flags |= VM_IO; //RESERVED;
 	vma->vm_private_data = fp->private_data;
+    pmaddevobj->vma = vma;
 
     //Increment the reference count on first use
 	maddev_vma_open(vma);
     mutex_unlock(&pmaddevobj->devmutex);
 
-    PDEBUG("maddev_mmap:remap_pfn_range... dev#=%d start=%px rc=%d\n",
+    PDEBUG("maddev_mmap()... dev#=%d start=%px rc=%d\n",
            (int)pmaddevobj->devnum, (void *)vma->vm_start, rc);
 
     return rc;
@@ -325,11 +392,13 @@ int maddev_setup_device(PMADDEVOBJ pmaddevobj, struct pci_dev** ppPcidevTmp, U8 
     pmaddevobj->pdevnode = &pmaddevobj->pPcidev->dev;
 
     #ifdef _CDEV_
-	rc = maddev_setup_cdev(pmaddevobj, i);
+	    rc = maddevc_setup_cdev(pmaddevobj, i);
     #endif
 
     #ifdef _BLOCKIO_
-    rc = maddevb_create_device(pmaddevobj);
+        //Set up a target device for fs-open, mmap, ioctls
+    	rc = maddevr_setup_cdev(pmaddevobj, i);
+        rc = maddevb_create_device(pmaddevobj);
     #endif
 
     if (rc != 0)
@@ -348,7 +417,7 @@ int maddev_setup_device(PMADDEVOBJ pmaddevobj, struct pci_dev** ppPcidevTmp, U8 
           (int)i, (void *)pmaddevobj, 
           pmaddevobj->pDevBase, pmaddevobj->MadDevPA);
 
-    //Release our quantum - let asynchronous threads run
+    //Release our quantum - let waiting threads run
   	schedule(); 
 
     return rc;

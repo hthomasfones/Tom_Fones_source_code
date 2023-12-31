@@ -627,6 +627,9 @@ int numdevsready = 0;
         pmadbusobj++; 
         }
 
+    PINFO("madbus_init_module:madbus_setup_devices() num_devices=%d\n",
+          (int)numdevsready);
+
     return numdevsready;
 }
 
@@ -710,6 +713,7 @@ static int madbus_init(void)
         PERR("madbus_init_module:madbus_setup_devices() rc=%d\n", rc);
    		madbus_exit();
         ret = rc;
+        //goto InitExit;
    		}
 
 InitExit:;

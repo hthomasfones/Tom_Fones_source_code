@@ -7,4 +7,5 @@
 //============================================================================
 
 #define  BIO
+#define  OPENFLAGS 0 //O_DIRECT
 #include "../madtest/madtest.cpp"

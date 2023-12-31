@@ -7,4 +7,5 @@
 //============================================================================
 
 #undef BIO
+#define OPENFLAGS 0
 #include "../madtest/madtest.cpp"

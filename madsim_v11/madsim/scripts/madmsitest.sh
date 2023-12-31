@@ -30,6 +30,7 @@
 #Set up script environment variables
 bdev=0 #We will setup  char-mode device(s)
 source madenv.sh
+pcidev=4098 # x1001 char device; msi
 
 #Clear the console; hide executing commands
 clear

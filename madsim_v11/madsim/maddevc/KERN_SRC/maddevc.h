@@ -118,20 +118,11 @@
 extern int maddev_major;     /* main.c */
 extern int maddev_nbr_devs;
 
-//
-ssize_t
-maddev_read(struct file *filp, char __user *buf, size_t count, loff_t *f_pos);
-///*static*/ ssize_t
-//maddev_read_bufrd(struct file *filp, char __user *buf, size_t count, loff_t *f_pos);
-ssize_t
-maddev_write(struct file *filp, const char __user *buf, size_t count, loff_t *f_pos);
-//static ssize_t
-extern ssize_t maddev_direct_io(struct file *filp, const char __user *buf, 
-                                size_t count, loff_t *f_pos, bool bWr);
+int maddevc_setup_cdev(void* pvoid, int indx);
 
-#ifdef _DEVICE_DRIVER_MAIN_
-static int maddev_setup_cdev(/*PMADDEVOBJ*/ void* pmaddevobj, int indx);
-#endif
+//#ifdef _DEVICE_DRIVER_MAIN_
+//static int maddev_setup_cdev(/*PMADDEVOBJ*/ void* pmaddevobj, int indx);
+//#endif
 
 irqreturn_t maddevc_msi_one_isr(int irq, void* dev_id);
 irqreturn_t maddevc_msi_two_isr(int irq, void* dev_id);
@@ -146,8 +137,8 @@ irqreturn_t maddevc_msi_eight_isr(int irq, void* dev_id);
 //void *dev_get_drvdata(const struct device *dev); void dev_set_drvdata(struct device *dev, void *data)
 static inline irqreturn_t maddevc_isr_worker_fn(int irq, void* dev_id, int msinum)
 {
-    //struct pci_dev* pPciDev = (struct pci_dev *)dev_id;
-	//PMADDEVOBJ pmaddevobj = (PMADDEVOBJ)pPciDev->dev.driver_data;
+    //struct pci_dev* pPcidev = (struct pci_dev *)dev_id;
+	//PMADDEVOBJ pmaddevobj = (PMADDEVOBJ)pPcidev->dev.driver_data;
     PMADDEVOBJ pmaddevobj = dev_id;
 	PMADREGS pmadregs;
 	//

@@ -281,7 +281,6 @@ static struct file_operations maddevseq_proc_ops = {
 	.owner   = THIS_MODULE,
 	.open    = maddevseq_proc_open,
 	.read    = seq_read,
-    .mmap    = maddev_mmap,
 	.llseek  = seq_lseek,
 	.release = seq_release
 };
@@ -306,123 +305,151 @@ static void maddev_remove_proc(void)
 //
 #endif /* MADDEV_DEBUG */
 
-int maddevb_system_ioctl(struct block_device* bdev, fmode_t mode,
-                         unsigned int cmd, unsigned long arg)
+/*
+ * Open and close
+ */
+//This is the open function for one hardware device
+static int maddevr_open(struct inode *inode, struct file *fp)
 {
-    struct maddevb* pmaddevb       = bdev->bd_disk->private_data;
-    struct mad_dev_obj* pmaddevobj = (PMADDEVOBJ)pmaddevb->mbdev->pmaddevobj;
-    int rc = -ENOSYS; 
-    int flags = 0;
+	struct mad_dev_obj *pmaddevobj = 
+                       container_of(inode->i_cdev, struct mad_dev_obj, cdev_str);
 
-    //PINFO("maddevb_system_ioctl... dev#=%d blkdev=%px fmode=x%X cmd=x%X arg=x%X\n",
-    //      (int)pmaddevobj->devnum, bdev, mode, cmd, arg);
+	PINFO("maddevr_open... dev#=%d maddev=%p inode=%p fp=%p\n",
+		  (int)pmaddevobj->devnum, pmaddevobj, inode, fp);
 
-    switch (cmd)
-        {
-        case CDROM_GET_CAPABILITY:
-            flags = (int)MADDEVB_GENHD_FLAGS;
-            PINFO("maddevb_system_ioctl... cdrom_get_caps; dev#=%d flags=x%X\n",
-                  (int)pmaddevobj->devnum, flags);
-            break;
+    mutex_lock(&pmaddevobj->devmutex);
+    fp->private_data = pmaddevobj; /* for other methods */
+    mutex_unlock(&pmaddevobj->devmutex);
 
-        case CDROMCLOSETRAY:
-        case CDROM_SET_OPTIONS: 
-        case CDROM_CLEAR_OPTIONS:
-        case CDROM_SELECT_SPEED:
-        case CDROM_SELECT_DISC:
-        case CDROM_MEDIA_CHANGED:
-        case CDROM_DRIVE_STATUS:
-        case CDROM_DISC_STATUS:
-        case CDROM_CHANGER_NSLOTS:
-        case CDROM_LOCKDOOR:	
-        case CDROM_DEBUG: 
-            PINFO("maddevb_system_ioctl... cdrom_ioctl dev#=%d rc=%d\n",
-                  (int)pmaddevobj->devnum, rc);
-            break;
-
-        default:;
-            PINFO("maddevb_system_ioctl... dev#=%d cmd=%ld not a system ioctl\n",
-                  (int)pmaddevobj->devnum, cmd);
-        }
-
-    if (rc < 0)
-        {PDEBUG("maddevb_system_ioctl... dev#=%d rc=%d\n",
-                (int)pmaddevobj->devnum, rc);}
-
-    return rc;
+	return 0;          /* success */
 }
 
-/* The ioctl() implementation
- */
-int maddevb_ioctl(struct block_device* bdev, fmode_t mode,
-                  unsigned int cmd, unsigned long arg)
+//This is the release function for one hardware device
+static int maddevr_release(struct inode *inode, struct file *fp)
 {
-	static MADREGS  MadRegs;
-	//
-    struct maddevb* pmaddevb       = bdev->bd_disk->private_data;
-	struct mad_dev_obj *pmaddevobj =  (PMADDEVOBJ)pmaddevb->mbdev->pmaddevobj;
-	PMADREGS        pmadregs  = (PMADREGS)pmaddevobj->pDevBase;
-	PMADCTLPARMS    pCtlParms = (PMADCTLPARMS)arg;
-	int err = 0;
-	long retval = 0;
-    int  sysrc = 0;
-	U32  remains = 0;
-    U32  flags1 = 0;
-    u8*  madcache = NULL;
-    u8   cachebufr[MAD_SECTOR_SIZE];
+	struct mad_dev_obj *pmaddevobj = (struct mad_dev_obj*)fp->private_data;
+    int rc = 0;
 
-    PINFO("maddevb_ioctl... dev#=%d blkdev=%px fmode=x%X cmd=x%X arg=x%X\n",
-		  (int)pmaddevobj->devnum, bdev, mode, cmd, (int)arg);
-    ASSERT((int)(pmaddevb->disk == bdev->bd_disk));
+	PINFO("maddevr_release...dev#=%d inode=%p fp=%p\n",
+          (int)pmaddevobj->devnum, inode, fp);
+
+    mutex_lock(&pmaddevobj->devmutex);
+    if (pmaddevobj->vma != NULL)
+        {
+        //rc = munmap(pmaddevobj->vma->vm_start, pmaddevobj->vma->vm_end); 
+        pmaddevobj->vma = NULL;
+        }
+    mutex_unlock(&pmaddevobj->devmutex);
+
+    if (rc != 0)
+        {PERR("maddevr_release... dev#=%d rc=%d\n", (int)pmaddevobj->devnum, rc);}
+
+	return rc;
+}
+
+/*
+ * Data management: read and write
+ */
+//This is the generic read function
+static ssize_t
+maddevr_read(struct file *fp, char __user *usrbufr, size_t count, loff_t *f_pos)
+{
+    struct mad_dev_obj *pmaddevobj = (struct mad_dev_obj*)fp->private_data;
+    ssize_t iocount = 0;                                                         
+
+    PINFO("maddevr_read... dev#=%d fp=%px count=%ld offset_arg=%ld fppos=%ld\n",
+          (int)pmaddevobj->devnum, (void *)fp,
+          (long int)count, (unsigned long int)*f_pos, (long int)fp->f_pos);
 
     mutex_lock(&pmaddevobj->devmutex);
 
-    sysrc = maddevb_system_ioctl(bdev, mode, cmd, arg);
-    if (sysrc != -ENOSYS)
-        {
-        mutex_unlock(&pmaddevobj->devmutex);
-        return sysrc;
-        }
+    //Do a large buffered read using direct-io of the user buffer
+    iocount = maddevb_direct_io(fp, usrbufr, count, f_pos, false);
+
+    mutex_unlock(&pmaddevobj->devmutex);
+
+    return iocount;
+}
+
+//This is the generic write function
+static ssize_t maddevr_write(struct file *fp, const char __user *usrbufr, size_t count,
+                            loff_t *f_pos)
+{
+    PMADDEVOBJ pmaddevobj = (PMADDEVOBJ)fp->private_data;
+    ssize_t iocount = 0;                                                         
+
+    PINFO("maddevr_write... dev#=%d fp=%px count=%ld f_pos=%ld fp->pos=%ld\n",
+          (int)pmaddevobj->devnum, (void *)fp, (long int)count,
+          (long int)*f_pos, (long int)fp->f_pos);
+
+    mutex_lock(&pmaddevobj->devmutex);
+
+    //Do a large buffered write using direct-io of the user buffer
+    iocount = maddevb_direct_io(fp, usrbufr, count, f_pos, true);
+
+    mutex_unlock(&pmaddevobj->devmutex);
+
+    return iocount;
+}
+
+long maddevr_ioctl(struct file *fp, unsigned int cmd, unsigned long arg)
+{
+	static MADREGS  MadRegs;
+	//
+	struct mad_dev_obj *pmaddevobj = fp->private_data;
+	PMADREGS        pmadregs  = (PMADREGS)pmaddevobj->pDevBase;
+	PMADCTLPARMS    pCtlParms = (PMADCTLPARMS)arg;
+	//
+	int err = 0;
+	long retval = 0;
+	U32  remains = 0;
+    u32 flags1 = 0;
+    //U32 flags2 = 0;
+    u8*  madcache = NULL;
+    u8   cachebufr[MAD_SECTOR_SIZE];
+
+	PINFO("maddevr_ioctl... dev#=%d fp=%px cmd=x%X arg=x%X\n",
+		  (int)pmaddevobj->devnum, (void *)fp, cmd, (int)arg);
 
     /* Extract the type and number bitfields, and don't decode
 	 * wrong cmds: return (inappropriate ioctl) before access_ok() */
 	if ((_IOC_TYPE(cmd) != MADDEVOBJ_IOC_MAGIC)  ||
         (_IOC_NR(cmd) > MADDEVOBJ_IOCTL_MAX_NBR))
-	    {
-        mutex_unlock(&pmaddevobj->devmutex);
-        PWARN("maddev_ioctl... dev#=%d cmd=x%X rc=-EACCES\n", 
-              (int)pmaddevobj->devnum, (unsigned)cmd);
+        {
+		PDEBUG( "maddev_ioctl returning -EACCES\n");
 		return -EACCES;
-	    }
+        }
 
-    err = !access_ok((void __user *)arg, _IOC_SIZE(cmd));
+	/* The direction is a bitmask, and VERIFY_WRITE catches R/W
+	 * transfers. `Type' is user-oriented, while
+	 * access_ok is kernel-oriented, so the concept of "read" and
+	 * "write" is reversed */
+    err = !access_ok(/*VERIFY_WRITE,*/ (void __user *)arg, _IOC_SIZE(cmd));
 	if (err)
-	    {
-        mutex_unlock(&pmaddevobj->devmutex);
-        PERR( "maddevb_ioctl... dev#=%d rc=-EINVAL\n", (int)pmaddevobj->devnum);
+        {
+		PDEBUG( "maddevr_ioctl returning -EINVAL\n");
 		return -EINVAL;
-	    }
- 
+        }
+
     //If the ioctl queue is not free we return
     if (pmaddevobj->ioctl_f != eIoReset)
-        {
-        mutex_unlock(&pmaddevobj->devmutex);
-        return -EAGAIN;
-        }
+        {return -EAGAIN;}
+
+    mutex_lock(&pmaddevobj->devmutex);
 
     switch(cmd)
 	    {
 	    case MADDEVOBJ_IOC_INIT: //Initialize the device in a standard way
-	    	PINFO("maddev_ioctl: MADDEVOBJ_IOC_INIT\n");
+	    	PDEBUG( "maddevr_ioctl MADDEVOBJ_IOC_INIT\n");
             maddev_acquire_lock_disable_ints(&pmaddevobj->devlock, flags1);
-            memcpy_toio(&MadRegsRst, pmadregs, sizeof(MADREGS)); //Hard-coded init values
+            memcpy_toio(&MadRegsRst, pmadregs, sizeof(MADREGS));
             maddev_enable_ints_release_lock(&pmaddevobj->devlock, flags1);
             break;
 
 	    case MADDEVOBJ_IOC_RESET: //Reset all index registers
-	    	PINFO("maddev_ioctl: MADDEVOBJ_IOC_RESET\n");
+	    	PDEBUG("maddevr_ioctl MADDEVOBJ_IOC_RESET\n");
             maddev_acquire_lock_disable_ints(&pmaddevobj->devlock, flags1);
-	    	iowrite32(0, &pmadregs->ByteIndxRd);
+            iowrite32(0, &pmadregs->ByteIndxRd);
 	    	iowrite32(0, &pmadregs->ByteIndxWr);
 	    	iowrite32(0, &pmadregs->CacheIndxRd);
 	    	iowrite32(0, &pmadregs->CacheIndxWr);
@@ -430,67 +457,59 @@ int maddevb_ioctl(struct block_device* bdev, fmode_t mode,
             maddev_enable_ints_release_lock(&pmaddevobj->devlock, flags1);
             break;
 
-       case MADDEVOBJ_IOC_GET_DEVICE:
-		    PINFO("maddev_ioctl: devnum=%d; MADDEVOBJ_IOC_GET_DEVICE\n",
-                  (int)pmaddevobj->devnum);
+	    case MADDEVOBJ_IOC_GET_DEVICE:
+		    PDEBUG("maddevr_ioctl... dev#=%d; MADDEVOBJ_IOC_GET_DEVICE\n",
+                   (int)pmaddevobj->devnum);
 		    //
 		    memset(&MadRegs, 0xcc, sizeof(MADREGS));
-		    spin_lock(&pmaddevobj->devlock);
             maddev_acquire_lock_disable_ints(&pmaddevobj->devlock, flags1);
             memcpy_fromio(&MadRegs, pmadregs, sizeof(MADREGS));
             maddev_enable_ints_release_lock(&pmaddevobj->devlock, flags1);
 
-		    remains =
+            remains =
 		    copy_to_user(&pCtlParms->MadRegs, &MadRegs, sizeof(MADREGS)); //possibly paged memory - copy outside of spinlock
 		    if (remains > 0)
                 {
-                PWARN("mmaddev_ioctl: copy_to_user returned (%d) bytes remaining...devnum=%d\n",
-                      (int)remains, (int)pmaddevobj->devnum);
+                PERR("maddevr_ioctl:copy_to_user...  dev#=%d bytes_remaining=%ld rc=-EFAULT\n",
+                     (int)pmaddevobj->devnum, remains);
 	    		retval = -EFAULT;
                 }
 		    break;
 
-	    case MADDEVOBJ_IOC_GET_ENABLE:
-	    case MADDEVOBJ_IOC_GET_CONTROL:
-		    retval = -ENOSYS; //STATUS_NOT_IMPLEMENTED
-		    break;
-
 	    case MADDEVOBJ_IOC_SET_ENABLE:
 		    MadRegs.IntEnable = arg;
-		    spin_lock(&pmaddevobj->devlock);
             maddev_acquire_lock_disable_ints(&pmaddevobj->devlock, flags1);
             iowrite32(MadRegs.IntEnable, &pmadregs->IntEnable);
             maddev_enable_ints_release_lock(&pmaddevobj->devlock, flags1);
-		    break;
+            break;
 
 	    case MADDEVOBJ_IOC_SET_CONTROL:
 		    MadRegs.Control = arg;
             maddev_acquire_lock_disable_ints(&pmaddevobj->devlock, flags1);
-            spin_lock(&pmaddevobj->devlock);
-		    iowrite32(MadRegs.Control, &pmadregs->Control);
+            iowrite32(MadRegs.Control, &pmadregs->Control);
             maddev_enable_ints_release_lock(&pmaddevobj->devlock, flags1);
-		    break;
+	        break;
 
         case MADDEVOBJ_IOC_ALIGN_READ_CACHE:
-            PDEBUG("maddev_ioctl... MADDEVOBJ_IOC_ALIGN_READ_CACHE dev#=%d cache_read_dx=%ld\n",
+            PDEBUG("maddevr_ioctl... MADDEVOBJ_IOC_ALIGN_READ_CACHE dev#=%d cache_read_dx=%ld\n",
                    (int)pmaddevobj->devnum, arg);
 
             if ((arg < 0) || (arg > MAD_DEVICE_MAX_SECTORS-1))
                 {
-		        retval = -EINVAL;
+                retval = -EINVAL;
                 break;
                 }
 
             MadRegs.CacheIndxRd = arg; //The sector#
             maddev_acquire_lock_disable_ints(&pmaddevobj->devlock, flags1);
-		    iowrite32(MadRegs.CacheIndxRd, &pmadregs->CacheIndxRd);
+            iowrite32(MadRegs.CacheIndxRd, &pmadregs->CacheIndxRd);
             maddev_enable_ints_release_lock(&pmaddevobj->devlock, flags1);
             //PDEBUG("maddev_ioctl... dev#=%d set_cache_rd_indx=%ld\n",
             //       (int)pmaddevobj->devnum, pmadregs->CacheIndxRd);
             break;
 
         case MADDEVOBJ_IOC_ALIGN_WRITE_CACHE:
-            PDEBUG("maddev_ioctl... MADDEVOBJ_IOC_ALIGN_WRITE_CACHE dev#=%d cache_write_dx=%ld\n",
+            PDEBUG("maddevr_ioctl... MADDEVOBJ_IOC_ALIGN_WRITE_CACHE dev#=%d cache_write_dx=%ld\n",
                    (int)pmaddevobj->devnum, arg);
 
             if ((arg < 0) || (arg > MAD_DEVICE_MAX_SECTORS-1))
@@ -508,7 +527,7 @@ int maddevb_ioctl(struct block_device* bdev, fmode_t mode,
             break;
 
         case MADDEVOBJ_IOC_PULL_READ_CACHE:
-            PDEBUG("maddev_ioctl... MADDEVOBJ_IOC_PULL_READ_CACHE dev#=%d\n",
+            PDEBUG("maddevr_ioctl... MADDEVOBJ_IOC_PULL_READ_CACHE dev#=%d\n",
                    (int)pmaddevobj->devnum);
 
             //Retrieve the current cache for the user
@@ -531,7 +550,7 @@ int maddevb_ioctl(struct block_device* bdev, fmode_t mode,
 
             //Release our quantum:
             // not processing for an interrupt - sleazy synchronous implementation
-    	    schedule(); 
+            schedule(); 
             schedule(); 
 
             //Confirm that we have a good interrupt
@@ -544,7 +563,7 @@ int maddevb_ioctl(struct block_device* bdev, fmode_t mode,
             break;
 
         case MADDEVOBJ_IOC_PUSH_WRITE_CACHE:
-            PDEBUG("maddev_ioctl... MADDEVOBJ_IOC_PUSH_WRITE_CACHE dev#=%d\n",
+            PDEBUG("maddevr_ioctl... MADDEVOBJ_IOC_PUSH_WRITE_CACHE dev#=%d\n",
                    (int)pmaddevobj->devnum);
 
             //Program the device for a transfer from the write cache to the device
@@ -579,6 +598,12 @@ int maddevb_ioctl(struct block_device* bdev, fmode_t mode,
             maddev_enable_ints_release_lock(&pmaddevobj->devlock, flags1);
             break;
 
+        //Not implemented
+	    case MADDEVOBJ_IOC_GET_ENABLE:
+	    case MADDEVOBJ_IOC_GET_CONTROL:
+	        retval = -ENOSYS; 
+            break;
+
 	    default:
 		    retval = -EINVAL;
 	    }
@@ -586,9 +611,62 @@ int maddevb_ioctl(struct block_device* bdev, fmode_t mode,
     mutex_unlock(&pmaddevobj->devmutex);
 
     if (retval != 0)
-        {PERR("maddev_ioctl... devnum=%d rc=%d\n", (int)pmaddevobj->devnum, retval);}
+        {PERR("maddevr_ioctl... devnum=%d rc=%d\n", (int)pmaddevobj->devnum, retval);}
 
-	return (int)retval;
+	return retval;
+}
+
+//This is the table of entry points for device i/o operations
+static struct file_operations maddevr_fops = 
+{
+	.owner          = THIS_MODULE,
+	.llseek         = maddev_llseek,
+	.read           = maddevr_read,
+	.write          = maddevr_write,
+    //.read_iter      = maddev_queued_read,
+    //.write_iter     = maddev_queued_write,
+    .unlocked_ioctl = maddevr_ioctl,
+    .mmap           = maddev_mmap,
+    .open           = maddevr_open,
+	.release        = maddevr_release,
+};
+
+#if 0
+static void madcdev_default_release(struct kobject* kobj)
+{
+    PDEBUG("madcdev_release... \n");
+}
+//
+static struct kobj_type ktype_madcdev_default = 
+{
+    .release = madcdev_default_release,
+};
+#endif
+
+/*
+ * Set up the char_dev structure for this device.
+ */
+int maddevr_setup_cdev(void* pvoid, int indx)
+{
+    struct mad_dev_obj* pmaddevobj = (struct mad_dev_obj*)pvoid;
+	int devno = MKDEV(maddev_major, maddev_minor + indx);
+	int rc = 0;
+        
+	PDEBUG("maddevb_setup_cdev... dev#=%d maddev_major=%d maddev_minor=%d cdev_no=x%X\n",
+		   indx, maddev_major, (maddev_minor+indx), devno);
+
+    //Initialize the cdev structure
+	cdev_init(&pmaddevobj->cdev_str, &maddevr_fops);
+	pmaddevobj->cdev_str.owner = THIS_MODULE;
+
+    //Introduce the device to the kernel
+	rc = cdev_add(&pmaddevobj->cdev_str, devno, 1);
+	//if (rc) 	/* Fail gracefully if need be */
+    //    {PERR("maddev_setup_cdev:cdev_add... dev#=%d rc=%d", indx, rc);}
+
+    PDEBUG("maddevb_setup_cdev... dev#=%d rc=%d\n", (int)pmaddevobj->devnum, rc);
+
+    return rc;
 }
 
 // This is the driver init function

@@ -674,7 +674,7 @@ int madbus_hotplug(U32 indx, U16 pci_devid)
 
     pmbobj_hpl = &madbus_objects[indx];
     if (pmbobj_hpl->pci_devid != 0)
-       {return -EEXIST;} //This bus slot is in use;
+       {return -EADDRINUSE;} //This bus slot is in use;
 
     pPcidev = madbus_setup_pci_device(indx, pci_devid);
     if ((pPcidev == NULL) || (IS_ERR(pPcidev)))

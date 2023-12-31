@@ -57,7 +57,7 @@ static DECLARE_FAULT_ATTR(maddevb_requeue_attr);
 extern struct mutex lock;
 extern int maddevb_major;
 extern struct ida maddevb_indexes;
-
+extern char MadDevNames[10][20];
 static LIST_HEAD(maddevb_list);
 
 static void maddevb_free_device_storage(struct maddevblk_device *dev, bool is_cache);
@@ -1605,6 +1605,8 @@ static const struct block_device_operations maddevb_fops =
 	.owner           = THIS_MODULE,
 	.open            = maddevb_open,
 	.release         = maddevb_release,
+    //.mmap            = maddev_mmap,
+    //
     .rw_page         = maddevb_rw_page,
     .getgeo          = maddevb_getgeo,
     .ioctl           = maddevb_ioctl,
@@ -1721,9 +1723,12 @@ static int maddevb_add_device(struct maddevblk_device *mbdev)
 {
 	struct maddevb* pmaddevb;
     PMADDEVOBJ pmaddevobj;
+    int devnum = 0;
 	int rv;
 
-    PINFO("maddevb_add_device... mbdev=%px\n", mbdev);
+    pmaddevobj = (PMADDEVOBJ)mbdev->pmaddevobj;
+    devnum = (int)pmaddevobj->devnum;
+    PINFO("maddevb_add_device... mbdev=%px dev#=%d\n", mbdev, devnum);
 
     maddevb_validate_conf(mbdev);
 
@@ -1734,12 +1739,17 @@ static int maddevb_add_device(struct maddevblk_device *mbdev)
 		rv = -ENOMEM;
 		goto out;
 	    }
-
     pmaddevb->mbdev = mbdev;
-	mbdev->pmaddevb = pmaddevb;
-    pmaddevobj = (PMADDEVOBJ)mbdev->pmaddevobj;
+    mbdev->pmaddevb = pmaddevb;
 
 	spin_lock_init(&pmaddevb->lock);
+
+    //rv = register_blkdev(maddevb_major, MadDevNames[devnum]);
+    //if (rv < 0)
+        //{
+        //PWARN("maddevb_add_device:register_blkdev() mbdev#=%d rc=%d... continuing\n",
+        //      devnum, rv);
+        //}
 
 	rv = maddevb_setup_queues(pmaddevb);
 	if (rv)
@@ -2013,6 +2023,141 @@ void maddevb_release(struct gendisk *disk, fmode_t mode)
     mutex_unlock(&pmaddevobj->devmutex);
 
     return;
+}
+
+static int maddevb_system_ioctl(struct block_device* bdev, fmode_t mode,
+                                unsigned int cmd, unsigned long arg)
+{
+    struct maddevb* pmaddevb       = bdev->bd_disk->private_data;
+    struct mad_dev_obj* pmaddevobj = (PMADDEVOBJ)pmaddevb->mbdev->pmaddevobj;
+    int rc = -ENOSYS; 
+    int flags = 0;
+
+    //PINFO("maddevb_system_ioctl... dev#=%d blkdev=%px fmode=x%X cmd=x%X arg=x%X\n",
+    //      (int)pmaddevobj->devnum, bdev, mode, cmd, arg);
+
+    switch (cmd)
+        {
+        case CDROM_GET_CAPABILITY:
+            flags = (int)MADDEVB_GENHD_FLAGS;
+            PINFO("maddevb_system_ioctl... cdrom_get_caps; dev#=%d flags=x%X\n",
+                  (int)pmaddevobj->devnum, flags);
+            break;
+
+        case CDROMCLOSETRAY:
+        case CDROM_SET_OPTIONS: 
+        case CDROM_CLEAR_OPTIONS:
+        case CDROM_SELECT_SPEED:
+        case CDROM_SELECT_DISC:
+        case CDROM_MEDIA_CHANGED:
+        case CDROM_DRIVE_STATUS:
+        case CDROM_DISC_STATUS:
+        case CDROM_CHANGER_NSLOTS:
+        case CDROM_LOCKDOOR:	
+        case CDROM_DEBUG: 
+            PINFO("maddevb_system_ioctl... cdrom_ioctl dev#=%d rc=%d\n",
+                  (int)pmaddevobj->devnum, rc);
+            break;
+
+        default:;
+            PINFO("maddevb_system_ioctl... dev#=%d cmd=%ld not a system ioctl\n",
+                  (int)pmaddevobj->devnum, cmd);
+        }
+
+    if (rc < 0)
+        {PDEBUG("maddevb_system_ioctl... dev#=%d rc=%d\n",
+                (int)pmaddevobj->devnum, rc);}
+
+    return rc;
+}
+
+/* The ioctl() implementation
+ */
+extern MADREGS MadRegsRst; 
+int maddevb_ioctl(struct block_device* bdev, fmode_t mode,
+                  unsigned int cmd, unsigned long arg)
+{
+	static MADREGS  MadRegs;
+	//
+    struct maddevb* pmaddevb       = bdev->bd_disk->private_data;
+	struct mad_dev_obj *pmaddevobj =  (PMADDEVOBJ)pmaddevb->mbdev->pmaddevobj;
+	PMADREGS        pmadregs  = (PMADREGS)pmaddevobj->pDevBase;
+	PMADCTLPARMS    pCtlParms = (PMADCTLPARMS)arg;
+	int err = 0;
+	long retval = 0;
+    int  sysrc = 0;
+	U32  remains = 0;
+    U32  flags1 = 0;
+
+    PINFO("maddevb_ioctl... dev#=%d blkdev=%px fmode=x%X cmd=x%X arg=x%X\n",
+		  (int)pmaddevobj->devnum, bdev, mode, cmd, (int)arg);
+    ASSERT((int)(pmaddevb->disk == bdev->bd_disk));
+
+    mutex_lock(&pmaddevobj->devmutex);
+
+    sysrc = maddevb_system_ioctl(bdev, mode, cmd, arg);
+    if (sysrc != -ENOSYS)
+        {
+        mutex_unlock(&pmaddevobj->devmutex);
+        return sysrc;
+        }
+
+    /* Extract the type and number bitfields, and don't decode
+	 * wrong cmds: return (inappropriate ioctl) before access_ok() */
+	if ((_IOC_TYPE(cmd) != MADDEVOBJ_IOC_MAGIC)  ||
+        (_IOC_NR(cmd) > MADDEVOBJ_IOCTL_MAX_NBR))
+	    {
+        mutex_unlock(&pmaddevobj->devmutex);
+        PWARN("maddevb_ioctl... dev#=%d cmd=x%X rc=-EACCES\n", 
+              (int)pmaddevobj->devnum, (unsigned)cmd);
+		return -EACCES;
+	    }
+
+    err = !access_ok((void __user *)arg, _IOC_SIZE(cmd));
+	if (err)
+	    {
+        mutex_unlock(&pmaddevobj->devmutex);
+        PERR( "maddevb_ioctl... dev#=%d rc=-EINVAL\n", (int)pmaddevobj->devnum);
+		return -EINVAL;
+	    }
+ 
+    //If the ioctl queue is not free we return
+    if (pmaddevobj->ioctl_f != eIoReset)
+        {
+        mutex_unlock(&pmaddevobj->devmutex);
+        return -EAGAIN;
+        }
+
+    switch(cmd)
+	    {
+	    case MADDEVOBJ_IOC_INIT: //Initialize the device in a standard way
+	    	PINFO("maddevb_ioctl: MADDEVOBJ_IOC_INIT\n");
+            maddev_acquire_lock_disable_ints(&pmaddevobj->devlock, flags1);
+            memcpy_toio(&MadRegsRst, pmadregs, sizeof(MADREGS)); //Hard-coded init values
+            maddev_enable_ints_release_lock(&pmaddevobj->devlock, flags1);
+            break;
+
+	    case MADDEVOBJ_IOC_RESET: //Reset all index registers
+	    	PINFO("maddevb_ioctl: MADDEVOBJ_IOC_RESET\n");
+            maddev_acquire_lock_disable_ints(&pmaddevobj->devlock, flags1);
+	    	iowrite32(0, &pmadregs->ByteIndxRd);
+	    	iowrite32(0, &pmadregs->ByteIndxWr);
+	    	iowrite32(0, &pmadregs->CacheIndxRd);
+	    	iowrite32(0, &pmadregs->CacheIndxWr);
+	    	iowrite32(MAD_STATUS_CACHE_INIT_MASK, &pmadregs->Status);
+            maddev_enable_ints_release_lock(&pmaddevobj->devlock, flags1);
+            break;
+
+	    default:
+		    retval = -EINVAL;
+	    } /* */
+
+    mutex_unlock(&pmaddevobj->devmutex);
+
+    if (retval != 0)
+       {PERR("maddevb_ioctl... devnum=%d rc=%d\n", (int)pmaddevobj->devnum, retval);}
+
+	return (int)retval;
 }
 
 int maddevb_revalidate_disk(struct gendisk *disk)

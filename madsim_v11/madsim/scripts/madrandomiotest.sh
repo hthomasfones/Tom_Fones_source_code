@@ -28,8 +28,7 @@
 #/* $Id: madrandomiotest.sh, v 1.0 2021/01/01 00:00:00 htf $                            
 #/*                                                                            
 #Set up script environment variables
-bdev=0 #We will setup  char-mode device(s)
-
+bdev=1 #We will setup block-mode device(s)
 source madenv.sh
 
 clear
@@ -48,41 +47,41 @@ $simapp_path$simapp $devnum idd b 2048
 #
 $simapp_path$simapp $devnum get
 
-$testapp_path$testapp $devnum rst
+$testappbio_path$testappbio $devnum rst
 
 set +x ; printf "First some writes at various locations X pages apart\n" ; set -x
-$testapp_path$testapp $devnum wrr 4100 0 Zero_00000000000 
+$testappbio_path$testappbio $devnum wrr 4100 0 Zero_00000000000 
 #
-$testapp_path$testapp $devnum wrr 4100 4096 One_111111111111
+$testappbio_path$testappbio $devnum wrr 4100 4096 One_111111111111
 #
-$testapp_path$testapp $devnum wrr 4100 8192 Two_222222222222
+$testappbio_path$testappbio $devnum wrr 4100 8192 Two_222222222222
 #
-$testapp_path$testapp $devnum wrr 4100 12288 Three_3333333333 
+$testappbio_path$testappbio $devnum wrr 4100 12288 Three_3333333333 
 #
-$testapp_path$testapp $devnum wrr 4100 16384 Four_44444444444 
+$testappbio_path$testappbio $devnum wrr 4100 16384 Four_44444444444 
 #
-$testapp_path$testapp $devnum wrr 4100 20480 Five_55555555555 
+$testappbio_path$testappbio $devnum wrr 4100 20480 Five_55555555555 
 #
-$testapp_path$testapp $devnum wrr 4100 24576 Six_666666666666
+$testappbio_path$testappbio $devnum wrr 4100 24576 Six_666666666666
 #
-#$testapp_path$testapp $devnum wrr 16900 28672 Seven_7777777777
+#$testappbio_path$testappbio $devnum wrr 16900 28672 Seven_7777777777
 #
 set +x ; printf "\nNow some reads... \n" ; set -x
-$testapp_path$testapp $devnum rdr 4100 0
+$testappbio_path$testappbio $devnum rdr 4100 0
 #
-$testapp_path$testapp $devnum rdr 4100 4096
+$testappbio_path$testappbio $devnum rdr 4100 4096
 #
-$testapp_path$testapp $devnum rdr 4100 8192
+$testappbio_path$testappbio $devnum rdr 4100 8192
 #
-$testapp_path$testapp $devnum rdr 4100 12288 
+$testappbio_path$testappbio $devnum rdr 4100 12288 
 #
-$testapp_path$testapp $devnum rdr 4100 16384
+$testappbio_path$testappbio $devnum rdr 4100 16384
 #
-$testapp_path$testapp $devnum rdr 4100 20480
+$testappbio_path$testappbio $devnum rdr 4100 20480
 #
-$testapp_path$testapp $devnum rdr 4100 24576
+$testappbio_path$testappbio $devnum rdr 4100 24576
 #
-$testapp_path$testapp $devnum rdr 16900 28672
+$testappbio_path$testappbio $devnum rdr 16900 28672
 #
 sleep 1
 

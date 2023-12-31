@@ -89,8 +89,7 @@ ln -sfv ${busdevobj} /dev/${busdevobj}
 set +x ; printf "\nChange permission modes for all nodes to $mode \n" ; set -x
 #chgrp $group /dev/${busdevobj}[0-$number_devs] 
 chmod -v $mode  /dev/${busdevobj}[0-$number_bus_slots]
-
-sleep 1
+sleep $delay
 ### load the device driver
 #
 set +x ;  printf "\nLoad the target device driver... $madmodule.ko\n" ; set -x
@@ -119,7 +118,11 @@ ln -sfv ${maddevobj} /dev/${maddevobj}
 
 set +x ; printf "\nChange permission modes for all nodes to $mode \n" ; set -x
 #chgrp $group /dev/${maddevobj}[0-$number_bus_slots] 
-chmod -v $mode  /dev/${maddevobj}[0-$number_bus_slots]
+#chmod -v $mode  /dev/${maddevobj}[0-$number_bus_slots]
+chmod -v $mode  /dev/${maddevobj}1
+chmod -v $mode  /dev/${maddevobj}2
+chmod -v $mode  /dev/${maddevobj}3
+ls -l /dev | grep mad
 
 set +x
 printf "\nSome integrity checks... \n"

@@ -73,21 +73,24 @@ int indx = 0;
     return val;
 }
 
-int Build_DevName_Open(char* DevName, int devno, int devnumdx, char* DevPathName, int* fd)
+int Build_DevName_Open(char* DevName, int devno, int devnumdx, int openflags, char* DevPathName, int* fd)
 
 {
+int rc=0;
+
     strcpy(DevPathName, LINUX_DEVICE_PATH_PREFIX);
     DevName[devnumdx] = DEVNUMSTR[devno];
     strcat(DevPathName, DevName);
     //fprintf(stderr, "Opening device: %s\n", DevPathName);
-    *fd = open(DevPathName, O_RDWR, 0);
+    *fd = open(DevPathName, (O_RDWR|openflags), 0);
     if (*fd < 1)
         {
- 	fprintf(stderr, "device open failure: errno=%d, devname=%s\n", errno, DevPathName);
- 	return errno;
+        rc =- errno;
+ 	fprintf(stderr, "device open failure: errno=%d, devname=%s\n", rc, DevPathName);
+ 	//return rc;
         }
 
-    return 0;
+    return rc;
 }
 //
 int MapDeviceSection(void **ppSection, int fd, size_t maplen, ULONG DevOfset)
@@ -105,7 +108,7 @@ int MapDeviceSection(void **ppSection, int fd, size_t maplen, ULONG DevOfset)
 	if ((long int)(*ppSection) == -1)
 	    {
             *ppSection = NULL;
-	    rc = errno;
+	    rc = -errno;
 	    }
 	//else
 	    //{fprintf(stderr, "MapDeviceSection: mmap returns umaddr=%p\n", *ppSection);}

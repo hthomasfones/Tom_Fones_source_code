@@ -246,7 +246,7 @@ static void maddev_remove_proc(void)
  * Open and close
  */
 //This is the open function for one hardware device
-static int maddev_open(struct inode *inode, struct file *fp)
+static int maddevc_open(struct inode *inode, struct file *fp)
 {
 	struct mad_dev_obj *pmaddevobj = 
                        container_of(inode->i_cdev, struct mad_dev_obj, cdev_str);
@@ -262,7 +262,7 @@ static int maddev_open(struct inode *inode, struct file *fp)
 }
 
 //This is the release function for one hardware device
-static int maddev_release(struct inode *inode, struct file *fp)
+static int maddevc_release(struct inode *inode, struct file *fp)
 {
 	struct mad_dev_obj *pmaddevobj = (struct mad_dev_obj*)fp->private_data;
 
@@ -280,24 +280,23 @@ static int maddev_release(struct inode *inode, struct file *fp)
  * Data management: read and write
  */
 //This is the generic read function
-ssize_t
-maddev_read(struct file *fp, char __user *usrbufr, size_t count, loff_t *f_pos)
+static ssize_t
+maddevc_read(struct file *fp, char __user *usrbufr, size_t count, loff_t *f_pos)
 {
     struct mad_dev_obj *pmaddevobj = (struct mad_dev_obj*)fp->private_data;
     ssize_t iocount = 0;                                                         
 
-    PINFO("maddev_read... dev#=%d fp=%px count=%ld offset_arg=%ld fppos=%ld\n",
+    PINFO("maddevc_read... dev#=%d fp=%px count=%ld offset_arg=%ld fppos=%ld\n",
           (int)pmaddevobj->devnum, (void *)fp,
           (long int)count, (unsigned long int)*f_pos, (long int)fp->f_pos);
 
     mutex_lock(&pmaddevobj->devmutex);
-
-    if (count <= MAD_BUFRD_IO_MAX_SIZE)
+  
+    if (count > MAD_BUFRD_IO_MAX_SIZE)
+        {iocount = -EOVERFLOW;}
+    else
         //Do a normal buffered read
         {iocount = maddev_read_bufrd(fp, usrbufr, count, f_pos);}
-    else
-        //Do a large buffered read using direct-io of the user buffer
-        {iocount = maddev_direct_io(fp, usrbufr, count, f_pos, false);}
 
     mutex_unlock(&pmaddevobj->devmutex);
 
@@ -305,7 +304,7 @@ maddev_read(struct file *fp, char __user *usrbufr, size_t count, loff_t *f_pos)
 }
 
 //This is the generic write function
-ssize_t maddev_write(struct file *fp, const char __user *usrbufr, size_t count,
+static ssize_t maddevc_write(struct file *fp, const char __user *usrbufr, size_t count,
                             loff_t *f_pos)
 {
     PMADDEVOBJ pmaddevobj = (PMADDEVOBJ)fp->private_data;
@@ -316,12 +315,11 @@ ssize_t maddev_write(struct file *fp, const char __user *usrbufr, size_t count,
 
     mutex_lock(&pmaddevobj->devmutex);
 
-    if (count < MAD_BUFRD_IO_MAX_SIZE)
+    if (count > MAD_BUFRD_IO_MAX_SIZE)
+        {iocount = -EOVERFLOW;}
+    else
         //Do a normal buffered write 
         {iocount = maddev_write_bufrd(fp, usrbufr, count, f_pos);}
-    else
-        //Do a large buffered write using direct-io of the user buffer
-        {iocount = maddev_direct_io(fp, usrbufr, count, f_pos, true);}
 
     mutex_unlock(&pmaddevobj->devmutex);
 
@@ -331,7 +329,7 @@ ssize_t maddev_write(struct file *fp, const char __user *usrbufr, size_t count,
 /*
  * The ioctl() implementation
  */
-long maddev_ioctl(struct file *fp, unsigned int cmd, unsigned long arg)
+long maddevc_ioctl(struct file *fp, unsigned int cmd, unsigned long arg)
 {
 	static MADREGS  MadRegs;
 	//
@@ -345,7 +343,7 @@ long maddev_ioctl(struct file *fp, unsigned int cmd, unsigned long arg)
     u32 flags1 = 0;
     //U32 flags2 = 0;
 
-	PINFO("maddev_ioctl... dev#=%d fp=%px cmd=x%X arg=x%X\n",
+	PINFO("maddevc_ioctl... dev#=%d fp=%px cmd=x%X arg=x%X\n",
 		  (int)pmaddevobj->devnum, (void *)fp, cmd, (int)arg);
 
     /* Extract the type and number bitfields, and don't decode
@@ -468,75 +466,6 @@ long maddev_ioctl(struct file *fp, unsigned int cmd, unsigned long arg)
 	return retval;
 }
 
-/*
- * The "extended" operations -- only seek
- */
-//The random access seek function is not currently used
-loff_t maddev_llseek(struct file *fp, loff_t off, int whence)
-{
-	struct mad_dev_obj *pmaddevobj = fp->private_data;
-    PMADREGS pmadregs = pmaddevobj->pDevBase; 
-	//
-	loff_t newpos = 0;
-   	u32 flags1 = 0;
-    //U32 flags2 = 0;
-    int rc = 0;
-
-	PINFO("maddev_llseek... dev#=%d lseek=%ld\n",
-          (int)pmaddevobj->devnum, (ulong)off);
-
-    mutex_lock(&pmaddevobj->devmutex);
-    switch(whence)
-        {
-	    case 0: /* SEEK_SET */
-		    newpos = off;
-		    break;
-
-	    case 1: /* SEEK_CUR */
-		    newpos = fp->f_pos + off;
-		    break;
-
-	    case 2: /* SEEK_END */
-		    //newpos = pmaddevobj->size + off;
-		    break;
-
-	    default: /* can't happen */
-		    rc = -EINVAL;
-	    }
-
-	if (newpos < 0) 
-        {rc = -EINVAL;}
-
-    if (rc == -EINVAL)
-        {
-        mutex_unlock(&pmaddevobj->devmutex);
-        PWARN("maddev_llseek... dev#=%d rc=-EINVAL\n",
-              (int)pmaddevobj->devnum);
-        return rc;
-        }
-
-    //Align to unit-io size
-    newpos = (newpos / MAD_UNITIO_SIZE_BYTES);
-    newpos = (newpos * MAD_UNITIO_SIZE_BYTES);
-
-    //Update the device registers
-    maddev_acquire_lock_disable_ints(&pmaddevobj->devlock, flags1);
-    iowrite32(newpos, &pmadregs->ByteIndxRd);
-    iowrite32(newpos, &pmadregs->ByteIndxWr);
-    maddev_enable_ints_release_lock(&pmaddevobj->devlock, flags1);
-
-    //Sets the file_pos for the next read/write 
-    fp->f_pos = newpos;
-    mutex_unlock(&pmaddevobj->devmutex);
-
-    PINFO("maddev_llseek... dev#=%d location=%ld fpos=%ld\n",
-          (int)pmaddevobj->devnum, (ulong)newpos, (ulong)fp->f_pos);
-
-	return newpos;
-}
-
-
-//
 #if 0
 static int maddev_vma_fault(struct vm_fault *vmf)
 {
@@ -571,18 +500,18 @@ static int maddev_vma_fault(struct vm_fault *vmf)
 #endif
   
 //This is the table of entry points for device i/o operations
-static struct file_operations maddev_fops = 
+static struct file_operations maddevc_fops = 
 {
 	.owner          = THIS_MODULE,
 	.llseek         = maddev_llseek,
-	.read           = maddev_read,
-	.write          = maddev_write,
+	.read           = maddevc_read,
+	.write          = maddevc_write,
     .read_iter      = maddev_queued_read,
     .write_iter     = maddev_queued_write,
-    .unlocked_ioctl = maddev_ioctl,
+    .unlocked_ioctl = maddevc_ioctl,
     .mmap           = maddev_mmap,
-    .open           = maddev_open,
-	.release        = maddev_release,
+    .open           = maddevc_open,
+	.release        = maddevc_release,
 };
 
 #if 0
@@ -600,17 +529,17 @@ static struct kobj_type ktype_madcdev_default =
 /*
  * Set up the char_dev structure for this device.
  */
-static int maddev_setup_cdev(void* pvoid, int indx)
+int maddevc_setup_cdev(void* pvoid, int indx)
 {
     struct mad_dev_obj* pmaddevobj = (struct mad_dev_obj*)pvoid;
 	int devno = MKDEV(maddev_major, maddev_minor + indx);
 	int rc = 0;
         
-	PDEBUG("maddev_setup_cdev... dev#=%d maddev_major=%d maddev_minor=%d cdev_no=x%X\n",
+	PDEBUG("maddevc_setup_cdev... dev#=%d maddev_major=%d maddev_minor=%d cdev_no=x%X\n",
 		   indx, maddev_major, (maddev_minor+indx), devno);
 
     //Initialize the cdev structure
-	cdev_init(&pmaddevobj->cdev_str, &maddev_fops);
+	cdev_init(&pmaddevobj->cdev_str, &maddevc_fops);
 	pmaddevobj->cdev_str.owner = THIS_MODULE;
 
     //Introduce the device to the kernel

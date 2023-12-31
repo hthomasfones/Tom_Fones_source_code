@@ -275,7 +275,11 @@ static inline u64 mb_per_tick(int mbps)
 	return (1 << 20) / TICKS_PER_SEC * ((u64) mbps);
 }
 
+int maddevr_setup_cdev(void* pvoid, int indx);
+extern ssize_t maddevb_direct_io(struct file *filp, const char __user *buf, 
+                                 size_t count, loff_t *f_pos, bool bWr);
 extern int maddevb_create_device(/*PMADDEVOBJ pmaddev*/void* pv);
+
 int maddevb_gendisk_register(struct maddevb *maddevb);
 blk_qc_t maddevb_queue_bio(struct request_queue *q, struct bio *bio);
 void maddevb_restart_queue_async(struct maddevb *maddevb);
@@ -323,7 +327,8 @@ static inline irqreturn_t maddevb_isr_worker_fn(int irq, void* dev_id, int msinu
     devnum = pmaddevobj->devnum;
 
     PDEBUG("maddevb_isr... dev#=%d pmaddevobj=%px irq=%d msinum=%d IntID=x%lX Control=x%lX\n",
-           devnum, pmaddevobj, irq, msinum, (long unsigned)IntID, (long unsigned)Control);
+           devnum, pmaddevobj, irq, msinum, 
+           (unsigned long)IntID, (unsigned long)Control);
 
     maddev_acquire_lock_disable_ints(&pmaddevobj->devlock, flags1);
 
@@ -348,8 +353,8 @@ static inline irqreturn_t maddevb_isr_worker_fn(int irq, void* dev_id, int msinu
         {
         maddev_enable_ints_release_lock(&pmaddevobj->devlock, flags1);
 
-        PERR("maddevb_isr... undefined int-id from device: dev#=%d IntID=x%X\n",
-             (int)pmaddevobj->devnum, IntID);
+        PERR("maddevb_isr... undefined int-id from device: dev#=%d IntID=x%lX\n",
+             (int)pmaddevobj->devnum, (unsigned long)IntID);
     	return IRQ_HANDLED;
         }
 
@@ -368,8 +373,8 @@ static inline irqreturn_t maddevb_isr_worker_fn(int irq, void* dev_id, int msinu
     maddev_enable_ints_release_lock(&pmaddevobj->devlock, flags1);
     #endif
 
-    PDEBUG("maddevb_isr... normal wxit: dev#=%d IntID=x%X rc=%d\n",
-           (int)pmaddevobj->devnum, IntID, IRQ_HANDLED);
+    PDEBUG("maddevb_isr... normal exit: dev#=%d IntID=x%lX rc=%d\n",
+           (int)pmaddevobj->devnum, (unsigned long)IntID, IRQ_HANDLED);
 
 	return IRQ_HANDLED;
 }

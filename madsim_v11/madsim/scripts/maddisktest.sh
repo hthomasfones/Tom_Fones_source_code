@@ -47,7 +47,7 @@ sleep $delay
 ls -l /dev | grep "fd"
 #
 cd $appbasepath"/scripts"
-source madrawblk.sh
+#source madrawblk.sh
 sleep $delay
 #
 cd $appbasepath 
@@ -145,9 +145,9 @@ sleep $delay
 umount $mountpath
 umount $madblockdevpath$dx
 sleep $delay
-rmmod $madmodule
-rmmod $busmodule
-lsmod | grep "mad"
+#rmmod $madmodule
+#rmmod $busmodule
+#lsmod | grep "mad"
 
 #Dump the device-file in hex
 #The MBR and directory should appear at the beginning

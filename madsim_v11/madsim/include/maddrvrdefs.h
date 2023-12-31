@@ -97,19 +97,20 @@ struct mad_dev_obj
    	struct work_struct dpc_work_wr;
 	struct async_work  rd_workq;
     struct async_work  wr_workq;
+    struct vm_area_struct* vma;
 
     MAD_DMA_CHAIN_ELEMENT SgDmaElements[MAD_SGDMA_MAX_SECTORS];
     struct scatterlist    sgl[MAD_SGDMA_MAX_PAGES];
     //
     char               pci_config_space[MAD_PCI_CFG_SPACE_SIZE];
 
-    #ifdef _CDEV_
+    //#ifdef _CDEV_
     struct cdev      cdev_str;	  /* Char device structure */
     char       junk[sizeof(struct list_head)];
-    #endif
+    //#endif
 
     #ifdef _BLOCKIO_
-    struct maddevblk_device *maddevblk_dev;
+        struct maddevblk_device *maddevblk_dev;
     #endif
 };
 //
@@ -125,7 +126,10 @@ ssize_t
 maddev_write(struct file *filp, const char __user *buf, size_t count, loff_t *f_pos);
 //static ssize_t
 //maddev_write_bufrd(struct file *filp, const char __user *buf, size_t count, loff_t *f_pos);
-
+int maddev_mmap(struct file *fp, struct vm_area_struct* vma);
+//#ifdef _BLOCKIO_
+ //   static int maddevr_setup_cdev(void* pvoid, int indx);
+//#endif
 int maddev_setup_devices(int num_devs, U8 bHPL, u8 bMSI); 
 void maddev_remove_devices(int num_devices);
 void maddev_cleanup_module(void);
@@ -136,7 +140,6 @@ int  maddev_setup_device(PMADDEVOBJ pmaddevobj,
                          struct pci_dev** ppPciDvTmp, U8 HPL, u8 bMSI);
 void maddev_remove_device(PMADDEVOBJ pmaddevobj);
 loff_t  maddev_llseek(struct file *filp, loff_t off, int whence);
-int maddev_mmap(struct file *fp, struct vm_area_struct* vma);
 bool  maddev_need_sg(struct page* pPages[], u32 num_pgs);
 void maddevc_program_stream_io(spinlock_t *splock, PMADREGS pmadregs,
 		                     U32 ControlReg, U32 IntEnableReg,

@@ -42,6 +42,7 @@ MADREGS MadRegs;
 PMADREGS pMapdDevRegs = NULL;
 
 void* pPIOregn = NULL;
+void* pDevData = NULL;
 char* pLargeBufr = NULL;
 u8 RandomBufr[8192];
 
@@ -72,7 +73,7 @@ struct stat statstr;
     	exit(9);
         }
 
-    rc = Build_DevName_Open(MadDevName, devnum, MADDEVNUMDX, MadDevPathName, &fd);
+    rc = Build_DevName_Open(MadDevName, devnum, MADDEVNUMDX, OPENFLAGS, MadDevPathName, &fd);
     if (fd < 1)
         {
         rc = -errno;
@@ -83,17 +84,27 @@ struct stat statstr;
     //fprintf(stderr, "ParseCmd:stat() fd=%d rc=%d err#=%d stmode=%d stsize=%ld\n",
     //        fd, rc, errno, statstr. st_mode, statstr.st_size);
 
-    rc = MapDeviceRegsPio(&pMapdDevRegs, fd);
+    //rc = MapDeviceRegsPio(&pMapdDevRegs, fd);
+    //rc = MapWholeDevice(&pMapdDevRegs, fd);
     if (pMapdDevRegs != NULL)
-        {pPIOregn = ((U8*)pMapdDevRegs + MAD_MAPD_READ_OFFSET);}
-
+        {
+        pPIOregn = ((U8*)pMapdDevRegs + MAD_MAPD_READ_OFFSET);
+        pDevData = ((U8*)pMapdDevRegs + MAD_DEVICE_DATA_OFFSET);
+	//fprintf(stderr, "madtest pRegs=%p pPIO=%p pData=%p\n",
+	//        pMapdDevRegs, pPIOregn, pDevData);
+        }
+        
     rc = Process_Cmd(fd, op, val, offset, parm);
-
-    close(fd);
 
     if (pBufr != NULL) //We have a buffer
         free(pBufr);
+        
+    if (pMapdDevRegs != NULL)
+        if (pMapdDevRegs != (void *)-1)
+            munmap(pMapdDevRegs, MAD_SAFE_MMAP_SIZE);
 
+    close(fd);
+      
     if (rc != 0)
 	fprintf(stderr, "madtest returning rc=%d\n", rc);
 
@@ -110,9 +121,9 @@ bool Parse_Cmd(int argc, char **argv,
     *devnum = atoi(argv[1]);
     if (*devnum == 0)
         {
-	display_error_w_help(argv[1]);
-	return false;
-	}
+	    display_error_w_help(argv[1]);
+	    return false;
+	    }
 
     *op = kNOP;
     if (memcmp(argv[2], "nop", 3) == 0)
@@ -187,15 +198,15 @@ bool Parse_Cmd(int argc, char **argv,
     if (memcmp(argv[2], "arc", 3) == 0)
         {*op = kARC;}
 
-    if (memcmp(argv[2], "wrck", 3) == 0)
+    if (memcmp(argv[2], "awc", 3) == 0)
         {*op = kAWC;}
 
 
     if (*op == kNOP)
         {
-	display_error_w_help(argv[2]);
-	return false;
-	}
+	    display_error_w_help(argv[2]);
+	    return false;
+	    }
 
     switch (*op)
         {
@@ -246,20 +257,21 @@ bool Parse_Cmd(int argc, char **argv,
         case kWB:
         case kWBA:
         case kWBQ:
-        //case kWDI:
-      	    if (argc < 5) //no write data entered
+        case kWDI:
+      	    if (argc < 6) //no write data entered
         	{
 	    	display_error_w_help((char*)" No write data entered! ");
 	    	return false;
         	}
+
             *parm = argv[5]; //The text-data from the command line
             // fall through
         case kRB:
         case kRBA:
         case kRBQ:
-        //case kRDI:
+        case kRDI:
             *val = atoi(argv[3]); //iolen
-	     if (*val < 1)
+	         if (*val < 1)
 	         {
 	    	 display_error_w_help(argv[3]);
 	    	 return false;
@@ -272,8 +284,8 @@ bool Parse_Cmd(int argc, char **argv,
                      (char *)memalign(PAGE_SIZE, (*val * LINUX_PAGE_SIZE));} //checked during process_cmd
                  }
                  
-            if (argc > 5)
-                *offset = atoi(argv[4]); //iolen
+            if (argc > 4)
+                *offset = atoi(argv[4]); //offset
                  
             break;
 
@@ -371,8 +383,8 @@ void display_help()
     printf(" madtest x  wbq   <size> {data}... Write <size> bytes {data} bufr'd to dev x q'd\n");
     printf(" madtest x  rdr   <size> <offset>... Read <size> pages from device x at <offset>n");
     printf(" madtest x  wrr   <size> <offset> {data}... Write <size> pages {data} at <offset> to dev x\n");
-    //printf(" madtest x  rdi  <size> {data} offset...  Read <size> pages Direct-IO from device x at <offset>\n");
-    //printf(" madtest x  wdi  <size> {data} Write <size> pages Direct-IO to device x at <offset>\n");
+    //printf(" madtest x  rdi  <size> <offset>...  Read <size> pages Direct-IO from device x at <offset>\n");
+    //printf(" madtest x  wdi  <size>  Write <size> pages Direct-IO to device x at <offset> {data}\n");
     //printf(" madtest x  pir   <size>... Read <size> bytes from device x Programmed Io regn\n");
     //printf(" madtest x  piw   <size> {data}... Write <size> bytes to device x PIO regn\n");
     printf(" madtest x  rd    <size> <offset>... Dma-Read <size> bytes from device x\n");
@@ -418,6 +430,9 @@ char data[11];
 
 	case kRST:
 	    rc = ioctl(fd, MADDEVOBJ_IOC_RESET, NULL);
+	    if (pDevData != NULL)
+	        {memset(pDevData, '.', 
+	                (MAD_SAFE_MMAP_SIZE - MAD_DEVICE_DATA_OFFSET));}
 	    break;
                                     
         case kRB:
@@ -474,9 +489,9 @@ char data[11];
 	        } */
  
             offsetr = lseek(fd, offset, SEEK_SET);
-            assert(offsetr == offset);
-            fprintf(stderr, "fpos set to %ld\n", offsetr);
-            sleep(3);
+            //assert(offsetr == offset);
+            fprintf(stderr, "fpos %ld set to %ld\n", offset, offsetr);
+            sleep(1);
             iocount = (op == kRDR) ? read(fd, pLargeBufr, (size_t)val) :
                                      write(fd, pLargeBufr, (size_t)val); /* */
             if (iocount < 0)
@@ -565,17 +580,19 @@ char data[11];
 	case kGET:
 	    rc = ioctl(fd, MADDEVOBJ_IOC_GET_DEVICE, &MadCtlParms);
 	    if (rc == 0)
-		DisplayDevRegs(&MadCtlParms.MadRegs);
+		{DisplayDevRegs(&MadCtlParms.MadRegs);}
 	    break;
 
 	case kMGT:
-	    //fprintf(stderr, "DisplayDevRegs at %p... \n", pMapdDevRegs);
-	    DisplayDevRegs(pMapdDevRegs);
+	    if ((pMapdDevRegs == NULL) || ((long int)pMapdDevRegs == -1))
+	        rc = -ENOSYS; 
+            else
+	        DisplayDevRegs(pMapdDevRegs);
 	    break;
 
         case kPRC:
             memset(iobufr, 0x00, MAD_CACHE_SIZE_BYTES);
-	    rc = ioctl(fd, MADDEVOBJ_IOC_LOAD_READ_CACHE, iobufr);
+	    rc = ioctl(fd, MADDEVOBJ_IOC_PULL_READ_CACHE, iobufr);
 	    if (rc == 0)
                 {fprintf(stderr, "Load read cache completes: %d bytes...\n%s\n",
             MAD_CACHE_SIZE_BYTES, iobufr);}
@@ -584,7 +601,7 @@ char data[11];
 	case kPWC:
 	    memset(iobufr, '.' /*0x00*/, MAD_CACHE_SIZE_BYTES);
 	    memcpy((char *)iobufr, (char *)parm, strlen((char *)parm));
-	    rc = ioctl(fd, MADDEVOBJ_IOC_FLUSH_WRITE_CACHE, iobufr);
+	    rc = ioctl(fd, MADDEVOBJ_IOC_PUSH_WRITE_CACHE, iobufr);
 	    if (rc == 0)
                 {fprintf(stderr, "Flush write cache completes: %d bytes...\n", MAD_CACHE_SIZE_BYTES);}
 	    break;
@@ -630,8 +647,8 @@ char data[11];
     if (rc == -1)
         {rc = -errno;}
 
-    if (rc < 0)
-	fprintf(stderr, "Parse_Cmd returning %d\n", rc);
+    if (rc != 0)
+	fprintf(stderr, "Process_Cmd returning %d\n", rc);
 
     return rc;
 }
