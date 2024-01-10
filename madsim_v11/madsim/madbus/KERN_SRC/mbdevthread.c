@@ -240,8 +240,8 @@ static void mbdt_process_io(PMADBUSOBJ pmadbusobj, IoType iotype)
         }
 
     //{msidx = pmaddevice->MesgID - 1;}
-	PINFO("mbdthread:mbdt_process_io... dev#=%ld iotype=%d IntEnable=x%lX msidx=%d\n",
-	   	  (long int)pmadbusobj->devnum, iotype,
+	PINFO("mbdthread:mbdt_process_io... dev#=%d iotype=%d IntEnable=x%lX msidx=%d\n",
+	   	  (int)pmadbusobj->devnum, iotype,
           (long unsigned int)pmaddev->IntEnable, (int)msidx);
 
     ASSERT((int)(pmaddev->IntEnable != 0));
@@ -284,6 +284,9 @@ static void mbdt_process_io(PMADBUSOBJ pmadbusobj, IoType iotype)
             PWARN("madbus_dev_thread:mbdt_complete_simulated_io... dev#=%d invalid iotype=%d\n",
                   (int)pmadbusobj->devnum, iotype);
         }
+
+	PINFO("mbdthread:mbdt_process_io... dev#=%d iotype=%d fini\n", 
+          (int)pmadbusobj->devnum, iotype);
 
     return;
 }
@@ -372,7 +375,7 @@ void mbdt_process_cache_io(PMADBUSOBJ pmadbusobj, bool write, u32 msidx)
 
 	if (write)
 	    {
-		pDevData += (pmaddevice->CacheIndxWr * MAD_CACHE_SIZE_BYTES);
+		pDevData += ((u64)(pmaddevice->CacheIndxWr * MAD_SECTOR_SIZE));
 		pCacheData += MAD_CACHE_WRITE_OFFSET;
 
 		//Push the write cache to the device if the cache is loaded,
@@ -385,6 +388,8 @@ void mbdt_process_cache_io(PMADBUSOBJ pmadbusobj, bool write, u32 msidx)
 		    }
 		else //only push and advance the cache index if the cache was not empty
 		    {
+            //PDEBUG("madbus_dev_thread:mbdt_process_cache... memcpy pDevData=%px pCacheData=%px\n",
+            //        pDevData, pCacheData);
 	        memcpy(pDevData, pCacheData, MAD_CACHE_SIZE_BYTES);
 			pmaddevice->CacheIndxWr += MAD_CACHE_NUM_SECTORS;
 		    }
@@ -393,7 +398,7 @@ void mbdt_process_cache_io(PMADBUSOBJ pmadbusobj, bool write, u32 msidx)
 	    }
 	else //cache read
 	    {
-	    pDevData += (pmaddevice->CacheIndxRd * MAD_CACHE_SIZE_BYTES);
+	    pDevData += ((u64)(pmaddevice->CacheIndxRd * MAD_SECTOR_SIZE));
 		pCacheData += MAD_CACHE_READ_OFFSET;
 
 		//Pull the read cache into the host, reload the read cache
@@ -409,6 +414,8 @@ void mbdt_process_cache_io(PMADBUSOBJ pmadbusobj, bool write, u32 msidx)
 		    }
 
         // load/reload the read cache
+        //{PDEBUG("madbus_dev_thread:mbdt_process_cache... memcpy pCacheData=%px pDevData=%px\n",
+        //       pCacheData, pDevData);}
 	    memcpy(pCacheData, pDevData, MAD_CACHE_SIZE_BYTES);
 		pmaddevice->IntID |= MAD_INT_BUFRD_INPUT_BIT;
 	    }

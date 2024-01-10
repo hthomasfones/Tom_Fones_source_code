@@ -128,7 +128,7 @@ char MadDevNames[10][20] =
      {MADDEVOBJNAME, MADDEVOBJNAME, MADDEVOBJNAME, MADDEVOBJNAME, MADDEVOBJNAME, MADDEVOBJNAME, MADDEVOBJNAME, MADDEVOBJNAME};
 char MadDevNumStr[] = DEVNUMSTR;
 
-MADREGS MadRegsRst = {0, MAD_STATUS_CACHE_INIT_MASK, 0, 0x080B0B, 0, 0, 0, 0, 0, 0, 0, 0};
+MADREGS MadRegsRst = {0, MAD_STATUS_CACHE_INIT_MASK, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 struct mad_dev_obj *mad_dev_objects; /* allocated in maddev_init_module */
 
@@ -330,15 +330,12 @@ static int maddevr_release(struct inode *inode, struct file *fp)
 	struct mad_dev_obj *pmaddevobj = (struct mad_dev_obj*)fp->private_data;
     int rc = 0;
 
-	PINFO("maddevr_release...dev#=%d inode=%p fp=%p\n",
+	PINFO("maddevr_release...dev#=%d inode=%p fp=%p\n\n",
           (int)pmaddevobj->devnum, inode, fp);
 
     mutex_lock(&pmaddevobj->devmutex);
     if (pmaddevobj->vma != NULL)
-        {
-        //rc = munmap(pmaddevobj->vma->vm_start, pmaddevobj->vma->vm_end); 
-        pmaddevobj->vma = NULL;
-        }
+        {pmaddevobj->vma = NULL;}
     mutex_unlock(&pmaddevobj->devmutex);
 
     if (rc != 0)
@@ -399,14 +396,16 @@ long maddevr_ioctl(struct file *fp, unsigned int cmd, unsigned long arg)
 	struct mad_dev_obj *pmaddevobj = fp->private_data;
 	PMADREGS        pmadregs  = (PMADREGS)pmaddevobj->pDevBase;
 	PMADCTLPARMS    pCtlParms = (PMADCTLPARMS)arg;
+    //u8 tempbufr[] = "____________\0";
 	//
 	int err = 0;
 	long retval = 0;
 	U32  remains = 0;
     u32 flags1 = 0;
     //U32 flags2 = 0;
-    u8*  madcache = NULL;
     u8   cachebufr[MAD_SECTOR_SIZE];
+    u8*  devcache = NULL;
+    u8*  userbufr = NULL;
 
 	PINFO("maddevr_ioctl... dev#=%d fp=%px cmd=x%X arg=x%X\n",
 		  (int)pmaddevobj->devnum, (void *)fp, cmd, (int)arg);
@@ -440,14 +439,14 @@ long maddevr_ioctl(struct file *fp, unsigned int cmd, unsigned long arg)
     switch(cmd)
 	    {
 	    case MADDEVOBJ_IOC_INIT: //Initialize the device in a standard way
-	    	PDEBUG( "maddevr_ioctl MADDEVOBJ_IOC_INIT\n");
+	    	PDEBUG( "maddevr_ioctl... dev#=%d MADDEVOBJ_IOC_INIT\n", (int)pmaddevobj->devnum);
             maddev_acquire_lock_disable_ints(&pmaddevobj->devlock, flags1);
-            memcpy_toio(&MadRegsRst, pmadregs, sizeof(MADREGS));
+            memcpy_toio(pmadregs, &MadRegsRst, sizeof(MADREGS));
             maddev_enable_ints_release_lock(&pmaddevobj->devlock, flags1);
             break;
 
 	    case MADDEVOBJ_IOC_RESET: //Reset all index registers
-	    	PDEBUG("maddevr_ioctl MADDEVOBJ_IOC_RESET\n");
+	    	PDEBUG("maddevr_ioctl... dev#=%d MADDEVOBJ_IOC_RESET\n", (int)pmaddevobj->devnum);
             maddev_acquire_lock_disable_ints(&pmaddevobj->devlock, flags1);
             iowrite32(0, &pmadregs->ByteIndxRd);
 	    	iowrite32(0, &pmadregs->ByteIndxWr);
@@ -466,9 +465,10 @@ long maddevr_ioctl(struct file *fp, unsigned int cmd, unsigned long arg)
             memcpy_fromio(&MadRegs, pmadregs, sizeof(MADREGS));
             maddev_enable_ints_release_lock(&pmaddevobj->devlock, flags1);
 
+            //possibly paged memory - copy outside of spinlock
             remains =
-		    copy_to_user(&pCtlParms->MadRegs, &MadRegs, sizeof(MADREGS)); //possibly paged memory - copy outside of spinlock
-		    if (remains > 0)
+		    copy_to_user(&pCtlParms->MadRegs, &MadRegs, sizeof(MADREGS)); 
+            if (remains > 0)
                 {
                 PERR("maddevr_ioctl:copy_to_user...  dev#=%d bytes_remaining=%ld rc=-EFAULT\n",
                      (int)pmaddevobj->devnum, remains);
@@ -491,7 +491,7 @@ long maddevr_ioctl(struct file *fp, unsigned int cmd, unsigned long arg)
 	        break;
 
         case MADDEVOBJ_IOC_ALIGN_READ_CACHE:
-            PDEBUG("maddevr_ioctl... MADDEVOBJ_IOC_ALIGN_READ_CACHE dev#=%d cache_read_dx=%ld\n",
+            PDEBUG("maddevr_ioctl... MADDEVOBJ_IOC_ALIGN_READ_CACHE dev#=%d cache_dx=%ld\n",
                    (int)pmaddevobj->devnum, arg);
 
             if ((arg < 0) || (arg > MAD_DEVICE_MAX_SECTORS-1))
@@ -504,12 +504,10 @@ long maddevr_ioctl(struct file *fp, unsigned int cmd, unsigned long arg)
             maddev_acquire_lock_disable_ints(&pmaddevobj->devlock, flags1);
             iowrite32(MadRegs.CacheIndxRd, &pmadregs->CacheIndxRd);
             maddev_enable_ints_release_lock(&pmaddevobj->devlock, flags1);
-            //PDEBUG("maddev_ioctl... dev#=%d set_cache_rd_indx=%ld\n",
-            //       (int)pmaddevobj->devnum, pmadregs->CacheIndxRd);
             break;
 
         case MADDEVOBJ_IOC_ALIGN_WRITE_CACHE:
-            PDEBUG("maddevr_ioctl... MADDEVOBJ_IOC_ALIGN_WRITE_CACHE dev#=%d cache_write_dx=%ld\n",
+            PDEBUG("maddevr_ioctl... MADDEVOBJ_IOC_ALIGN_WRITE_CACHE dev#=%d cache_dx=%ld\n",
                    (int)pmaddevobj->devnum, arg);
 
             if ((arg < 0) || (arg > MAD_DEVICE_MAX_SECTORS-1))
@@ -522,8 +520,6 @@ long maddevr_ioctl(struct file *fp, unsigned int cmd, unsigned long arg)
             maddev_acquire_lock_disable_ints(&pmaddevobj->devlock, flags1);
 		    iowrite32(MadRegs.CacheIndxWr, &pmadregs->CacheIndxWr);
             maddev_enable_ints_release_lock(&pmaddevobj->devlock, flags1);
-            //PDEBUG("maddev_ioctl... dev#=%d set_cache_wr_indx=%ld\n",
-            //       (int)pmaddevobj->devnum, pmadregs->CacheIndxWr);
             break;
 
         case MADDEVOBJ_IOC_PULL_READ_CACHE:
@@ -531,13 +527,14 @@ long maddevr_ioctl(struct file *fp, unsigned int cmd, unsigned long arg)
                    (int)pmaddevobj->devnum);
 
             //Retrieve the current cache for the user
-            madcache = (u8*)((u64)pmadregs + MAD_CACHE_READ_OFFSET);
+            devcache = (u8*)((u64)pmadregs + MAD_CACHE_READ_OFFSET);
             maddev_acquire_lock_disable_ints(&pmaddevobj->devlock, flags1);
-            memcpy_fromio(cachebufr, madcache, MAD_SECTOR_SIZE);
+            memcpy_fromio(cachebufr, devcache, MAD_SECTOR_SIZE);
             maddev_enable_ints_release_lock(&pmaddevobj->devlock, flags1);
 
             //possibly paged memory - copy outside of spinlock
-            remains = copy_to_user(&pCtlParms->databufr, cachebufr, MAD_SECTOR_SIZE); 
+            userbufr = (u8*)pCtlParms;
+            remains = copy_to_user(userbufr, cachebufr, MAD_SECTOR_SIZE); 
 
             //Program the device for a transfer from the device to the read cache
             maddev_acquire_lock_disable_ints(&pmaddevobj->devlock, flags1);
@@ -550,15 +547,14 @@ long maddevr_ioctl(struct file *fp, unsigned int cmd, unsigned long arg)
 
             //Release our quantum:
             // not processing for an interrupt - sleazy synchronous implementation
-            schedule(); 
-            schedule(); 
+            while (ioread32(&pmadregs->IntID) == 0)
+                {schedule();}
 
             //Confirm that we have a good interrupt
             maddev_acquire_lock_disable_ints(&pmaddevobj->devlock, flags1);
-            ASSERT((int)(ioread32(&pmadregs->IntID)==MAD_INT_BUFRD_INPUT_BIT));
-            ASSERT((int)(ioread32(&pmadregs->Status)==MAD_STATUS_NO_ERROR_MASK));
-            iowrite32(0, &pmadregs->IntID);
-            iowrite32(0, &pmadregs->Control);
+            //ASSERT((int)(ioread32(&pmadregs->IntID)==MAD_INT_BUFRD_INPUT_BIT));
+            //ASSERT((int)(ioread32(&pmadregs->Status)==MAD_STATUS_NO_ERROR_MASK));
+            maddev_reset_io_registers(pmadregs, NULL);
             maddev_enable_ints_release_lock(&pmaddevobj->devlock, flags1);
             break;
 
@@ -577,24 +573,22 @@ long maddevr_ioctl(struct file *fp, unsigned int cmd, unsigned long arg)
 
             //Release our quantum:-
             // not processing for an interrupt - sleazy synchronous implementation
-    	    schedule(); 
-            schedule(); 
+            while (ioread32(&pmadregs->IntID) == 0)
+                {schedule();}
 
             //Confirm that we have a good interrupt
-            maddev_acquire_lock_disable_ints(&pmaddevobj->devlock, flags1);
-            ASSERT((int)(ioread32(&pmadregs->IntID)==MAD_INT_BUFRD_OUTPUT_BIT));
-            ASSERT((int)(ioread32(&pmadregs->Status)==MAD_STATUS_NO_ERROR_MASK));
-            iowrite32(0, &pmadregs->IntID);
-            iowrite32(0, &pmadregs->Control);
-            maddev_enable_ints_release_lock(&pmaddevobj->devlock, flags1);
+            //ASSERT((int)(ioread32(&pmadregs->IntID)==MAD_INT_BUFRD_OUTPUT_BIT));
+            //ASSERT((int)(ioread32(&pmadregs->Status)==MAD_STATUS_NO_ERROR_MASK));
 
             //possibly paged memory - copy outside of spinlock
-            remains = copy_from_user(cachebufr, &pCtlParms->databufr, MAD_SECTOR_SIZE);
+            userbufr = (u8*)pCtlParms;
+            remains = copy_from_user(cachebufr, userbufr, MAD_SECTOR_SIZE);
 
             //Update the write cache from the user
-            madcache = (u8*)((u64)pmadregs + MAD_CACHE_WRITE_OFFSET);
+            devcache = (u8*)((u64)pmadregs + MAD_CACHE_WRITE_OFFSET);
             maddev_acquire_lock_disable_ints(&pmaddevobj->devlock, flags1);
-            memcpy_toio(cachebufr, madcache, MAD_SECTOR_SIZE);
+            memcpy_toio(devcache, cachebufr, MAD_SECTOR_SIZE);
+            maddev_reset_io_registers(pmadregs, NULL);
             maddev_enable_ints_release_lock(&pmaddevobj->devlock, flags1);
             break;
 

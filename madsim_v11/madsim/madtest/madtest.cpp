@@ -41,7 +41,7 @@ char MadDevPathName[100] = "";
 MADREGS MadRegs;
 PMADREGS pMapdDevRegs = NULL;
 
-void* pPIOregn = NULL;
+void* pPioregn = NULL;
 void* pDevData = NULL;
 char* pLargeBufr = NULL;
 u8 RandomBufr[8192];
@@ -85,13 +85,13 @@ struct stat statstr;
     //        fd, rc, errno, statstr. st_mode, statstr.st_size);
 
     //rc = MapDeviceRegsPio(&pMapdDevRegs, fd);
-    //rc = MapWholeDevice(&pMapdDevRegs, fd);
+    rc = MapWholeDevice(&pMapdDevRegs, fd);
     if (pMapdDevRegs != NULL)
         {
-        pPIOregn = ((U8*)pMapdDevRegs + MAD_MAPD_READ_OFFSET);
+        pPioregn = ((U8*)pMapdDevRegs + MAD_MAPD_READ_OFFSET);
         pDevData = ((U8*)pMapdDevRegs + MAD_DEVICE_DATA_OFFSET);
 	//fprintf(stderr, "madtest pRegs=%p pPIO=%p pData=%p\n",
-	//        pMapdDevRegs, pPIOregn, pDevData);
+	//        pMapdDevRegs, pPioregn, pDevData);
         }
         
     rc = Process_Cmd(fd, op, val, offset, parm);
@@ -397,10 +397,11 @@ void display_help()
     return;
 }
 
+static u8 iobufr[MAD_CACHE_SIZE_BYTES];
 int Process_Cmd(int fd, int op, long val, long offset, void* parm)
 
 {
-static u8 iobufr[MAD_SECTOR_SIZE+2];
+static u8 iobufr[MAD_CACHE_SIZE_BYTES];
 //
 ulong iparm = *(ULONG *)parm;
 //
@@ -547,29 +548,29 @@ char data[11];
             break;
 
         case kPW:
-            if (pPIOregn == NULL)
+            if (pPioregn == NULL)
                 {
                 rc = -ENOMEM;
                 break;
                 }
 
-            memset(pPIOregn, '.' /*0x00*/, MAD_CACHE_SIZE_BYTES);
-	    memcpy(pPIOregn, (char *)parm, strlen((char *)parm));
+            memset(pPioregn, '.' /*0x00*/, MAD_SECTOR_SIZE);
+	    memcpy(pPioregn, (char *)parm, strlen((char *)parm));
             //fprintf(stderr, "Write to PIO region completes: %d bytes\n%s\n", val, (char *)parm);
             fprintf(stderr, "Write to PIO region completes: %d bytes\n", val);
-            //fprintf(stderr, "Write to PIO region completes: \n%s\n", (char *)pPIOregn);
+            //fprintf(stderr, "Write to PIO region completes: \n%s\n", (char *)pPioregn);
             break;
 
         case kPR:
-            if (pPIOregn == NULL)
+            if (pPioregn == NULL)
                 {
                 rc = -ENOMEM;
                 break;
                 }
 
-            memset(iobufr, 0x00, MAD_CACHE_SIZE_BYTES);
-	    memcpy(iobufr, pPIOregn, (size_t)val);
-	    //fprintf(stderr, "Read from PIO region completes: %d bytes...\n%s\n", val, pPIOregn);
+            memset(iobufr, 0x00, MAD_SECTOR_SIZE);
+	    memcpy(iobufr, pPioregn, (size_t)val);
+	    //fprintf(stderr, "Read from PIO region completes: %d bytes...\n%s\n", val, pPioregn);
 	    fprintf(stderr, "Read from PIO region completes: %d bytes...\n%s\n", val, iobufr);
             break;
 
@@ -591,19 +592,19 @@ char data[11];
 	    break;
 
         case kPRC:
-            memset(iobufr, 0x00, MAD_CACHE_SIZE_BYTES);
+            memset(iobufr, '.', MAD_CACHE_SIZE_BYTES);
 	    rc = ioctl(fd, MADDEVOBJ_IOC_PULL_READ_CACHE, iobufr);
 	    if (rc == 0)
-                {fprintf(stderr, "Load read cache completes: %d bytes...\n%s\n",
+                {fprintf(stderr, "Pull read cache completes: %d bytes...\n%s\n",
             MAD_CACHE_SIZE_BYTES, iobufr);}
 	    break;
 
 	case kPWC:
-	    memset(iobufr, '.' /*0x00*/, MAD_CACHE_SIZE_BYTES);
+	    memset(iobufr, 0x00, MAD_CACHE_SIZE_BYTES);
 	    memcpy((char *)iobufr, (char *)parm, strlen((char *)parm));
 	    rc = ioctl(fd, MADDEVOBJ_IOC_PUSH_WRITE_CACHE, iobufr);
 	    if (rc == 0)
-                {fprintf(stderr, "Flush write cache completes: %d bytes...\n", MAD_CACHE_SIZE_BYTES);}
+                {fprintf(stderr, "Push write cache completes: %d bytes...\n", MAD_CACHE_SIZE_BYTES);}
 	    break;
 
 	case kARC:

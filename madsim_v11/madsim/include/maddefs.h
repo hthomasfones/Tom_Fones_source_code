@@ -235,13 +235,13 @@ typedef enum {eNOP=0, eBufrdRd, eBufrdWr, eLoadRdCache, eFlushWrCache,
 #define MAD_TOTAL_ALLOC_SIZE         (MAD_SECTOR_SIZE * MAD_DEVICE_MAX_SECTORS)
 #define MAD_SAFE_MMAP_SIZE           (1 << 16)
 //
-#define MAD_CACHE_NUM_SECTORS        8
+#define MAD_CACHE_NUM_SECTORS        1 //8
 #define MAD_CACHE_SIZE_BYTES         (MAD_CACHE_NUM_SECTORS * MAD_SECTOR_SIZE)
 #define MAD_CACHE_NUM_PAGES          (MAD_CACHE_NUM_SECTORS / MAD_SECTORS_PER_PAGE) 
 //
 #define MAD_REGISTER_BLOCK_SIZE      MAD_SECTOR_SIZE
 #define MAD_MAPD_READ_OFFSET         MAD_REGISTER_BLOCK_SIZE //MAPD as in mapped
-#define MAD_MAPD_READ_SIZE           (MAD_SECTOR_SIZE * 1)  // * N sectors if useful
+#define MAD_MAPD_READ_SIZE           (MAD_SECTOR_SIZE * MAD_CACHE_NUM_SECTORS) 
 #define MAD_MAPD_WRITE_OFFSET        (MAD_MAPD_READ_OFFSET + MAD_MAPD_READ_SIZE) 
 #define MAD_MAPD_WRITE_SIZE          MAD_MAPD_READ_SIZE  
 //

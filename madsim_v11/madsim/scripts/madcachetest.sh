@@ -44,143 +44,90 @@ dx=$devnum
 #
 sleep $delay
 cd $appbasepath"/scripts"
-#source madrawblk.sh
+source madrawblk.sh
 sleep $delay
 #exit
 #Check help for the testware
-cd $currdir
-cd $appbasepath 
+#cd $currdir
+#cd $appbasepath 
 
 ### Customized tests: Device Cacheing
 #
 cd $appbasepath 
 set +x ; printf "\nCache & Programmed i/o test\n" ; set -x ;
 $testappbio_path$testappbio $devnum ini
-#exit
-#$testappbio_path$testappbio $devnum get
-#$simappbio_path$simappbio $devnum get
-#exit
-#$simapp_path$simapp $devnum mgt
-#$simapp_path$simapp $devnum idd
+sleep $delay
 #
-set +x ; printf "\nLet's do some programmed i/o =================\n" ; set -x ;
-#$testappbio_path$testappbio $devnum piw 45 ABCDEFGHIJKLMNOPQRSTUVWXYZ_0123456789
-#
-#$testappbio_path$testappbio $devnum pir 50
+
+set +x ; printf "\nLet's do some programmed (mmaped) io  =================\n" ; set -x ;
+$testappbio_path$testappbio $devnum piw 45 ABCDEFGHIJKLMNOPQRSTUVWXYZ_0123456789
+sleep $delay
+$testappbio_path$testappbio $devnum pir 50
+#exit
+
+set +x ; printf "\nLet's align the read & write caches and confirm ========\n" ; set -x ;
+$testappbio_path$testappbio $devnum awc 8  #Align the write cache
+sleep $delay
+$testappbio_path$testappbio $devnum arc 16  #Align the read cache
+sleep $delay
+$testappbio_path$testappbio $devnum mget 
+#sleep $delay
 #exit
 set +x ; printf "\nPopulate device sectors through the write cache =================\n" ; set -x ;
-#$testappbio_path$testappbio $devnum apwc ##Align the write cache
+$testappbio_path$testappbio $devnum rst  #Align the read, write caches to 0
 $testappbio_path$testappbio $devnum pwc Sector_zero_000 #Program the write cache
 sleep $delay
-$testappbio_path$testappbio $simappbio_path$simappbio $devnum get
-exit
-$testappbio_path$testappbio $devnum pwc Sector_zero_000 #Program the write cache
-sleep $delay
-$testappbio_path$testappbio $devnum prc 
-sleep $delay
-exit
-#$simapp_path$simapp $devnum fwc #Flush the write cache
-#sleep $delay
-
 $testappbio_path$testappbio $devnum pwc Sector_one_111 
 sleep $delay
-#$simapp_path$simapp $devnum fwc
-#sleep $delay
-
 $testappbio_path$testappbio $devnum pwc Sector_two_222 
 sleep $delay
-#$simapp_path$simapp $devnum fwc
-#sleep $delay
 
 $testappbio_path$testappbio $devnum pwc Sector_three_333 
 sleep $delay
-#$simapp_path$simapp $devnum fwc
-#sleep $delay
 
 $testappbio_path$testappbio $devnum pwc Sector_four_444 
 sleep $delay
-#$simapp_path$simapp $devnum fwc
-#sleep $delay
-$testappbio_path$testappbio $devnum get
-
 set +x ; printf "\nRetrieve device sectors through the read cache ==================\n" ; set +x ;
 $testappbio_path$testappbio $devnum prc 
 sleep $delay
-#$simapp_path$simapp $devnum lrc
-#sleep $delay
-
 $testappbio_path$testappbio $devnum prc 
 sleep $delay
-#$simapp_path$simapp $devnum lrc
-#sleep $delay
-
 $testappbio_path$testappbio $devnum prc 
-sleep $delay
-#$simapp_path$simapp $devnum lrc
-#sleep $delay
-
-$testappbio_path$testappbio $devnum prc 
-sleep $delay
-$simapp_path$simappc $devnum lrc
 sleep $delay
 
 $testappbio_path$testappbio $devnum prc 
 sleep $delay
-#$simapp_path$simapp $devnum lrc
-#sleep $delay
 
 $testappbio_path$testappbio $devnum prc 
 sleep $delay
-$simapp_path$simapp $devnum lrc
-#sleep $delay
-#$testappbio_path$testappbio $devnum get
+$testappbio_path$testappbio $devnum prc 
+sleep $delay
+#exit
 
 set +x ; printf "\nAlign (reset) the read cache and retrieve device sectors again=====\n" ; set +x ;
-$testappbio_path$testappbio $devnum arc 1 
+$testappbio_path$testappbio $devnum rst  #Align the read, write caches to 0
 sleep $delay
-#simapp_path$simapp $devnum arc
-#sleep $delay
-#$testappbio_path$testappbio $devnum get
+$testappbio_path$testappbio $devnum prc 
+sleep $delay
+#exit
+$testappbio_path$testappbio $devnum prc 
+sleep $delay
 
 $testappbio_path$testappbio $devnum prc 
 sleep $delay
-#$simapp_path$simapp $devnum lrc
-#sleep $delay
 
 $testappbio_path$testappbio $devnum prc 
 sleep $delay
-#$simapp_path$simapp $devnum lrc
-#sleep $delay
-
 $testappbio_path$testappbio $devnum prc 
-sleep $delay
-#$simapp_path$simapp $devnum lrc
-#sleep $delay
-
-$testappbio_path$testappbio $devnum prc 
-sleep $delay
-$simapp_path$simapp $devnum lrc
-#sleep $delay
-#$testappbio_path$testappbio $devnum get
 #
-#$simapp_path$simapp 1 hun
-sleep 900
-rmmod $madmodule
-rmmod $busmodule
-lsmod | grep "mad"
+$simapp_path$simapp 1 hun
+sleep 1
+#rmmod $madmodule
+#rmmod $busmodule
+#lsmod | grep "mad"
 cd $currdir
 set +x
 dumpsize=4100
 source madresults.sh
 echo "=== madcachetest.sh  fini ==================="
-
-
-
-
-
-
-
-
-
-
 
