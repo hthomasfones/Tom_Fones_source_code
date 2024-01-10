@@ -87,7 +87,7 @@ sleep $delay
 
 $testappbio_path$testappbio $devnum pwc Sector_four_444 
 sleep $delay
-set +x ; printf "\nRetrieve device sectors through the read cache ==================\n" ; set +x ;
+set +x ; printf "\nRetrieve device sectors through the read cache ==================\n" ; set -x ;
 $testappbio_path$testappbio $devnum prc 
 sleep $delay
 $testappbio_path$testappbio $devnum prc 
@@ -104,7 +104,7 @@ $testappbio_path$testappbio $devnum prc
 sleep $delay
 #exit
 
-set +x ; printf "\nAlign (reset) the read cache and retrieve device sectors again=====\n" ; set +x ;
+set +x ; printf "\nAlign (reset) the read cache and retrieve device sectors again=====\n" ; set -x ;
 $testappbio_path$testappbio $devnum rst  #Align the read, write caches to 0
 sleep $delay
 $testappbio_path$testappbio $devnum prc 

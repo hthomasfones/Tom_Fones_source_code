@@ -610,7 +610,7 @@ int  sim_request_irq(unsigned int irq, void* isrfunxn,
 
     return 0;       
 }
-//
+
 //This function implements a simulation of the kernel/pcicore free_irq function
 int sim_free_irq(unsigned int irq, void* dev_id)
 {
@@ -704,11 +704,17 @@ int madbus_hotplug(U32 indx, U16 pci_devid)
     if (rc == MAD_NO_VENDOR_DEVID_MATCH) 
         {rc = -EUNATCH;} /* Protocol driver not attached */
 
-    if (rc == 0)
-        {ASSERT((int)(pmbobj_hpl->pcidev.driver != NULL));}
-    else
+    if (rc != 0)
         //Mark this slot as free
-        {pmbobj_hpl->pci_devid = 0;}
+        {
+        PWARN("madbus_hotplug... dev#=%d rc=%d\n", (int)indx, rc);
+        pmbobj_hpl->pci_devid = 0;
+        }
+    else
+        {
+        ASSERT((int)(pmbobj_hpl->pcidev.driver != NULL));
+        pmbobj_hpl->bHP = 1;
+        }
 
     return rc;
 }
@@ -735,6 +741,9 @@ int madbus_hotunplug(U32 indx)
 
     if (pPciDrvr->remove == NULL)
        {return -EFAULT;}
+
+     if (!pmbobj_hpl->bHP)
+         {return -EOPNOTSUPP;} //Operation not supported - this device wasn't hot-plugged
 
     /*rc =*/ pPciDrvr->remove(&pmbobj_hpl->pcidev);
     rc = 0;

@@ -109,6 +109,7 @@ struct madbus_object
     irq_handler_t  isrfn[MAD_NUM_MSI_IRQS+1];
     int            irq[MAD_NUM_MSI_IRQS+1];
 
+    u32        bHP;
     //The device to be exposed in SysFs
     U32        bRegstrd;
     struct     device  sysfs_dev;
@@ -128,7 +129,7 @@ typedef struct madbus_object MADBUSOBJ, *PMADBUSOBJ;
 
 #define to_madbus_object(dev) container_of(dev, struct madbus_object, dev);
 
-int madbus_setup_device(PMADBUSOBJ pmaddbusobj, u32 indx);
+int madbus_setup_device(PMADBUSOBJ pmaddbusobj, u32 indx, u8 bHP);
 extern int register_mad_device(struct madbus_object *);
 extern void unregister_mad_device(struct madbus_object *);
 extern int madbus_create_thread(PMADBUSOBJ pmadbusobj);

@@ -234,7 +234,7 @@ static long madbus_dev_ioctl(struct file *fp, unsigned int cmd, unsigned long ar
 	    }
 
 	if (retval != 0)
-        {PWARN("madbus_ioctl: returning %d\n", retval);}
+        {PWARN("madbus_ioctl: dev#=%d returning %d\n", indx, retval);}
 
 	return retval;
 }
@@ -562,13 +562,14 @@ int rc = 0;
     return 0;
 }
 
-int madbus_setup_device(PMADBUSOBJ pmadbusobj, u32 indx)
+int madbus_setup_device(PMADBUSOBJ pmadbusobj, u32 indx, u8 bHP)
 {
     int i= indx;
     int rc = 0;
     pmadbusobj->devnum = indx;
     
-    PINFO("madbus_setup_device... pmadbusobj=%px dev#=%d\n", pmadbusobj, i);
+    PINFO("madbus_setup_device... pmadbusobj=%px dev#=%d Hp=%d\n",
+          pmadbusobj, i, bHP);
     rc = madbus_dev_setup_cdev(pmadbusobj, i);
     if (rc != 0)
         {return rc;} 
@@ -600,6 +601,7 @@ int madbus_setup_device(PMADBUSOBJ pmadbusobj, u32 indx)
     return rc;
 }
 
+//Set up all statically allocated devices
 int madbus_setup_devices(PMADBUSOBJ madbusobjs, int num_devices)
 {
 PMADBUSOBJ pmadbusobj = madbusobjs; 
@@ -609,7 +611,7 @@ int numdevsready = 0;
 
     for (i = 0; i <= num_devices; i++)
         {
-        rc = madbus_setup_device(pmadbusobj, i);
+        rc = madbus_setup_device(pmadbusobj, i, false);
        	if (rc != 0)
         	{
        		if (i > 1)
