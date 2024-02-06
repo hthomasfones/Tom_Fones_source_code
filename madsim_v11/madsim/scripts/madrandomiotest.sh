@@ -30,17 +30,16 @@
 #Set up script environment variables
 bdev=1 #We will setup block-mode device(s)
 source madenv.sh
-
 clear
 
 #Load the simulation & target drivers
 source madinsmods.sh
 
 #Check for help from the test app & sim-ui
-cd $currdir
-#source madappintro.sh
+cd $projectdir
+#source $scriptpath"madappintro.sh"
 
-cd $appbasepath 
+#cd $appbasepath 
 ### Customized tests: Random i/o
 set +x ; printf "\nRandom i/o tests  =================\n" ; set -x
 $simapp_path$simapp $devnum idd b 2048
@@ -88,6 +87,6 @@ sleep 1
 cd $currdir
 set +x
 dumpsize=30000
-source madresults.sh
+source $scriptpath"madresults.sh"
 echo "=== fini ==================="
 

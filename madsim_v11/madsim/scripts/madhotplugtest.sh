@@ -44,17 +44,17 @@ source madinsmods.sh
 sleep $delay
 
 #Check for help from the test app & sim-ui
-cd $currdir
-cd $appbasepath 
+#cd $currdir
+cd $projectdir 
 
-#source madappintro.sh
+#source $scriptpath"madappintro.sh
 
 #printf "\nHotplug tests\n"
 #for (( dn=1; dn<=$number_bus_slots; dn++ ))
 #do
     $simapp_path$simapp 1 hun # hot-unplug to an empty slot
     sleep $delay
-    $simapp_path$simapp $dn hpl 1005 #hotplu an unknown pci-device-id
+    $simapp_path$simapp 1 hpl 1005 #hotplu an unknown pci-device-id
     sleep $delay
 #done
 

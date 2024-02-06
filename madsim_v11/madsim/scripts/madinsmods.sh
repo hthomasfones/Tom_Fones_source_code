@@ -79,8 +79,8 @@ do
 done
 
 set +x ; printf "\nLoad the bus & device(s) simulation driver... madbus.ko\n" ; set -x
-cd $busdrvrpath
-/sbin/insmod ./$busmodule.ko madbus_major=$madbus_major madbus_nbr_slots=$number_bus_slots $* || exit 1
+#cd $busdrvrpath
+/sbin/insmod $busdrvrpath$busmodule.ko madbus_major=$madbus_major madbus_nbr_slots=$number_bus_slots $* || exit 1
 
 set +x ; printf "\nCreate symbolic links between... \n" ; set -x
 #Create symbolic link: soft, force, verbose
@@ -97,7 +97,7 @@ cd ..
 cd $trgtdrvrpath
 #exit
 ### invoke insmod including driver-pathname with all the input arguments 
-/sbin/insmod ./$madmodule.ko maddev_max_devs=$number_bus_slots  \
+/sbin/insmod $trgtdrvrpath$madmodule.ko maddev_max_devs=$number_bus_slots  \
                              maddev_nbr_devs=$number_static_devs \
                              mad_pci_devid=$pcidev              $* || exit 1
 

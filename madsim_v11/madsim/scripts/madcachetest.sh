@@ -43,7 +43,7 @@ devnum=1
 dx=$devnum
 #
 sleep $delay
-cd $appbasepath"/scripts"
+cd $scriptpath
 source madrawblk.sh
 sleep $delay
 #exit
@@ -53,7 +53,7 @@ sleep $delay
 
 ### Customized tests: Device Cacheing
 #
-cd $appbasepath 
+cd $proectdir 
 set +x ; printf "\nCache & Programmed i/o test\n" ; set -x ;
 $testappbio_path$testappbio $devnum ini
 sleep $delay
@@ -128,6 +128,6 @@ sleep 1
 cd $currdir
 set +x
 dumpsize=4100
-source madresults.sh
+source $scriptpath"madresults.sh"
 echo "=== madcachetest.sh  fini ==================="
 

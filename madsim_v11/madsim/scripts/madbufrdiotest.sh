@@ -30,7 +30,6 @@
 #Set up script environment variables
 bdev=0 #We will setup  char-mode device(s)
 source madenv.sh
-
 clear
 
 #Load the simulation & target drivers
@@ -38,9 +37,9 @@ source madinsmods.sh
 
 #Check for help from the test app & sim-ui
 cd $currdir
-#source madappintro.sh
+#source "$scriptpath/madappintro.sh"
 
-cd $appbasepath 
+cd projectdir #appbasepath 
 #set +x
 #echo "\nSanity tests... Get the device registers\n"
 #echo "from a simulator ioctl; from a simulator mmap\n"
@@ -96,8 +95,8 @@ sleep $delay
 #killall --verbose --wait $testapp
 #ps -ef | grep -i $testapp
 
-cd $currdir
-source madresults.sh
+cd $projectdir
+source $scriptpath"/madresults.sh"
 
 echo "=== fini ==================="
 

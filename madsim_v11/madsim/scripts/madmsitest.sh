@@ -41,10 +41,9 @@ number_static_devs=0
 source madinsmods.sh
 
 #Check for help from the test app & sim-ui
-cd $currdir
-cd $appbasepath 
+cd $projectdir 
 
-#source madappintro.sh
+#source $scriptpath"madappintro.sh"
 
 #printf "\nMSI tests\n"
 #$simapp_path$simapp 1 hun 
@@ -76,19 +75,17 @@ $testapp_path$testapp 1 rb 16 0
 sleep $delay
 $testapp_path$testapp 1 rb 16 0
 #
-cd $currdir
+cd $projectdir
 devnum=1
-source madresults.sh
+source $scriptpath"madresults.sh"
 sleep 20
 $simapp_path$simapp 1 hun 
 
 
 #kill all instances of the no-waited test apps
-killall --verbose --wait $testapp
-ps -ef | grep -i $testapp
 
-rmmod $madmodule
-rmmod $busmodule
+#rmmod $madmodule
+#rmmod $busmodule
 lsmod | grep "mad"
 
 echo "=== madmsitest.sh fini ==================="

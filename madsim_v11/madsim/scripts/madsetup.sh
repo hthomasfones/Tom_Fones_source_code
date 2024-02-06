@@ -40,22 +40,12 @@ bdev=0
 source madinsmods.sh
 
 #Check help for the testware
-cd $currdir
-cd $appbasepath 
-#source madappintro.sh
+#cd $currdir
+cd $projectdir  
+#source "$scriptpath/madappintro.sh
 
 ### Ready for a unit test
 #Hide executing commands
 set +x
 echo "=== fini ==================="
-
-
-
-
-
-
-
-
-
-
 

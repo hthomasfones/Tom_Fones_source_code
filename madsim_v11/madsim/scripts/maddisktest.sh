@@ -46,11 +46,11 @@ source madinsmods.sh
 sleep $delay
 ls -l /dev | grep "fd"
 #
-cd $appbasepath"/scripts"
+cd $scriptspath
 #source madrawblk.sh
 sleep $delay
 #
-cd $appbasepath 
+cd $projectdir  #appbasepath 
 #
 set +x ; printf "\nList all floppy disks\n" ; set -x
 ls -l $madblockdevpath*

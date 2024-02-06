@@ -30,7 +30,7 @@
                           
 #Set up script environment variables
 #
-bdev=0  #which device driver; 0=char-mode, 1=block-mode
+bdev=1  #which device driver; 0=char-mode, 1=block-mode
 source madenv.sh
 
 #Clear the console; hide executing commands

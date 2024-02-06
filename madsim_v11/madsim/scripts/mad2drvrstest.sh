@@ -30,6 +30,7 @@
 #Set up script environment variables
 bdev=0 #Char-mode device 1st - then a block-mode on the 2nd driver
 source madenv.sh
+trgtdrvrpath2="$projectdir/$madmodule2/KERN_SRC/"
 number_bus_slots=2
 number_static_devs=$number_bus_slots
 
@@ -49,9 +50,7 @@ source madinsmods.sh
 
 ln -sfv ${maddevobj} /dev/${maddevobj}
 
-cd ../../
-cd $madmodule2/KERN_SRC
-/sbin/insmod ./$madmodule2.ko maddev_major=$maddev_major maddev_max_devs=$number_bus_slots maddev_nbr_devs=0 || exit 1
+/sbin/insmod $trgtdrvrpath2$madmodule2.ko  maddev_major=$maddev_major maddev_max_devs=$number_bus_slots maddev_nbr_devs=0 || exit 1
 lsmod | grep "mad"
 
 printf "\nChange permission modes for all nodes... \n"
@@ -59,8 +58,8 @@ printf "\nChange permission modes for all nodes... \n"
 chmod -v $mode  /dev/${maddevobj}[0-$number_bus_slots]
 
 #Check for help from the test app & sim-ui
-cd $currdir
-cd $appbasepath 
+#cd $currdir
+cd $projectdir 
 
 printf "\n Multiple driver/device-type tests\n"
 $simapp_path$simapp 1 hpl 1001 

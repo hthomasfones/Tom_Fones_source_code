@@ -37,6 +37,6 @@ ls -l /dev/raw
 sleep $delay
 #
 set +x ; printf "\nLets see if we can send an ioctl to the raw block device\n" ; set -x  
-cd $appbasepath 
+cd $projectdir  #appbasepath 
 $testappbio_path$testappbio $devnum rst
 sleep $delay

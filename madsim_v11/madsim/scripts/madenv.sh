@@ -28,8 +28,13 @@
 #/* $Id: madenv.sh, v 1.0 2021/01/01 00:00:00 htf $                            
 #/*                                                                          
 delay=0.25
+#
+basedir="/home/htfones"
+projectdir="$basedir/eclipse-wkspc/madsim"
+appbasepath=$projectdir
+scriptpath="$projectdir/scripts/"
 
-busdrvrpath="../madbus/KERN_SRC"
+busdrvrpath="$projectdir/madbus/KERN_SRC/"
 busmodule="madbus"
 busdevobj="madbusobj"
 busdevname="madbus_0"
@@ -51,7 +56,7 @@ else
     pcidev=4097 #x1001
 fi    
 sleep $delay
-trgtdrvrpath="../$madmodule/KERN_SRC"
+trgtdrvrpath="$projectdir/$madmodule/KERN_SRC/"
 
 # number of devices 
 number_bus_slots=1
@@ -64,18 +69,16 @@ madbus_major=1
 maddev_major=0
 mode="664"
 #
-appbasepath="/home/htfones/eclipse-wkspc/madsim"
-scriptpath="../../scripts"
-simapp_path="madsimui/Debug/"
+simapp_path=$projectdir"/madsimui/Debug/"
 simapp="madsimui"
 #
-simappauto_path="madsimauto/Debug/"
+simappauto_path=$projectdir"/madsimauto/Debug/"
 simappauto="madsimauto"
 #
-testapp_path="madtestc/Debug/"
+testapp_path=$projectdir"/madtestc/Debug/"
 testapp="madtestc"
 #
-testappbio_path="madtestb/Debug/"
+testappbio_path=$projectdir"/madtestb/Debug/"
 testappbio="madtestb"
 madblockdevpath="/dev/fd"
 

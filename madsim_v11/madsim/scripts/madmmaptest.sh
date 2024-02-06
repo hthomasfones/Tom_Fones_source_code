@@ -38,10 +38,10 @@ clear
 source madinsmods.sh
 
 #Check for help from the test app & sim-ui
-cd $currdir
-#source madappintro.sh
+cd $projectdir
+#source $scriptpath"madappintro.sh"
 
-cd $appbasepath 
+#cd $appbasepath 
 set +x
 echo "\nMemmap tests... Get the device registers\n"
 echo "from a simulator ioctl; from a simulator mmap\n"
@@ -56,11 +56,6 @@ $testapp_path$testapp $devnum get
 sleep $delay
 $testapp_path$testapp $devnum mget 
 #
-
-#kill all instances of the no-waited test apps
-#killall --verbose --wait $testapp
-#ps -ef | grep -i $testapp
-
 echo "=== fini ==================="
 
 

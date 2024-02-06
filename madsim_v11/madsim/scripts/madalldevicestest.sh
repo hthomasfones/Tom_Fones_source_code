@@ -41,9 +41,9 @@ set -x
 source madinsmods.sh
 
 #Check for help from the test app & sim-ui
-cd $currdir
+cd $scriptpath
 #source madappintro.sh
-cd $appbasepath 
+cd $projectdir  
 
 ### Customized tests: Buffered i/o
 #
@@ -61,30 +61,21 @@ do
     printf "First some writes \n"
     $testapp_path$testapp $dn wb 33 0 abcdefghijklmnop
     sleep $delay
-    #$simapp_path$simapp $dn cbw
-    sleep $delay
 
     $testapp_path$testapp $dn wba 17 0 0123456789ABCDEF
-    sleep $delay
-    #$simapp_path$simapp $dn cbw
     sleep $delay
 
     printf "\nNow some reads\n"
     $testapp_path$testapp $dn rb 50
     sleep $delay
-    #$simapp_path$simapp $dn cbr
-    sleep $delay
 
     $testapp_path$testapp $dn rba 50
-    sleep $delay
-    #$simapp_path$simapp $dn cbr
     sleep $delay
 
     $testapp_path$testapp $dn get
 #
     devnum=$dn
-    cd $currdir
-    source madresults.sh
+    source $scriptpath"madresults.sh"
 done
 echo "=== madalldevicestest.sh fini ==================="
 
