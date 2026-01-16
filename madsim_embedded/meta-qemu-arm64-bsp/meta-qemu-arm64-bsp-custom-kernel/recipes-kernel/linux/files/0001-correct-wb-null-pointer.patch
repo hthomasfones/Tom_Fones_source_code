@@ -1,0 +1,14 @@
+diff --git a/mm/page-writeback.c b/mm/page-writeback.c
+index 8ca6617b2a72..25dc273c1915 100644
+--- a/mm/page-writeback.c
++++ b/mm/page-writeback.c
+@@ -2475,7 +2475,8 @@ void account_page_cleaned(struct page *page, struct address_space *mapping,
+ 	if (mapping_can_writeback(mapping)) {
+ 		dec_lruvec_page_state(page, NR_FILE_DIRTY);
+ 		dec_zone_page_state(page, NR_ZONE_WRITE_PENDING);
+-		dec_wb_stat(wb, WB_RECLAIMABLE);
++		if (wb != NULL)
++		    dec_wb_stat(wb, WB_RECLAIMABLE);
+ 		task_io_account_cancelled_write(PAGE_SIZE);
+ 	}
+ }

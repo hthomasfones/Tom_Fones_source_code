@@ -1,0 +1,51 @@
+--- virt_full.dts.0	2025-09-25 10:09:49.690765000 -0700
++++ virt_full.dts	2025-09-25 13:44:35.984982390 -0700
+@@ -25,7 +25,48 @@
+             #address-cells = <2>;
+             #size-cells = <2>;
+             ranges;
++            
++            /* Fixed reserve of  65 * 3 MiB (0x0C300000) */
++            madbus_priv0: madbus-priv0@44000000
++                {
++                reg = <0x0 0x44000000 0x0 0x0C300000>; //(64 + 1 * 3)MiB
++                no-map;                                // if we ioremap/vmap it
++                };
++               
++            /* Definition of shared reusable memory 33 * 3 MiB (0x06300000) */
++            madbus_shared0: madbus-shared0
++                {
++                compatible = "shared-dma-pool";
++                reusable;
++                size = <0x0 0x06300000>;   // 33*3MiB
++                // omitting 'no-map' to have the pages linearly mapped
++                };
+         };
++        
++	madbus_dev_shared: madbus-dev-shared
++	    {
++            compatible = "myco,madbus";
++            memory-region = <&madbus_shared0>; /* shared-dma-pool, size-only */
++            madbus,mode  = "shared";
++
++            // Optional but handy if you ever carry more than one:
++            // memory-region-names = "shared";
++
++            dma-coherent;   /* if true on this platform */
++            status = "okay";
++        };
++      	
++      	madbus_dev_priv: madbus-dev-priv {
++            compatible = "myco,madbus";
++            memory-region = <&madbus_priv0>; /* shared-dma-pool, size-only */
++            madbus,mode  = "priv";
++
++            // Optional but handy if you ever carry more than one:
++            // memory-region-names = "priv";
++
++            dma-coherent;   /* if true on this platform */
++            status = "okay";
++        };         
+ 
+ 	platform@c000000 {
+ 		interrupt-parent = <0x8005>;

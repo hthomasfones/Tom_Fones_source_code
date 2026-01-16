@@ -1,0 +1,45 @@
+# Query: &pmaddev->IntRegState
+# Flags: CaseSensitive
+# ContextLines: 1
+
+9 results - 4 files
+
+maddevbio.c:
+  471      //Copy the device register state for the DPC
+  472:     memcpy_fromio((PMADREGS)&pmaddev->IntRegState, pmadregs, MADREGS_BASE_SIZE);
+  473  
+
+  584  
+  585: 	rc = maddev_status_to_errno(pmaddev->devnum, (PMADREGS)&pmaddev->IntRegState);
+  586  
+
+  631          {
+  632:         rc = maddev_status_to_errno(pmaddev->devnum, (PMADREGS)&pmaddev->IntRegState);
+  633          iocount = maddev_get_io_count(pmaddev->IntRegState.Status, MAD_STATUS_READ_COUNT_MASK,
+
+  669          {
+  670:         rc = maddev_status_to_errno(pmaddev->devnum, (PMADREGS)&pmaddev->IntRegState);
+  671          iocount = maddev_get_io_count(pmaddev->IntRegState.Status, MAD_STATUS_WRITE_COUNT_MASK,
+
+maddevc.h:
+  163      //Save the device register state for the DPC
+  164: 	memcpy_fromio((PMADREGS)&pmaddev->IntRegState, pmadregs, sizeof(MADREGS));
+  165  
+
+maddevcio.c:
+  425  
+  426: 	rc = maddev_status_to_errno(pmaddev->devnum, (PMADREGS)&pmaddev->IntRegState);
+  427  
+
+  491          {
+  492:         rc = maddev_status_to_errno(pmaddev->devnum, (PMADREGS)&pmaddev->IntRegState);
+  493          iocount = maddev_get_io_count(pmaddev->IntRegState.Status, MAD_STATUS_READ_COUNT_MASK,
+
+  530          {
+  531:         rc = maddev_status_to_errno(pmaddev->devnum, (PMADREGS)&pmaddev->IntRegState);
+  532          iocount = maddev_get_io_count(pmaddev->IntRegState.Status, MAD_STATUS_WRITE_COUNT_MASK,
+
+maddrvrdefs.c:
+  1381      PMADDEVOBJ pmaddev = pmdo;
+  1382:     PMADREGS   pIsrState  = (PMADREGS)(PMADREGS)&pmaddev->IntRegState;
+  1383      U32 iostat = 0;

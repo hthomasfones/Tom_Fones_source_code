@@ -1,0 +1,37 @@
+diff --git a/kernel/dma/contiguous.c b/kernel/dma/contiguous.c
+index 3d63d91cba5c..dcff3b86845e 100644
+--- a/kernel/dma/contiguous.c
++++ b/kernel/dma/contiguous.c
+@@ -262,7 +262,7 @@ struct page *dma_alloc_from_contiguous(struct device *dev, size_t count,
+ 
+ 	return cma_alloc(dev_get_cma_area(dev), count, align, no_warn);
+ }
+-
++EXPORT_SYMBOL(dma_alloc_from_contiguous);
+ /**
+  * dma_release_from_contiguous() - release allocated pages
+  * @dev:   Pointer to device for which the pages were allocated.
+@@ -278,6 +278,7 @@ bool dma_release_from_contiguous(struct device *dev, struct page *pages,
+ {
+ 	return cma_release(dev_get_cma_area(dev), pages, count);
+ }
++EXPORT_SYMBOL(dma_release_from_contiguous);
+ 
+ static struct page *cma_alloc_aligned(struct cma *cma, size_t size, gfp_t gfp)
+ {
+@@ -332,6 +333,7 @@ struct page *dma_alloc_contiguous(struct device *dev, size_t size, gfp_t gfp)
+ 
+ 	return cma_alloc_aligned(dma_contiguous_default_area, size, gfp);
+ }
++EXPORT_SYMBOL(dma_alloc_contiguous);
+ 
+ /**
+  * dma_free_contiguous() - release allocated pages
+@@ -368,6 +370,7 @@ void dma_free_contiguous(struct device *dev, struct page *page, size_t size)
+ 	/* not in any cma, free from buddy */
+ 	__free_pages(page, get_order(size));
+ }
++EXPORT_SYMBOL(dma_free_contiguous);
+ 
+ /*
+  * Support for reserved memory regions defined in device tree

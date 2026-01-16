@@ -1,0 +1,6 @@
+IMAGE_INSTALL:append = " madsimui"
+IMAGE_INSTALL:append = " madsimko"
+IMAGE_INSTALL:append = " perf"
+IMAGE_INSTALL:append = " gdb"
+IMAGE_INSTALL:append = " strace"
+IMAGE_INSTALL:append = " valgrind"

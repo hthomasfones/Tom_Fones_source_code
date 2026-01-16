@@ -1,0 +1,66 @@
+/ {
+    reserved-memory {
+        #address-cells = <2>;
+        #size-cells = <2>;
+        ranges;
+
+        dma_pool: dma_pool@0 {
+            compatible = "shared-dma-pool";
+            reusable;                  // allow freeing/reallocating
+            size = <0x0 0x04000000>;   // 64 MiB (hi, lo)
+            alignment = <0x0 0x01000000>; // 16 MiB alignment (optional)
+            no-map;                    // don’t map into linear (recommended)
+        };
+    };
+
+    mybus@... {
+        /* your bus or child device node */
+        compatible = "myco,mybus";
+        memory-region = <&dma_pool>;   // ← opt-in to this pool
+        dma-coherent;                  // if the device is coherent
+    };
+};
+Notes
+
+compatible = "shared-dma-pool" tells the reserved-mem core to create a DMA pool.
+
+memory-region on the device node associates that pool with the device.
+
+no-map is typical so the kernel doesn’t place it in the normal linear map.
+
+Driver (no pool plumbing needed)
+c
+Copy code
+...............................................................................
+
+Driver (no pool plumbing needed)
+/* in probe() of the device that has memory-region phandle */
+void *cpu;
+dma_addr_t dma;
+size_t len = SZ_1M;  // example
+
+cpu = dma_alloc_coherent(dev, len, &dma, GFP_KERNEL);
+if (!cpu) return -ENOMEM;
+
+/* use cpu/dma … */
+
+=========================================================================
+
+
+
+dma_free_coherent(dev, len, cpu, dma);
+
+ madbus: madbus {
+        compatible = "myco,madbus";
+
+        /* Pick exactly one at build time (fixed carve-out OR shared pool) */
+        // memory-region = <&madbus_priv0>;   /* fixed carve-out, no-map */
+        // memory-region = <&madbus_shared0>; /* shared-dma-pool, size-only */
+
+        // Optional but handy if you ever carry more than one:
+        // memory-region-names = "fixed";
+
+        dma-coherent;   /* if true on your platform/sim */
+        status = "okay";
+    };
+
