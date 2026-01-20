@@ -1,0 +1,17 @@
+# We have a conf and classes directory, add to BBPATH
+BBPATH .= ":${LAYERDIR}"
+
+# We have recipes-* directories, add to BBFILES
+BBFILES += "${LAYERDIR}/recipes-*/*/*.bb \
+            ${LAYERDIR}/recipes-*/*/*.bbappend"
+
+BBFILE_COLLECTIONS += "meta-custom-mods"
+BBFILE_PATTERN_meta-custom-mods = "^${LAYERDIR}/"
+BBFILE_PRIORITY_meta-custom-mods = "6"
+
+# LAYERDEPENDS_meta-custom-mods = "meta-qemu-x86_64-bsp-custom-kernel"
+LAYERDEPENDS_meta-custom-mods = "meta-qemu-arm64-bsp-custom-kernel"
+LAYERSERIES_COMPAT_meta-custom-mods = "kirkstone"
+
+IMAGE_INSTALL:append = " krash"
+

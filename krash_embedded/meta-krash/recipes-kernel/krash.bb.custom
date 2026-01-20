@@ -1,0 +1,36 @@
+SUMMARY = "Recipe for the kernel crash module - krash.ko"
+DESCRIPTION = "Recipe for the kernel crash module - krash.ko"
+
+LICENSE = "MIT"
+
+LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/MIT;md5=0835ade698e0bcf8506ecda2f7b4f302"
+
+inherit module
+
+SRC_URI = "file://krash.c  \
+           file://krash.h  \
+           file://ucrash.h  \
+           file://Makefile"
+
+# S = "${WORKDIR}"
+SOURCE = "${WORKDIR}/build"
+moddir = "/lib/modules/extra/"
+
+DEPENDS += "virtual/kernel"
+# KERNEL_INC = "${STAGING_DIR_KERNEL}/include"
+# CFLAGS += "-I$(KERNEL_INC)"
+
+do_compile() {
+   mkdir -p ${SOURCE}
+   make Makefile
+}
+    
+do_install() {
+    install -d ${D}${moddir}   
+    install -m 0755 ${SOURCE}/krash ${D}${moddir}
+}       
+
+# The inherit of module.bbclass will automatically name module packages with
+# "kernel-module-" prefix as required by the oe-core build environment.
+
+# RPROVIDES:${PN} += "kernel-module-krash"
