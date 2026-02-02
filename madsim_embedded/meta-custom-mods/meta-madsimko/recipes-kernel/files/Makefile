@@ -1,8 +1,8 @@
-obj-m := madbus.o maddevc.o
+obj-m := madbus.o maddevc.o maddevb.o
 
 madbus-objs  := madbusmain.o mbdevthread.o
 maddevc-objs := maddevcmain.o maddevcio.o
-###maddevb-objs := maddevbmain.o maddevbio.o maddevb_blk_utils.o maddevb_zoned.o
+maddevb-objs := maddevbmain.o maddevbio.o maddevb_blk_utils.o maddevb_zoned.o
 
 ccflags-y += -O0 -g #
 ccflags-y += -Wno-declaration-after-statement

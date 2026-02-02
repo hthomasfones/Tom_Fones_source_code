@@ -50,12 +50,12 @@ RPROVIDES:${PN} += " kernel-module-maddevc"
 do_install() {
     install -d ${D}/lib/modules/${KERNEL_VERSION}/extra/
     install -m 0644 madbus.ko ${D}/lib/modules/${KERNEL_VERSION}/extra/
-###    install -m 0644 maddevb.ko ${D}/lib/modules/${KERNEL_VERSION}/extra/
+    install -m 0644 maddevb.ko ${D}/lib/modules/${KERNEL_VERSION}/extra/
     install -m 0644 maddevc.ko ${D}/lib/modules/${KERNEL_VERSION}/extra/
 }
 
 FILES:kernel-module-madbus = "lib/modules/${KERNEL_VERSION}/extra/madbus.ko"
-###FILES:kernel-module-maddevb = "lib/modules/${KERNEL_VERSION}/extra/maddevb.ko"
+FILES:kernel-module-maddevb = "lib/modules/${KERNEL_VERSION}/extra/maddevb.ko"
 FILES:kernel-module-maddevc = "lib/modules/${KERNEL_VERSION}/extra/maddevc.ko"
 
 INSANE_SKIP:${PN} += "moduleref"

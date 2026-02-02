@@ -44,6 +44,7 @@
 
 #define _BLOCKIO_
 #define _KERNEL_MODULE_
+#define _MAD_SIMULATION_MODE_
 
 #include <linux/ioctl.h> /* needed for the _IOW etc stuff used later */
 #include <linux/device.h>
@@ -69,11 +70,18 @@
 #include <linux/interrupt.h>
 #include <linux/fs.h>    
 #include <linux/blk_types.h> 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(6,0,0)
+
+#if LINUX_VERSION_CODE < KERNEL_VERSION(5,1,0)
+    #error "Unsupported kernel version"
+#endif
+
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,15,0) && LINUX_VERSION_CODE <= KERNEL_VERSION(5,15,999)
     #include <linux/genhd.h>
-#else
+#endif
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,6,0)
     #include <linux/blkdev.h>   /* gendisk, add_disk, del_gendisk, etc. */
 #endif
+
 //#include <linux/backing-dev.h>
 #include <linux/hdreg.h>
 #include <linux/blk-mq.h>
@@ -93,8 +101,16 @@
 //
 #include <asm/io.h>
 
-#define _MAD_SIMULATION_MODE_
+#ifndef blk_opf_t
+    typedef __u32 blk_opf_t;
+#endif
 
+/* GET_OPF_FROM_REQ(req) should return op+flags in a compatible type */
+#ifndef GET_OPF_FROM_REQ
+    #define GET_OPF_FROM_REQ(req)   (req)->cmd_flags
+#endif
+
+#if 0
 #if defined(REQ_OP_MASK)
     #define req_opf req_op  
 	#define GET_OPF_FROM_REQ(req) \
@@ -102,6 +118,12 @@
 #else
 	typedef enum req_opf blk_opf_t;
 	#define GET_OPF_FROM_REQ(req)  (enum req_opf)req_op(req); 
+#endif
+
+/* GET_OPF_FROM_REQ(req) should return op+flags in a compatible type */
+#ifndef GET_OPF_FROM_REQ
+    #define GET_OPF_FROM_REQ(req)   (req)->cmd_flags
+#endif
 #endif
 
 #define  DRIVER_NAME   "maddevb.ko"
@@ -118,7 +140,6 @@
 #define MADDEV_NBR_DEVS         MADBUS_NUMBER_SLOTS
 #define MADDEVB_NUM_SUBMIT_QUEUES 1
 #define MADDEVB_DISK_SIZE       MAD_DEVICE_DATA_SIZE
-//(MAD_DEVICE_MAX_SECTORS * MAD_SECTOR_SIZE)
 #define MADDEVB_IO_TIMEOUT_MILLI_SECS 1
 #define MADDEVB_IO_TIMEOUT_NANO_SECS \
         (MADDEVB_IO_TIMEOUT_MILLI_SECS * 1000 * 1000)
@@ -318,25 +339,12 @@ static inline u64 mb_per_tick(int mbps)
 /* Older: int (*open)(struct block_device*, fmode_t);
  * 6.12+: int (*open)(struct gendisk*, blk_mode_t) and
  *        void (*release)(struct gendisk*) */
-#if LINUX_VERSION_CODE < KERNEL_VERSION(6,12,0)
+#if LINUX_VERSION_CODE <= KERNEL_VERSION(6,6,999)
     #define MADDEV_OPEN_PROTO   int maddevb_open(struct block_device *bdev, fmode_t mode)
     #define MADDEV_RELEASE_PROTO void maddevb_release(struct gendisk *gd, fmode_t mode)
-    #define MADDEV_BDEVOPS_OPEN_FIELD   .open = maddevb_open
-    #define MADDEV_BDEVOPS_RELEASE_FIELD .release = maddevb_release
-#else
-    #define MADDEV_OPEN_PROTO   int maddevb_open(struct gendisk *gd, blk_mode_t mode)
-    #define MADDEV_RELEASE_PROTO void maddevb_release(struct gendisk *gd)
-    #define MADDEV_BDEVOPS_OPEN_FIELD   .open = maddevb_open
-    #define MADDEV_BDEVOPS_RELEASE_FIELD .release = maddevb_release
-#endif
-
-/* ---------- rw_page member dropped ---------- */
-#if LINUX_VERSION_CODE < KERNEL_VERSION(6,8,0)
-/* keep your .rw_page assignment */
-    #define MADDEV_BDEVOPS_RW_PAGE_FIELD  .rw_page = maddevb_rw_page,
-#else
-/* removed in newer kernels */
-    #define MADDEV_BDEVOPS_RW_PAGE_FIELD  /* empty */
+    #define MADDEVB_DEVOPS_OPEN_FIELD   .open = maddevb_open
+    #define MADDEVB_DEVOPS_RELEASE_FIELD .release = maddevb_release
+    #define MADDEVB_DEVOPS_RW_PAGE_FIELD  .rw_page = maddevb_rw_page
 #endif
 
 /* ---------- blk_mq_init_queue removed; use blk_mq_alloc_disk path ---------- */
@@ -347,66 +355,74 @@ static inline u64 mb_per_tick(int mbps)
 #endif
 
 /* ---------- queue write cache set/get split ---------- */
-#if LINUX_VERSION_CODE < KERNEL_VERSION(6,12,0)
+//#if LINUX_VERSION_CODE < KERNEL_VERSION(6,12,0)
     #define maddevb_blk_queue_set_write_cache(q, wc, fua) blk_queue_write_cache((q),(wc),(fua))
-#else
-    #define maddevb_blk_queue_set_write_cache(q, wc, fua) blk_queue_set_write_cache((q),(wc),(fua))
-#endif
+//#else
+//    #define maddevb_blk_queue_set_write_cache(q, wc, fua) blk_queue_set_write_cache((q),(wc),(fua))
+//#endif
 
 /* ---------- queue cleanup helpers changed ---------- */
-#if LINUX_VERSION_CODE < KERNEL_VERSION(6,12,0)
+//#if LINUX_VERSION_CODE < KERNEL_VERSION(6,12,0)
     #define maddevb_blk_cleanup_queue(q) blk_cleanup_queue((q))
-#else
-    #define maddevb_blk_cleanup_queue(q) blk_put_queue((q))
-#endif
+//#else
+//    #define maddevb_blk_cleanup_queue(q) blk_put_queue((q))
+//#endif
 
 /* ---------- ADD_RANDOM / DISCARD flags removals ---------- */
 /* Just no-op them on new kernels; entropy and discard are automatic via limits */
-#if LINUX_VERSION_CODE < KERNEL_VERSION(6,12,0)
+//#if LINUX_VERSION_CODE < KERNEL_VERSION(6,12,0)
     #define mad_queue_flag_clear_add_random(q)  blk_queue_flag_clear(QUEUE_FLAG_ADD_RANDOM, (q))
     #define mad_queue_flag_set_discard(q)       blk_queue_flag_set(QUEUE_FLAG_DISCARD, (q))
-#else
-    #define mad_queue_flag_clear_add_random(q)  do { } while (0)
-    #define mad_queue_flag_set_discard(q)       do { } while (0)
-#endif
+//#else
+//    #define mad_queue_flag_clear_add_random(q)  do { } while (0)
+//    #define mad_queue_flag_set_discard(q)       do { } while (0)
+//#endif
 
 /* ---------- blk_mq_alloc_disk macro args changed ---------- */
 /* Newer: blk_mq_alloc_disk(tag_set, limits, queuedata) (macro) */
-#if LINUX_VERSION_CODE < KERNEL_VERSION(6,12,0)
+//#if LINUX_VERSION_CODE < KERNEL_VERSION(6,12,0)
+//static inline struct gendisk *
+//maddevb_blk_mq_alloc_disk(struct blk_mq_tag_set *set, void *queuedata)
+//{
+//	struct gendisk *gd = blk_mq_alloc_disk(set, queuedata);
+//	return gd;
+//}
+//#else
 static inline struct gendisk *
-maddevb_blk_mq_alloc_disk(struct blk_mq_tag_set *set, void *queuedata)
+maddevb_blk_mq_alloc_disk(struct blk_mq_tag_set *set, struct 
+	                      request_queue *q, void *queuedata)
 {
-	struct gendisk *gd = blk_mq_alloc_disk(set, queuedata);
-	return gd;
-}
-#else
-static inline struct gendisk *
-maddevb_blk_mq_alloc_disk(struct blk_mq_tag_set *set, struct request_queue *q, void *queuedata)
-{
+	#if LINUX_VERSION_CODE <= KERNEL_VERSION(5,15,999)
 	struct gendisk *gd = blk_mq_alloc_disk(set, &q->limits, queuedata);
+	#endif
+	#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,6,0)
+	struct gendisk *gd = blk_mq_alloc_disk(set, queuedata);
+	#endif
+
 	return gd;
 }
-#endif
+//#endif
 
 /* ---------- blkdev_get_by_dev / blkdev_put replaced ---------- */
-#if LINUX_VERSION_CODE < KERNEL_VERSION(6,12,0)
-    #define maddevb_blkdev_get_by_dev(dev, mode)  blkdev_get_by_dev((dev), (mode), NULL)
+#if LINUX_VERSION_CODE <= KERNEL_VERSION(5,15,999)
+    #define maddevb_blkdev_get_by_dev(dev, mode, holder) \
+	                blkdev_get_by_dev((dev), (mode), NULL)
     #define maddevb_blkdev_put(bdev, mode)        blkdev_put((bdev), (mode))
 #else
 //# include <linux/blkdev.h>
 static inline struct block_device *
-maddevb_blkdev_get_by_dev(dev_t dev, blk_mode_t mode)
+maddevb_blkdev_get_by_dev(dev_t dev, blk_mode_t mode,  void* holder)
 {
 	/* No holder ops -> NULL is fine if your driver doesn’t need one */
 	//return bdev_open_by_dev(dev, mode, NULL, NULL);
-	struct file *filp = bdev_file_open_by_dev(dev, mode, NULL, NULL);
-	if (IS_ERR(filp))
-		return ERR_CAST(filp);
-
-	//return bdev_from_file(filp);
-	return file_bdev(filp);
+	//struct file *filp = bdev_file_open_by_dev(dev, mode, NULL, NULL);
+    struct bdev_handle *hbdev = bdev_open_by_dev(dev, mode, holder, NULL);
+	if (hbdev == NULL)
+		return NULL;
+    else
+	    return hbdev->bdev;
 }
-#define maddevb_blkdev_put(bdev, mode) bdev_fput((bdev))
+#define maddevb_blkdev_put(bdev, holder) blkdev_put(bdev, holder)
 #endif
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -557,10 +573,17 @@ irqreturn_t maddevb_msi_six_isr(int irq, void* dev_id);
 irqreturn_t maddevb_msi_seven_isr(int irq, void* dev_id);
 irqreturn_t maddevb_msi_eight_isr(int irq, void* dev_id);
 
-int maddevb_rw_page(struct block_device *bdev, sector_t sector,
-		            struct page *pPages, unsigned int op);
+#if LINUX_VERSION_CODE <= KERNEL_VERSION(5,15,999)				
 int maddevb_open(struct block_device *bdev, fmode_t mode);
 void maddevb_release(struct gendisk *disk, fmode_t mode);
+int maddevb_rw_page(struct block_device *bdev, sector_t sector,
+		            struct page *pPages, unsigned int op);
+#endif
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,6,0)				
+int maddevb_open(struct gendisk *gdisk, fmode_t mode);
+void maddevb_release(struct gendisk *gdisk);
+#endif
+
 int maddevb_revalidate_disk(struct gendisk *disk);
 int maddevb_getgeo(struct block_device* bdev, struct hd_geometry* geo);
 void maddevb_swap_slot_free_notify(struct block_device* bdev, 
@@ -590,7 +613,14 @@ static inline void maddevb_start_cmd_timer(struct maddevb_cmd *cmd)
 	hrtimer_start(&cmd->cmdtimer, rq_tlimit, HRTIMER_MODE_REL);
 }
 
-#ifndef HAVE_PAGE_ENDIO  /* assume 6.x without page_endio */
+//#ifndef HAVE_PAGE_ENDIO  /* assume 6.x without page_endio */
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,15,0) && LINUX_VERSION_CODE <= KERNEL_VERSION(5,15,999)
+    /* If your 5.15 headers still provide page_endio(), forward to it */
+static inline void maddevb_page_endio(struct page *page, bool is_write, int err)
+{
+    page_endio(page, is_write, err);
+}
+#else
 static inline void maddevb_page_endio(struct page *page, bool bWR, int err)
 {
 	struct folio *f = page_folio(page);
@@ -611,12 +641,6 @@ static inline void maddevb_page_endio(struct page *page, bool bWR, int err)
 
         unlock_page(page);                      /* completes read */
      }
-}
-#else
-/* If your 5.15 headers still provide page_endio(), forward to it */
-static inline void maddevb_page_endio(struct page *page, bool is_write, int err)
-{
-    page_endio(page, is_write, err);
 }
 #endif
 

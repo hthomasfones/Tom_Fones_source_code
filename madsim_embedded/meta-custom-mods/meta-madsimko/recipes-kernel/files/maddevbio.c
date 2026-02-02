@@ -38,20 +38,29 @@ extern struct mad_dev_obj *mad_dev_objects;
 //static u8   IoDataRd[MAD_UNITIO_SIZE_BYTES * (1 << MAD_BUFRD_IO_COUNT_BITS)];
 //static u8   IoDataWr[MAD_UNITIO_SIZE_BYTES * (1 << MAD_BUFRD_IO_COUNT_BITS)];
 
+#if LINUX_VERSION_CODE <= KERNEL_VERSION(5,15,999)
 int maddevb_open(struct block_device *bdev, fmode_t mode)
+#endif
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,6,0)
+//int (*open)(struct gendisk *disk, blk_mode_t mode);
+int maddevb_open(struct gendisk *gdisk, fmode_t mode)
+#endif
 {
-    PMADDEVOBJ pmaddev = maddevb_get_parent_from_bdev(bdev);
+    #if LINUX_VERSION_CODE <= KERNEL_VERSION(5,15,999)
 	struct gendisk *gdisk = bdev->bd_disk;
+    #endif
+    #if LINUX_VERSION_CODE >= KERNEL_VERSION(6,6,0)
+    struct block_device *bdev = gdisk->part0;
+    #endif
+
+    PMADDEVOBJ pmaddev = maddevb_get_parent_from_bdev(bdev);
+ 
 	int rc = 0;
 
 	ASSERT((int)(pmaddev != NULL));
 	PINFO("maddevb_open... dev#=%u bdev=%px disk=%px Qctx=%px mode=x%X\n", 
           pmaddev->devnum, bdev, gdisk, bdev_get_queue(bdev), mode);
 
-	//ASSERT(bdev_inode(bdev) != NULL);
-    //ASSERT(bdev->bd_disk);       /* disk object exists */
-    //ASSERT(bdev_i_mapping(bdev));/* mapping exists; avoids inode entirely */
- 
 	if (READ_ONCE(pmaddev->bReady) != true)
 	    {
         PWARN("maddevb_open... dev#=%u not open-ready! rc=-EBUSY\n", 
@@ -63,17 +72,19 @@ int maddevb_open(struct block_device *bdev, fmode_t mode)
     return rc;
 }
 
+#if LINUX_VERSION_CODE <= KERNEL_VERSION(5,15,999)
 void maddevb_release(struct gendisk *gdisk, fmode_t mode)
+#endif
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,6,0)
+void maddevb_release(struct gendisk *gdisk)
+#endif
 {
     struct block_device *bdev = gdisk->part0;
 	struct maddev_blk_dev *pmdblkdev = gdisk->private_data;
 	PMADDEVOBJ pmaddev = pmdblkdev->pmaddev;
 
-    PINFO("maddevb_release... dev#=%u disk=%px bdev=%px mode=x%X\n",
-          pmaddev->devnum, gdisk, bdev, mode);
-
-    //ASSERT((int)(bdev == pmdblkdev->bdev));
-    //ASSERT((bdev_inode(bdev));
+    PINFO("maddevb_release... dev#=%u disk=%px bdev=%px\n",
+          pmaddev->devnum, gdisk, bdev);
 
     //mutex_lock(&pmaddev->devmutex);
     //Nothing to do
@@ -218,8 +229,14 @@ pmdblkio_ioctl_end:;
 	return (int)retval;
 }
 
+#if LINUX_VERSION_CODE <= KERNEL_VERSION(5,15,999)
 int maddevb_rw_page(struct block_device *bdev, sector_t sector,
 		            struct page *pPage, unsigned int op)
+//#endif     
+//#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,6,0)
+//int maddevb_rw_page(struct block_device *bdev, sector_t sector,
+//		            struct page *pPage, unsigned int op)
+//#endif                        
 {
     PMADDEVOBJ pmaddev = maddevb_get_parent_from_bdev(bdev);
     bool bH2D = op_is_write(op);
@@ -271,6 +288,7 @@ int maddevb_rw_page(struct block_device *bdev, sector_t sector,
 
     return rc;
 }
+#endif
 
 //This function implements a direct-io read into a user mode buffer
 ssize_t
@@ -417,7 +435,8 @@ maddevb_complete_sglist_io(PMADDEVOBJ pmaddev, struct maddevb_cmd *cmd)
     __iomem MADREGS  *pmadregs  = (PMADREGS)pmaddev->pDevBase;
     struct request *req = cmd->req;
     sector_t nr_sectors = blk_rq_sectors(req);
-    enum req_opf op = GET_OPF_FROM_REQ(req);
+    //enum req_opf op = GET_OPF_FROM_REQ(req);
+    blk_opf_t op = GET_OPF_FROM_REQ(req);
     U32 dma_size = cmd->dma_size;
     ssize_t iocount = 0;
     U32   iostat;

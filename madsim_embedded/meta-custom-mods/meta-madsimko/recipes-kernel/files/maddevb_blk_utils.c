@@ -1101,7 +1101,7 @@ static inline blk_status_t pmdblkio_handle_badblocks(struct pmdblkio_cmd *cmd,
 #endif
 
 static inline blk_status_t
-maddevb_handle_memory_backed(struct maddevb_cmd *cmd, enum req_opf op)
+maddevb_handle_memory_backed(struct maddevb_cmd *cmd, /*enum req_opf op*/ int op)
 {
 	struct maddev_blk_dev *pmdblkdev = cmd->pmdbq->pmbdev;
     struct mad_dev_obj *pmaddev = (struct mad_dev_obj *)pmdblkdev->pmaddev;
@@ -1366,7 +1366,12 @@ bool maddevb_should_requeue_request(struct request *rq)
 	return false;
 }
 
+#if LINUX_VERSION_CODE <= KERNEL_VERSION(5,15,999)
 static enum blk_eh_timer_return maddevb_timeout_req(struct request *preq, bool res)
+#endif
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,6,0)
+static enum blk_eh_timer_return maddevb_timeout_req(struct request *preq)
+#endif
 {
 	ASSERT((int)(VIRT_ADDR_VALID(preq, sizeof(struct request))));
 	struct maddevb_cmd *cmd = blk_mq_rq_to_pdu(preq);
@@ -1394,7 +1399,13 @@ static blk_status_t maddevb_queue_req(struct blk_mq_hw_ctx *hctx,
 	struct request *req = bqd->rq;
 	sector_t nr_sectors = blk_rq_sectors(req);
 	sector_t sector = blk_rq_pos(req);
+	#if LINUX_VERSION_CODE <= KERNEL_VERSION(5,15,999)
 	enum req_opf op = GET_OPF_FROM_REQ(req);
+	#endif
+	#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,6,0)
+	blk_opf_t op = (blk_opf_t)(req->cmd_flags & REQ_OP_MASK);
+	#endif
+
 	struct maddevb_cmd *cmd;
 	blk_status_t blk_sts = BLK_STS_OK;
 	
@@ -1498,8 +1509,13 @@ static const struct blk_mq_ops maddevb_mq_ops =
     .exit_hctx  = NULL,
     .map_queues = NULL, //blk_mq_map_queues,
 	.complete	= NULL, //maddevb_complete_req,
-	//.timeout	= maddevb_timeout_req,
+
+	#if LINUX_VERSION_CODE <= KERNEL_VERSION(5,15,999)
 	MADDEV_TIMEOUT_FIELD(maddevb_timeout_req),
+	#endif
+	#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,6,0)
+	.timeout	= maddevb_timeout_req,
+	#endif
 };
 
 void maddevb_cleanup_queues(struct maddev_blk_io *pmdblkio)
@@ -1537,7 +1553,12 @@ void maddevb_delete_blockdev(struct maddev_blk_dev *pmdblkdev)
 	if (pmdblkdev->gdisk != NULL)
 	    {
 	    del_gendisk(pmdblkdev->gdisk);
+		#if LINUX_VERSION_CODE <= KERNEL_VERSION(5,15,999)
 	    blk_cleanup_disk(pmdblkdev->gdisk); //Calls put_disk(pmdblkdev->gdisk);
+		#endif
+		#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,6,0)
+	    put_disk(pmdblkdev->gdisk); //Calls put_disk(pmdblkdev->gdisk);
+		#endif
 		}
 
 	/*if (pmdblkio->reqQ != NULL)
@@ -1572,14 +1593,18 @@ void maddevb_delete_blockdev(struct maddev_blk_dev *pmdblkdev)
 static const struct block_device_operations maddevb_fops =
 {
 	.owner           = THIS_MODULE,
-	//.open            = maddevb_open,
-	MADDEV_BDEVOPS_OPEN_FIELD,
-	//.release         = maddevb_release,
-	MADDEV_BDEVOPS_RELEASE_FIELD,
+	#if LINUX_VERSION_CODE <= KERNEL_VERSION(5,15,999)
+    MADDEVB_DEVOPS_OPEN_FIELD,
+	MADDEVB_DEVOPS_RELEASE_FIELD,
+ 	MADDEVB_DEVOPS_RW_PAGE_FIELD,
+	#endif
+	#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,6,0)
+	.open            = maddevb_open,
+	.release         = maddevb_release,
     //.mmap            = maddev_mmap,
-    //
     //.rw_page         = maddevb_rw_page,
-	MADDEV_BDEVOPS_RW_PAGE_FIELD,
+	#endif
+
     .getgeo          = maddevb_getgeo,
     .ioctl           = maddevb_ioctl,
     .compat_ioctl    = maddevb_ioctl,
@@ -1846,8 +1871,10 @@ out_cleanup_zone:
     #endif
 
 //out_cleanup_blk_queue:
+	#if LINUX_VERSION_CODE <= KERNEL_VERSION(5,15,999)
     if (pmdblkio->reqQ  != NULL)
-	    maddevb_blk_cleanup_queue(pmdblkio->reqQ);
+	    {maddevb_blk_cleanup_queue(pmdblkio->reqQ);}
+	#endif
 
 out_cleanup_tags:
 	if (pmdblkdev->queue_mode == MADDEVB_Q_MQ && 
@@ -1902,7 +1929,10 @@ void maddevb_config_discard(struct maddev_blk_io *pmdblkio)
 	pmdblkio->reqQ->limits.discard_granularity = pmdblkio->pmdblkdev->blocksize;
 	pmdblkio->reqQ->limits.discard_alignment = pmdblkio->pmdblkdev->blocksize;
 	blk_queue_max_discard_sectors(pmdblkio->reqQ, UINT_MAX >> 9);
+
+	#if LINUX_VERSION_CODE <= KERNEL_VERSION(5,15,999)
 	blk_queue_flag_set(QUEUE_FLAG_DISCARD, pmdblkio->reqQ);
+	#endif
 
     PINFO("maddevb_config_discard... dev#=%d reqQ=%px\n",
           (int)pmaddev->devnum, pmdblkio->reqQ);
@@ -1957,7 +1987,13 @@ int maddevb_zone_report(struct gendisk *disk, sector_t sector,
 		nrz = min_t(unsigned int, *nr_zones, dev->nr_zones - zno);
 		memcpy(zones, &dev->zones[zno], nrz * sizeof(struct blk_zone));
 	} */
+    
+	#if LINUX_VERSION_CODE <= KERNEL_VERSION(5,15,999)
     maddevb_blkdev_put(bdev, mode);
+	#endif
+	#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,6,0)
+    maddevb_blkdev_put(bdev, NULL);
+	#endif
 
 	return 0;
 }
@@ -2053,10 +2089,10 @@ void maddevb_init_request_queue(struct maddev_blk_io *pmdblkio)
 
 	//blk_queue_flag_set(QUEUE_FLAG_NONROT, pmdblkio->reqQ);
 	#ifdef QUEUE_FLAG_ADD_RANDOM
-        blk_queue_flag_clear(pmdblkio->reqQ, QUEUE_FLAG_ADD_RANDOM);
+        blk_queue_flag_clear(QUEUE_FLAG_ADD_RANDOM, pmdblkio->reqQ);
     #endif
 	#ifdef QUEUE_FLAG_NOMERGES
-        blk_queue_flag_set(pmdblkio->reqQ, QUEUE_FLAG_NOMERGES);
+        blk_queue_flag_set(QUEUE_FLAG_NOMERGES, pmdblkio->reqQ);
     #endif
 	blk_queue_logical_block_size(pmdblkio->reqQ, pmdblkdev->blocksize);
 	blk_queue_physical_block_size(pmdblkio->reqQ, pmdblkdev->blocksize);

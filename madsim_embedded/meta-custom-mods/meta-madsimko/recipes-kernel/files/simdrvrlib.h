@@ -70,12 +70,17 @@ struct device_private
 
 //Define these functions in only one source module
 //Respond to udev events.
-//
+
+#if LINUX_VERSION_CODE <= KERNEL_VERSION(5,15,999)
 static int madbus_uevent(struct device *dev, struct kobj_uevent_env *env)
+#endif
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,6,0)
+//int (*uevent)(const struct device *dev, struct kobj_uevent_env *env);
+static int madbus_uevent(const struct device *dev, struct kobj_uevent_env *env)
+#endif
 {
 	if (add_uevent_var(env, "MADBUS_VERSION=%s", Version))
 		{return -ENOMEM;}
-
 	return 0;
 }
 
