@@ -1,0 +1,53 @@
+# ============================================================
+# Vivado generated files/directories
+# ============================================================
+
+*.runs/
+*.sim/
+*.cache/
+*.gen/
+*.hw/
+*.ip_user_files/
+.Xil/
+
+vivado.jou
+vivado.log
+vivado_*.backup.jou
+vivado_*.backup.log
+
+# Generated FPGA output
+*.bit
+*.bin
+*.ltx
+*.dcp
+
+# ============================================================
+# Linux kernel module build products
+# ============================================================
+
+*.o
+*.ko
+*.mod
+*.mod.c
+*.mod.o
+*.cmd
+modules.order
+Module.symvers
+
+# Kernel build temporary files
+.tmp_versions/
+.*.cmd
+
+# ============================================================
+# General temporary/editor files
+# ============================================================
+
+*~
+*.bak
+*.swp
+*.swo
+
+# Python
+__pycache__/
+*.pyc
+*.pyo

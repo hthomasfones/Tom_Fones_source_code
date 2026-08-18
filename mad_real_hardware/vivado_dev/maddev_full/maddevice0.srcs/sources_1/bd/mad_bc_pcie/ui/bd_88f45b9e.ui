@@ -1,0 +1,128 @@
+{
+   "ActiveEmotionalView":"Default View",
+   "Addressing View_Layers":"/pcie_refclk_buf_0_sys_clk:false|/pcie_refclk_clk_n_1:false|/pcie_refclk_clk_p_1:false|/pcie_perstn_1:false|",
+   "Addressing View_ScaleFactor":"0.8",
+   "Addressing View_TopLeft":"-63,20",
+   "Color Coded_ScaleFactor":"0.683633",
+   "Color Coded_TopLeft":"-133,-44",
+   "Default View_Layers":"/pcie_refclk_buf_0_sys_clk:true|/pcie_refclk_clk_n_1:true|/pcie_refclk_clk_p_1:true|/pcie_perstn_1:true|",
+   "Default View_ScaleFactor":"1.07456",
+   "Default View_TopLeft":"1093,1536",
+   "Display-PortTypeClock":"true",
+   "Display-PortTypeOthers":"true",
+   "Display-PortTypeReset":"true",
+   "ExpandedHierarchyInLayout":"",
+   "Interfaces View_ScaleFactor":"1.0",
+   "Interfaces View_TopLeft":"-146,-12",
+   "PinnedBlocks":"",
+   "PinnedPorts":"",
+   "guistr":"# # String gsaved with Nlview 7.5.8 2022-09-21 7111 VDI=41 GEI=38 GUI=JA:10.0 TLS
+#  -string -flagsOSRD
+preplace port pcie_refclk -pg 1 -lvl 0 -x 0 -y 20 -defaultsOSRD
+preplace port port-id_pcie_perstn -pg 1 -lvl 0 -x 0 -y 2150 -defaultsOSRD
+preplace port port-id_dbg_clk_p -pg 1 -lvl 0 -x 0 -y 2450 -defaultsOSRD
+preplace port port-id_dbg_clk_n -pg 1 -lvl 0 -x 0 -y 2470 -defaultsOSRD
+preplace portBus pci_exp_rxp -pg 1 -lvl 0 -x 0 -y 2680 -defaultsOSRD
+preplace portBus pci_exp_rxn -pg 1 -lvl 0 -x 0 -y 2660 -defaultsOSRD
+preplace portBus pci_exp_txp -pg 1 -lvl 5 -x 2270 -y 1970 -defaultsOSRD
+preplace portBus pci_exp_txn -pg 1 -lvl 5 -x 2270 -y 1950 -defaultsOSRD
+preplace inst pcie_refclk_buf_0 -pg 1 -lvl 2 -x 710 -y 2340 -defaultsOSRD
+preplace inst util_vector_logic_0 -pg 1 -lvl 2 -x 710 -y 1540 -defaultsOSRD
+preplace inst pcie4_uscale_plus_0 -pg 1 -lvl 3 -x 1720 -y 1930 -defaultsOSRD
+preplace inst dbg_clk_buf -pg 1 -lvl 1 -x 170 -y 2450 -defaultsOSRD
+preplace inst dbg_clk_wiz -pg 1 -lvl 2 -x 710 -y 2450 -defaultsOSRD
+preplace inst xlconstant_0 -pg 1 -lvl 4 -x 2170 -y 2030 -defaultsOSRD
+preplace inst const_zero_wr_busy -pg 1 -lvl 1 -x 170 -y 960 -defaultsOSRD
+preplace inst ila_pciecore_cq -pg 1 -lvl 3 -x 1720 -y 2490 -defaultsOSRD
+preplace inst device_wrapper -pg 1 -lvl 2 -x 710 -y 750 -defaultsOSRD
+preplace inst ila_devregs -pg 1 -lvl 3 -x 1720 -y 720 -defaultsOSRD
+preplace inst ila_pciecore_cc -pg 1 -lvl 3 -x 1720 -y 1200 -defaultsOSRD
+preplace inst ila_pciecore_rq -pg 1 -lvl 3 -x 1720 -y 340 -defaultsOSRD
+preplace netloc const_zero_wr_busy_dout 1 1 1 NJ 960
+preplace netloc dbg_clk_buf_IBUF_OUT 1 1 1 NJ 2450
+preplace netloc dbg_clk_n_2 1 0 1 NJ 2470
+preplace netloc dbg_clk_p_2 1 0 1 NJ 2450
+preplace netloc dbg_clk_wiz_clk_out1 1 2 1 N 2450
+preplace netloc device_wrapper_compl_done 1 2 1 1390 440n
+preplace netloc device_wrapper_dbg_axiw_pending 1 2 1 1290 880n
+preplace netloc device_wrapper_dbg_bufrd_go_pulse 1 2 1 1180 800n
+preplace netloc device_wrapper_dbg_bufrd_input_start 1 2 1 1160 420n
+preplace netloc device_wrapper_dbg_live_wr_en 1 2 1 1040 900n
+preplace netloc device_wrapper_dbg_regs_araddr 1 2 1 1240 840n
+preplace netloc device_wrapper_dbg_regs_arready 1 2 1 1260 1080n
+preplace netloc device_wrapper_dbg_regs_arvalid 1 2 1 1310 1060n
+preplace netloc device_wrapper_dbg_regs_awaddr 1 2 1 1200 820n
+preplace netloc device_wrapper_dbg_regs_awready 1 2 1 1070 720n
+preplace netloc device_wrapper_dbg_regs_awvalid 1 2 1 1030 700n
+preplace netloc device_wrapper_dbg_regs_rdata 1 2 1 1070 1140n
+preplace netloc device_wrapper_dbg_regs_rvalid 1 2 1 1220 1100n
+preplace netloc device_wrapper_dbg_regs_wdata 1 2 1 1270 860n
+preplace netloc device_wrapper_dbg_regs_wready 1 2 1 1150 760n
+preplace netloc device_wrapper_dbg_regs_wstrb 1 2 1 1170 780n
+preplace netloc device_wrapper_dbg_regs_wvalid 1 2 1 1080 740n
+preplace netloc device_wrapper_dbg_rq_state 1 2 1 1130 400n
+preplace netloc device_wrapper_dbg_rx_state 1 2 1 1060 920n
+preplace netloc device_wrapper_dbg_tx_rd_addr 1 2 1 1210 1180n
+preplace netloc device_wrapper_dbg_tx_rd_en 1 2 1 1110 1160n
+preplace netloc device_wrapper_m_axis_rc_tready 1 1 3 470 1600 1390J 1510 2000
+preplace netloc device_wrapper_req_addr 1 2 1 960 580n
+preplace netloc device_wrapper_req_be 1 2 1 980 560n
+preplace netloc device_wrapper_req_compl 1 2 1 970 380n
+preplace netloc device_wrapper_req_compl_wd 1 2 1 1110 400n
+preplace netloc device_wrapper_req_rid 1 2 1 1140 520n
+preplace netloc device_wrapper_req_tag 1 2 1 1230 540n
+preplace netloc device_wrapper_s_axis_cc_tdata 1 2 1 1400 100n
+preplace netloc device_wrapper_s_axis_cc_tkeep 1 2 1 1380 120n
+preplace netloc device_wrapper_s_axis_cc_tlast 1 2 1 1360 140n
+preplace netloc device_wrapper_s_axis_cc_tuser 1 2 1 1340 160n
+preplace netloc device_wrapper_s_axis_cc_tvalid 1 2 1 1320 180n
+preplace netloc device_wrapper_s_axis_rq_tdata 1 2 1 1300 240n
+preplace netloc device_wrapper_s_axis_rq_tkeep 1 2 1 1120 260n
+preplace netloc device_wrapper_s_axis_rq_tlast 1 2 1 1250 280n
+preplace netloc device_wrapper_s_axis_rq_tuser 1 2 1 1090 300n
+preplace netloc device_wrapper_s_axis_rq_tvalid 1 2 1 1350 280n
+preplace netloc device_wrapper_wr_addr 1 2 1 1000 580n
+preplace netloc device_wrapper_wr_be 1 2 1 990 560n
+preplace netloc device_wrapper_wr_data 1 2 1 940 600n
+preplace netloc device_wrapper_wr_data_be 1 2 1 1010 660n
+preplace netloc device_wrapper_wr_en 1 2 1 1020 680n
+preplace netloc pci_exp_rxn_0_2 1 0 4 NJ 2660 NJ 2660 NJ 2660 2000
+preplace netloc pci_exp_rxp_0_2 1 0 4 NJ 2680 NJ 2680 NJ 2680 2050
+preplace netloc pcie4_uscale_plus_0_cfg_bus_number 1 2 1 1500 2090n
+preplace netloc pcie4_uscale_plus_0_cfg_msg_received 1 1 3 350 2270 980J 2330 1990
+preplace netloc pcie4_uscale_plus_0_cfg_msg_received_data 1 1 3 390 2240 1020J 2310 1980
+preplace netloc pcie4_uscale_plus_0_cfg_msg_received_type 1 1 3 370 2250 1010J 2320 1940
+preplace netloc pcie4_uscale_plus_0_m_axis_cq_tdata 1 1 3 340 2510 1490 2640 2030
+preplace netloc pcie4_uscale_plus_0_m_axis_cq_tkeep 1 1 3 360 2260 1000 2340 2010
+preplace netloc pcie4_uscale_plus_0_m_axis_cq_tlast 1 1 3 320 2520 1440 2690 2070
+preplace netloc pcie4_uscale_plus_0_m_axis_cq_tuser 1 1 3 400 1670 1460 1460 2060
+preplace netloc pcie4_uscale_plus_0_m_axis_cq_tvalid 1 1 3 470 10 1280 1450 2080
+preplace netloc pcie4_uscale_plus_0_m_axis_rc_tdata 1 1 3 460 1610 1370J 1470 2050
+preplace netloc pcie4_uscale_plus_0_m_axis_rc_tkeep 1 1 3 440 1630 1430J 1520 1950
+preplace netloc pcie4_uscale_plus_0_m_axis_rc_tlast 1 1 3 450 1620 1440J 1530 1990
+preplace netloc pcie4_uscale_plus_0_m_axis_rc_tuser 1 1 3 410 1660 1470J 1550 1960
+preplace netloc pcie4_uscale_plus_0_m_axis_rc_tvalid 1 1 3 430 1640 1450J 1540 1980
+preplace netloc pcie4_uscale_plus_0_pci_exp_txn1 1 3 2 NJ 1950 NJ
+preplace netloc pcie4_uscale_plus_0_pci_exp_txp1 1 3 2 NJ 1970 NJ
+preplace netloc pcie4_uscale_plus_0_pcie_cq_np_req_count 1 1 3 330 2580 1480 2650 1970
+preplace netloc pcie4_uscale_plus_0_s_axis_cc_tready 1 2 1 1330 200n
+preplace netloc pcie4_uscale_plus_0_s_axis_rq_tready 1 2 1 1100 300n
+preplace netloc pcie4_uscale_plus_0_user_clk 1 1 3 480 20 1190 2670 1960
+preplace netloc pcie4_uscale_plus_0_user_lnk_up 1 1 3 480 1480 NJ 1480 2040
+preplace netloc pcie4_uscale_plus_0_user_reset 1 1 3 420 1650 1420J 1500 2020
+preplace netloc pcie_device_wrapper_0_m_axis_cq_tready 1 1 3 380 1680 1480 1490 1940
+preplace netloc pcie_device_wrapper_0_pcie_cq_np_req1 1 2 2 1050 1440 2090
+preplace netloc pcie_perstn_1 1 0 3 NJ 2150 NJ 2150 NJ
+preplace netloc pcie_refclk_buf_0_sys_clk 1 2 1 1490 2110n
+preplace netloc pcie_refclk_buf_0_sys_clk_gt 1 2 1 970 2130n
+preplace netloc xlconstant_0_dout 1 4 1 N 2030
+preplace netloc device_wrapper_s_axis_cc 1 2 1 1410 80n
+levelinfo -pg 1 0 170 710 1720 2170 2270
+pagesize -pg 1 -db -bbox -sgen -170 0 2440 2700
+"
+}
+{
+   "da_board_cnt":"6",
+   "da_clkrst_cnt":"5",
+   "da_xdma_cnt":"1"
+}

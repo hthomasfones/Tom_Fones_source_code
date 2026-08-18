@@ -1,0 +1,1714 @@
+{
+  "design": {
+    "design_info": {
+      "boundary_crc": "0xF8EB9BA8B86B1921",
+      "device": "xcku5p-ffvb676-2-e",
+      "gen_directory": "../../../../maddevice0.gen/sources_1/bd/mad_bc_pcie",
+      "name": "mad_bc_pcie",
+      "rev_ctrl_bd_flag": "RevCtrlBdOff",
+      "synth_flow_mode": "None",
+      "tool_version": "2023.2",
+      "validated": "true"
+    },
+    "design_tree": {
+      "pcie_refclk_buf_0": "",
+      "util_vector_logic_0": "",
+      "pcie4_uscale_plus_0": "",
+      "dbg_clk_buf": "",
+      "dbg_clk_wiz": "",
+      "xlconstant_0": "",
+      "const_zero_wr_busy": "",
+      "ila_pciecore_cq": "",
+      "device_wrapper": "",
+      "ila_devregs": "",
+      "ila_pciecore_cc": "",
+      "ila_pciecore_rq": ""
+    },
+    "interface_ports": {
+      "pcie_refclk": {
+        "mode": "Slave",
+        "vlnv_bus_definition": "xilinx.com:interface:diff_clock:1.0",
+        "vlnv": "xilinx.com:interface:diff_clock_rtl:1.0",
+        "parameters": {
+          "CAN_DEBUG": {
+            "value": "false",
+            "value_src": "default"
+          },
+          "FREQ_HZ": {
+            "value": "100000000"
+          }
+        },
+        "port_maps": {
+          "CLK_P": {
+            "physical_name": "pcie_refclk_clk_p",
+            "direction": "I"
+          },
+          "CLK_N": {
+            "physical_name": "pcie_refclk_clk_n",
+            "direction": "I"
+          }
+        }
+      }
+    },
+    "ports": {
+      "pcie_refclk_clk_p": {
+        "type": "clk",
+        "direction": "I",
+        "parameters": {
+          "CLK_DOMAIN": {
+            "value": "mad_bc_pcie_pcie_refclk_clk_p",
+            "value_src": "default"
+          },
+          "FREQ_HZ": {
+            "value": "100000000"
+          },
+          "FREQ_TOLERANCE_HZ": {
+            "value": "0",
+            "value_src": "default"
+          },
+          "INSERT_VIP": {
+            "value": "0",
+            "value_src": "default"
+          },
+          "PHASE": {
+            "value": "0.0",
+            "value_src": "default"
+          }
+        }
+      },
+      "pcie_refclk_clk_n": {
+        "type": "clk",
+        "direction": "I",
+        "parameters": {
+          "CLK_DOMAIN": {
+            "value": "mad_bc_pcie_pcie_refclk_clk_n",
+            "value_src": "default"
+          },
+          "FREQ_HZ": {
+            "value": "100000000"
+          },
+          "FREQ_TOLERANCE_HZ": {
+            "value": "0",
+            "value_src": "default"
+          },
+          "INSERT_VIP": {
+            "value": "0",
+            "value_src": "default"
+          },
+          "PHASE": {
+            "value": "0.0",
+            "value_src": "default"
+          }
+        }
+      },
+      "pcie_perstn": {
+        "type": "rst",
+        "direction": "I",
+        "parameters": {
+          "INSERT_VIP": {
+            "value": "0",
+            "value_src": "default"
+          },
+          "POLARITY": {
+            "value": "ACTIVE_LOW"
+          }
+        }
+      },
+      "pci_exp_rxp": {
+        "direction": "I",
+        "left": "3",
+        "right": "0"
+      },
+      "pci_exp_rxn": {
+        "direction": "I",
+        "left": "3",
+        "right": "0"
+      },
+      "pci_exp_txp": {
+        "direction": "O",
+        "left": "3",
+        "right": "0"
+      },
+      "pci_exp_txn": {
+        "direction": "O",
+        "left": "3",
+        "right": "0"
+      },
+      "dbg_clk_p": {
+        "type": "clk",
+        "direction": "I",
+        "parameters": {
+          "CLK_DOMAIN": {
+            "value": "mad_bc_pcie_dbg_clk_p",
+            "value_src": "default"
+          },
+          "FREQ_HZ": {
+            "value": "300000000"
+          },
+          "FREQ_TOLERANCE_HZ": {
+            "value": "0",
+            "value_src": "default"
+          },
+          "INSERT_VIP": {
+            "value": "0",
+            "value_src": "default"
+          },
+          "PHASE": {
+            "value": "0.0",
+            "value_src": "default"
+          }
+        }
+      },
+      "dbg_clk_n": {
+        "type": "clk",
+        "direction": "I",
+        "parameters": {
+          "CLK_DOMAIN": {
+            "value": "mad_bc_pcie_dbg_clk_n",
+            "value_src": "default"
+          },
+          "FREQ_HZ": {
+            "value": "300000000"
+          },
+          "FREQ_TOLERANCE_HZ": {
+            "value": "0",
+            "value_src": "default"
+          },
+          "INSERT_VIP": {
+            "value": "0",
+            "value_src": "default"
+          },
+          "PHASE": {
+            "value": "0.0",
+            "value_src": "default"
+          }
+        }
+      }
+    },
+    "components": {
+      "pcie_refclk_buf_0": {
+        "vlnv": "xilinx.com:module_ref:pcie_refclk_buf:1.0",
+        "ip_revision": "1",
+        "xci_name": "mad_bc_pcie_pcie_refclk_buf_0_0",
+        "xci_path": "ip/mad_bc_pcie_pcie_refclk_buf_0_0/mad_bc_pcie_pcie_refclk_buf_0_0.xci",
+        "inst_hier_path": "pcie_refclk_buf_0",
+        "reference_info": {
+          "ref_type": "hdl",
+          "ref_name": "pcie_refclk_buf",
+          "boundary_crc": "0x0"
+        },
+        "ports": {
+          "pcie_refclk_p": {
+            "direction": "I",
+            "parameters": {
+              "FREQ_HZ": {
+                "value": "100000000",
+                "value_src": "user_prop"
+              },
+              "PHASE": {
+                "value": "0.0",
+                "value_src": "default_prop"
+              },
+              "CLK_DOMAIN": {
+                "value": "mad_bc_pcie_pcie_refclk_clk_p",
+                "value_src": "default_prop"
+              }
+            }
+          },
+          "pcie_refclk_n": {
+            "direction": "I",
+            "parameters": {
+              "FREQ_HZ": {
+                "value": "100000000",
+                "value_src": "user_prop"
+              },
+              "PHASE": {
+                "value": "0.0",
+                "value_src": "default_prop"
+              },
+              "CLK_DOMAIN": {
+                "value": "mad_bc_pcie_pcie_refclk_clk_n",
+                "value_src": "default_prop"
+              }
+            }
+          },
+          "sys_clk_gt": {
+            "direction": "O"
+          },
+          "sys_clk": {
+            "type": "clk",
+            "direction": "O"
+          }
+        }
+      },
+      "util_vector_logic_0": {
+        "vlnv": "xilinx.com:ip:util_vector_logic:2.0",
+        "ip_revision": "3",
+        "xci_name": "mad_bc_pcie_util_vector_logic_0_0",
+        "xci_path": "ip/mad_bc_pcie_util_vector_logic_0_0/mad_bc_pcie_util_vector_logic_0_0.xci",
+        "inst_hier_path": "util_vector_logic_0",
+        "parameters": {
+          "C_OPERATION": {
+            "value": "not"
+          },
+          "C_SIZE": {
+            "value": "1"
+          }
+        }
+      },
+      "pcie4_uscale_plus_0": {
+        "vlnv": "xilinx.com:ip:pcie4_uscale_plus:1.3",
+        "ip_revision": "23",
+        "xci_name": "mad_bc_pcie_pcie4_uscale_plus_0_0",
+        "xci_path": "ip/mad_bc_pcie_pcie4_uscale_plus_0_0/mad_bc_pcie_pcie4_uscale_plus_0_0.xci",
+        "inst_hier_path": "pcie4_uscale_plus_0",
+        "parameters": {
+          "PCIE_BOARD_INTERFACE": {
+            "value": "Custom"
+          },
+          "PF0_DEVICE_ID": {
+            "value": "1001"
+          },
+          "PF0_REVISION_ID": {
+            "value": "01"
+          },
+          "PF0_SUBSYSTEM_ID": {
+            "value": "1001"
+          },
+          "PF0_SUBSYSTEM_VENDOR_ID": {
+            "value": "9808"
+          },
+          "PF0_Use_Class_Code_Lookup_Assistant": {
+            "value": "true"
+          },
+          "PL_LINK_CAP_MAX_LINK_SPEED": {
+            "value": "8.0_GT/s"
+          },
+          "PL_LINK_CAP_MAX_LINK_WIDTH": {
+            "value": "X4"
+          },
+          "SYS_RST_N_BOARD_INTERFACE": {
+            "value": "Custom"
+          },
+          "bmd_pio_mode": {
+            "value": "false"
+          },
+          "completer_model": {
+            "value": "true"
+          },
+          "dedicate_perst": {
+            "value": "true"
+          },
+          "en_gt_selection": {
+            "value": "true"
+          },
+          "mode_selection": {
+            "value": "Basic"
+          },
+          "pf0_bar0_64bit": {
+            "value": "true"
+          },
+          "pf0_bar0_enabled": {
+            "value": "true"
+          },
+          "pf0_bar0_prefetchable": {
+            "value": "false"
+          },
+          "pf0_bar0_size": {
+            "value": "16"
+          },
+          "pf0_bar2_64bit": {
+            "value": "true"
+          },
+          "pf0_bar2_enabled": {
+            "value": "true"
+          },
+          "pf0_bar2_prefetchable": {
+            "value": "false"
+          },
+          "pf0_bar2_size": {
+            "value": "4"
+          },
+          "pf0_bar4_64bit": {
+            "value": "true"
+          },
+          "pf0_bar4_enabled": {
+            "value": "true"
+          },
+          "pf0_bar4_prefetchable": {
+            "value": "false"
+          },
+          "pf0_bar4_scale": {
+            "value": "Megabytes"
+          },
+          "pf0_bar4_size": {
+            "value": "2"
+          },
+          "select_quad": {
+            "value": "GTY_Quad_224"
+          },
+          "sys_reset_polarity": {
+            "value": "ACTIVE_LOW"
+          },
+          "use_standard_interfaces": {
+            "value": "false"
+          },
+          "user_interface_signals": {
+            "value": "false"
+          },
+          "vendor_id": {
+            "value": "9808"
+          }
+        }
+      },
+      "dbg_clk_buf": {
+        "vlnv": "xilinx.com:ip:util_ds_buf:2.2",
+        "ip_revision": "31",
+        "xci_name": "mad_bc_pcie_dbg_clk_buf_1",
+        "xci_path": "ip/mad_bc_pcie_dbg_clk_buf_1/mad_bc_pcie_dbg_clk_buf_1.xci",
+        "inst_hier_path": "dbg_clk_buf",
+        "parameters": {
+          "C_BUF_TYPE": {
+            "value": "IBUFDS"
+          }
+        }
+      },
+      "dbg_clk_wiz": {
+        "vlnv": "xilinx.com:ip:clk_wiz:6.0",
+        "ip_revision": "13",
+        "xci_name": "mad_bc_pcie_dbg_clk_wiz_0",
+        "xci_path": "ip/mad_bc_pcie_dbg_clk_wiz_0/mad_bc_pcie_dbg_clk_wiz_0.xci",
+        "inst_hier_path": "dbg_clk_wiz",
+        "parameters": {
+          "CLKOUT1_DRIVES": {
+            "value": "Buffer"
+          },
+          "CLKOUT1_REQUESTED_OUT_FREQ": {
+            "value": "100.000"
+          },
+          "CLKOUT2_DRIVES": {
+            "value": "Buffer"
+          },
+          "CLKOUT3_DRIVES": {
+            "value": "Buffer"
+          },
+          "CLKOUT4_DRIVES": {
+            "value": "Buffer"
+          },
+          "CLKOUT5_DRIVES": {
+            "value": "Buffer"
+          },
+          "CLKOUT6_DRIVES": {
+            "value": "Buffer"
+          },
+          "CLKOUT7_DRIVES": {
+            "value": "Buffer"
+          },
+          "FEEDBACK_SOURCE": {
+            "value": "FDBK_AUTO"
+          },
+          "NUM_OUT_CLKS": {
+            "value": "1"
+          },
+          "PRIM_IN_FREQ": {
+            "value": "300.000"
+          },
+          "USE_LOCKED": {
+            "value": "false"
+          },
+          "USE_RESET": {
+            "value": "false"
+          },
+          "USE_SAFE_CLOCK_STARTUP": {
+            "value": "false"
+          }
+        }
+      },
+      "xlconstant_0": {
+        "vlnv": "xilinx.com:ip:xlconstant:1.1",
+        "ip_revision": "8",
+        "xci_name": "mad_bc_pcie_xlconstant_0_0",
+        "xci_path": "ip/mad_bc_pcie_xlconstant_0_0/mad_bc_pcie_xlconstant_0_0.xci",
+        "inst_hier_path": "xlconstant_0"
+      },
+      "const_zero_wr_busy": {
+        "vlnv": "xilinx.com:ip:xlconstant:1.1",
+        "ip_revision": "8",
+        "xci_name": "mad_bc_pcie_const_zero_wr_busy_0",
+        "xci_path": "ip/mad_bc_pcie_const_zero_wr_busy_0/mad_bc_pcie_const_zero_wr_busy_0.xci",
+        "inst_hier_path": "const_zero_wr_busy",
+        "parameters": {
+          "CONST_VAL": {
+            "value": "0"
+          }
+        }
+      },
+      "ila_pciecore_cq": {
+        "vlnv": "xilinx.com:ip:ila:6.2",
+        "ip_revision": "14",
+        "xci_name": "mad_bc_pcie_ila_1_1",
+        "xci_path": "ip/mad_bc_pcie_ila_1_1/mad_bc_pcie_ila_1_1.xci",
+        "inst_hier_path": "ila_pciecore_cq",
+        "parameters": {
+          "C_MONITOR_TYPE": {
+            "value": "Native"
+          },
+          "C_NUM_OF_PROBES": {
+            "value": "9"
+          },
+          "C_PROBE0_WIDTH": {
+            "value": "4"
+          },
+          "C_PROBE3_WIDTH": {
+            "value": "128"
+          },
+          "C_PROBE4_WIDTH": {
+            "value": "88"
+          },
+          "C_PROBE6_WIDTH": {
+            "value": "8"
+          },
+          "C_PROBE7_WIDTH": {
+            "value": "2"
+          },
+          "C_PROBE8_WIDTH": {
+            "value": "6"
+          }
+        }
+      },
+      "device_wrapper": {
+        "vlnv": "xilinx.com:module_ref:pcie_device_wrapper_V2:1.0",
+        "ip_revision": "1",
+        "xci_name": "mad_bc_pcie_device_wrapper_2",
+        "xci_path": "ip/mad_bc_pcie_device_wrapper_2/mad_bc_pcie_device_wrapper_2.xci",
+        "inst_hier_path": "device_wrapper",
+        "reference_info": {
+          "ref_type": "hdl",
+          "ref_name": "pcie_device_wrapper_V2",
+          "boundary_crc": "0x0"
+        },
+        "interface_ports": {
+          "m_axis_cq": {
+            "mode": "Slave",
+            "vlnv_bus_definition": "xilinx.com:interface:axis:1.0",
+            "vlnv": "xilinx.com:interface:axis_rtl:1.0",
+            "parameters": {
+              "TDATA_NUM_BYTES": {
+                "value": "16",
+                "value_src": "auto"
+              },
+              "TDEST_WIDTH": {
+                "value": "0",
+                "value_src": "constant"
+              },
+              "TID_WIDTH": {
+                "value": "0",
+                "value_src": "constant"
+              },
+              "TUSER_WIDTH": {
+                "value": "88",
+                "value_src": "auto"
+              },
+              "HAS_TREADY": {
+                "value": "1",
+                "value_src": "constant"
+              },
+              "HAS_TSTRB": {
+                "value": "0",
+                "value_src": "constant"
+              },
+              "HAS_TKEEP": {
+                "value": "1",
+                "value_src": "auto"
+              },
+              "HAS_TLAST": {
+                "value": "1",
+                "value_src": "constant"
+              },
+              "FREQ_HZ": {
+                "value": "250000000",
+                "value_src": "constant"
+              },
+              "CLK_DOMAIN": {
+                "value": "mad_bc_pcie_pcie4_uscale_plus_0_0_user_clk",
+                "value_src": "default_prop"
+              }
+            },
+            "port_maps": {
+              "TDATA": {
+                "physical_name": "m_axis_cq_tdata",
+                "direction": "I",
+                "left": "127",
+                "right": "0"
+              },
+              "TKEEP": {
+                "physical_name": "m_axis_cq_tkeep",
+                "direction": "I",
+                "left": "3",
+                "right": "0"
+              },
+              "TLAST": {
+                "physical_name": "m_axis_cq_tlast",
+                "direction": "I"
+              },
+              "TUSER": {
+                "physical_name": "m_axis_cq_tuser",
+                "direction": "I",
+                "left": "87",
+                "right": "0"
+              },
+              "TVALID": {
+                "physical_name": "m_axis_cq_tvalid",
+                "direction": "I"
+              },
+              "TREADY": {
+                "physical_name": "m_axis_cq_tready",
+                "direction": "O"
+              }
+            }
+          },
+          "m_axis_rc": {
+            "mode": "Slave",
+            "vlnv_bus_definition": "xilinx.com:interface:axis:1.0",
+            "vlnv": "xilinx.com:interface:axis_rtl:1.0",
+            "parameters": {
+              "TDATA_NUM_BYTES": {
+                "value": "16",
+                "value_src": "auto"
+              },
+              "TDEST_WIDTH": {
+                "value": "0",
+                "value_src": "constant"
+              },
+              "TID_WIDTH": {
+                "value": "0",
+                "value_src": "constant"
+              },
+              "TUSER_WIDTH": {
+                "value": "75",
+                "value_src": "auto"
+              },
+              "HAS_TREADY": {
+                "value": "1",
+                "value_src": "constant"
+              },
+              "HAS_TSTRB": {
+                "value": "0",
+                "value_src": "constant"
+              },
+              "HAS_TKEEP": {
+                "value": "1",
+                "value_src": "auto"
+              },
+              "HAS_TLAST": {
+                "value": "1",
+                "value_src": "constant"
+              },
+              "FREQ_HZ": {
+                "value": "250000000",
+                "value_src": "constant"
+              },
+              "CLK_DOMAIN": {
+                "value": "mad_bc_pcie_pcie4_uscale_plus_0_0_user_clk",
+                "value_src": "default_prop"
+              }
+            },
+            "port_maps": {
+              "TDATA": {
+                "physical_name": "m_axis_rc_tdata",
+                "direction": "I",
+                "left": "127",
+                "right": "0"
+              },
+              "TKEEP": {
+                "physical_name": "m_axis_rc_tkeep",
+                "direction": "I",
+                "left": "3",
+                "right": "0"
+              },
+              "TLAST": {
+                "physical_name": "m_axis_rc_tlast",
+                "direction": "I"
+              },
+              "TUSER": {
+                "physical_name": "m_axis_rc_tuser",
+                "direction": "I",
+                "left": "74",
+                "right": "0"
+              },
+              "TVALID": {
+                "physical_name": "m_axis_rc_tvalid",
+                "direction": "I"
+              },
+              "TREADY": {
+                "physical_name": "m_axis_rc_tready",
+                "direction": "O"
+              }
+            }
+          },
+          "s_axis_cc": {
+            "mode": "Master",
+            "vlnv_bus_definition": "xilinx.com:interface:axis:1.0",
+            "vlnv": "xilinx.com:interface:axis_rtl:1.0",
+            "parameters": {
+              "TDATA_NUM_BYTES": {
+                "value": "16",
+                "value_src": "auto"
+              },
+              "TDEST_WIDTH": {
+                "value": "0",
+                "value_src": "constant"
+              },
+              "TID_WIDTH": {
+                "value": "0",
+                "value_src": "constant"
+              },
+              "TUSER_WIDTH": {
+                "value": "33",
+                "value_src": "constant"
+              },
+              "HAS_TREADY": {
+                "value": "1",
+                "value_src": "constant"
+              },
+              "HAS_TSTRB": {
+                "value": "0",
+                "value_src": "constant"
+              },
+              "HAS_TKEEP": {
+                "value": "1",
+                "value_src": "auto"
+              },
+              "HAS_TLAST": {
+                "value": "1",
+                "value_src": "constant"
+              },
+              "FREQ_HZ": {
+                "value": "250000000",
+                "value_src": "constant"
+              },
+              "CLK_DOMAIN": {
+                "value": "mad_bc_pcie_pcie4_uscale_plus_0_0_user_clk",
+                "value_src": "default_prop"
+              }
+            },
+            "port_maps": {
+              "TDATA": {
+                "physical_name": "s_axis_cc_tdata",
+                "direction": "O",
+                "left": "127",
+                "right": "0"
+              },
+              "TKEEP": {
+                "physical_name": "s_axis_cc_tkeep",
+                "direction": "O",
+                "left": "3",
+                "right": "0"
+              },
+              "TLAST": {
+                "physical_name": "s_axis_cc_tlast",
+                "direction": "O"
+              },
+              "TUSER": {
+                "physical_name": "s_axis_cc_tuser",
+                "direction": "O",
+                "left": "32",
+                "right": "0"
+              },
+              "TVALID": {
+                "physical_name": "s_axis_cc_tvalid",
+                "direction": "O"
+              },
+              "TREADY": {
+                "physical_name": "s_axis_cc_tready",
+                "direction": "I"
+              }
+            }
+          },
+          "s_axis_rq": {
+            "mode": "Master",
+            "vlnv_bus_definition": "xilinx.com:interface:axis:1.0",
+            "vlnv": "xilinx.com:interface:axis_rtl:1.0",
+            "parameters": {
+              "TDATA_NUM_BYTES": {
+                "value": "16",
+                "value_src": "auto"
+              },
+              "TDEST_WIDTH": {
+                "value": "0",
+                "value_src": "constant"
+              },
+              "TID_WIDTH": {
+                "value": "0",
+                "value_src": "constant"
+              },
+              "TUSER_WIDTH": {
+                "value": "62",
+                "value_src": "constant"
+              },
+              "HAS_TREADY": {
+                "value": "1",
+                "value_src": "constant"
+              },
+              "HAS_TSTRB": {
+                "value": "0",
+                "value_src": "constant"
+              },
+              "HAS_TKEEP": {
+                "value": "1",
+                "value_src": "auto"
+              },
+              "HAS_TLAST": {
+                "value": "1",
+                "value_src": "constant"
+              },
+              "FREQ_HZ": {
+                "value": "250000000",
+                "value_src": "constant"
+              },
+              "CLK_DOMAIN": {
+                "value": "mad_bc_pcie_pcie4_uscale_plus_0_0_user_clk",
+                "value_src": "default_prop"
+              }
+            },
+            "port_maps": {
+              "TDATA": {
+                "physical_name": "s_axis_rq_tdata",
+                "direction": "O",
+                "left": "127",
+                "right": "0"
+              },
+              "TKEEP": {
+                "physical_name": "s_axis_rq_tkeep",
+                "direction": "O",
+                "left": "3",
+                "right": "0"
+              },
+              "TLAST": {
+                "physical_name": "s_axis_rq_tlast",
+                "direction": "O"
+              },
+              "TUSER": {
+                "physical_name": "s_axis_rq_tuser",
+                "direction": "O",
+                "left": "61",
+                "right": "0"
+              },
+              "TVALID": {
+                "physical_name": "s_axis_rq_tvalid",
+                "direction": "O"
+              },
+              "TREADY": {
+                "physical_name": "s_axis_rq_tready",
+                "direction": "I"
+              }
+            }
+          }
+        },
+        "ports": {
+          "user_clk": {
+            "type": "clk",
+            "direction": "I",
+            "parameters": {
+              "ASSOCIATED_RESET": {
+                "value": "user_reset",
+                "value_src": "constant"
+              },
+              "ASSOCIATED_BUSIF": {
+                "value": "m_axis_cq:m_axis_rc:s_axis_cc:s_axis_rq",
+                "value_src": "constant"
+              },
+              "FREQ_HZ": {
+                "value": "250000000",
+                "value_src": "constant"
+              },
+              "CLK_DOMAIN": {
+                "value": "mad_bc_pcie_pcie4_uscale_plus_0_0_user_clk",
+                "value_src": "default_prop"
+              }
+            }
+          },
+          "user_reset": {
+            "type": "rst",
+            "direction": "I",
+            "parameters": {
+              "POLARITY": {
+                "value": "ACTIVE_HIGH",
+                "value_src": "constant"
+              }
+            }
+          },
+          "user_lnk_up": {
+            "direction": "I"
+          },
+          "pcie_cq_np_req_count": {
+            "direction": "I",
+            "left": "5",
+            "right": "0"
+          },
+          "pcie_cq_np_req": {
+            "direction": "O",
+            "left": "1",
+            "right": "0"
+          },
+          "cfg_msg_received": {
+            "direction": "I"
+          },
+          "cfg_msg_received_type": {
+            "direction": "I",
+            "left": "4",
+            "right": "0"
+          },
+          "cfg_msg_received_data": {
+            "direction": "I",
+            "left": "7",
+            "right": "0"
+          },
+          "req_compl": {
+            "direction": "O"
+          },
+          "req_compl_wd": {
+            "direction": "O"
+          },
+          "req_compl_ur": {
+            "direction": "O"
+          },
+          "compl_done": {
+            "direction": "O"
+          },
+          "req_tc": {
+            "direction": "O",
+            "left": "2",
+            "right": "0"
+          },
+          "req_attr": {
+            "direction": "O",
+            "left": "2",
+            "right": "0"
+          },
+          "req_len": {
+            "direction": "O",
+            "left": "10",
+            "right": "0"
+          },
+          "req_rid": {
+            "direction": "O",
+            "left": "15",
+            "right": "0"
+          },
+          "req_tag": {
+            "direction": "O",
+            "left": "7",
+            "right": "0"
+          },
+          "req_be": {
+            "direction": "O",
+            "left": "7",
+            "right": "0"
+          },
+          "req_addr": {
+            "direction": "O",
+            "left": "12",
+            "right": "0"
+          },
+          "req_at": {
+            "direction": "O",
+            "left": "1",
+            "right": "0"
+          },
+          "req_des_qword0": {
+            "direction": "O",
+            "left": "63",
+            "right": "0"
+          },
+          "req_des_qword1": {
+            "direction": "O",
+            "left": "63",
+            "right": "0"
+          },
+          "req_des_tph_present": {
+            "direction": "O"
+          },
+          "req_des_tph_type": {
+            "direction": "O",
+            "left": "1",
+            "right": "0"
+          },
+          "req_des_tph_st_tag": {
+            "direction": "O",
+            "left": "7",
+            "right": "0"
+          },
+          "req_mem_lock": {
+            "direction": "O"
+          },
+          "req_mem": {
+            "direction": "O"
+          },
+          "wr_data": {
+            "direction": "O",
+            "left": "511",
+            "right": "0"
+          },
+          "payload_len": {
+            "direction": "O",
+            "left": "10",
+            "right": "0"
+          },
+          "wr_sop": {
+            "direction": "O"
+          },
+          "wr_eop": {
+            "direction": "O"
+          },
+          "wr_data_be": {
+            "direction": "O",
+            "left": "63",
+            "right": "0"
+          },
+          "wr_addr": {
+            "direction": "O",
+            "left": "10",
+            "right": "0"
+          },
+          "wr_be": {
+            "direction": "O",
+            "left": "7",
+            "right": "0"
+          },
+          "wr_en": {
+            "direction": "O"
+          },
+          "dbg_regs_awvalid": {
+            "direction": "O"
+          },
+          "dbg_regs_awready": {
+            "direction": "O"
+          },
+          "dbg_regs_wvalid": {
+            "direction": "O"
+          },
+          "dbg_regs_wready": {
+            "direction": "O"
+          },
+          "dbg_regs_wstrb": {
+            "direction": "O",
+            "left": "3",
+            "right": "0"
+          },
+          "dbg_bufrd_go_pulse": {
+            "direction": "O"
+          },
+          "dbg_dma_go_pulse": {
+            "direction": "O"
+          },
+          "dbg_regs_arvalid": {
+            "direction": "O"
+          },
+          "dbg_regs_arready": {
+            "direction": "O"
+          },
+          "dbg_regs_rvalid": {
+            "direction": "O"
+          },
+          "dbg_regs_rready": {
+            "direction": "O"
+          },
+          "dbg_regs_rdata": {
+            "direction": "O",
+            "left": "31",
+            "right": "0"
+          },
+          "dbg_tx_rd_en": {
+            "direction": "O"
+          },
+          "dbg_tx_rd_addr": {
+            "direction": "O",
+            "left": "4",
+            "right": "0"
+          },
+          "dbg_tx_rd_data": {
+            "direction": "O",
+            "left": "511",
+            "right": "0"
+          },
+          "dbg_regs_awaddr": {
+            "direction": "O",
+            "left": "15",
+            "right": "0"
+          },
+          "dbg_regs_araddr": {
+            "direction": "O",
+            "left": "15",
+            "right": "0"
+          },
+          "dbg_regs_wdata": {
+            "direction": "O",
+            "left": "31",
+            "right": "0"
+          },
+          "dbg_axiw_pending": {
+            "direction": "O"
+          },
+          "dbg_portal_wr_busy": {
+            "direction": "O"
+          },
+          "dbg_live_wr_en": {
+            "direction": "O"
+          },
+          "dbg_sop": {
+            "direction": "O"
+          },
+          "dbg_in_packet_q": {
+            "direction": "O"
+          },
+          "dbg_rx_state": {
+            "direction": "O",
+            "left": "7",
+            "right": "0"
+          },
+          "dbg_rq_state": {
+            "direction": "O",
+            "left": "7",
+            "right": "0"
+          },
+          "dbg_bufrd_start": {
+            "direction": "O"
+          },
+          "wr_busy": {
+            "direction": "I"
+          }
+        }
+      },
+      "ila_devregs": {
+        "vlnv": "xilinx.com:ip:ila:6.2",
+        "ip_revision": "14",
+        "xci_name": "mad_bc_pcie_ila_0_2",
+        "xci_path": "ip/mad_bc_pcie_ila_0_2/mad_bc_pcie_ila_0_2.xci",
+        "inst_hier_path": "ila_devregs",
+        "parameters": {
+          "C_MONITOR_TYPE": {
+            "value": "Native"
+          },
+          "C_NUM_OF_PROBES": {
+            "value": "20"
+          },
+          "C_PROBE12_WIDTH": {
+            "value": "4"
+          },
+          "C_PROBE14_WIDTH": {
+            "value": "16"
+          },
+          "C_PROBE15_WIDTH": {
+            "value": "16"
+          },
+          "C_PROBE16_WIDTH": {
+            "value": "32"
+          },
+          "C_PROBE19_WIDTH": {
+            "value": "8"
+          },
+          "C_PROBE1_WIDTH": {
+            "value": "8"
+          },
+          "C_PROBE2_WIDTH": {
+            "value": "11"
+          },
+          "C_PROBE3_WIDTH": {
+            "value": "512"
+          },
+          "C_PROBE4_WIDTH": {
+            "value": "8"
+          },
+          "C_PROBE5_WIDTH": {
+            "value": "13"
+          },
+          "C_PROBE6_WIDTH": {
+            "value": "64"
+          }
+        }
+      },
+      "ila_pciecore_cc": {
+        "vlnv": "xilinx.com:ip:ila:6.2",
+        "ip_revision": "14",
+        "xci_name": "mad_bc_pcie_ila_0_3",
+        "xci_path": "ip/mad_bc_pcie_ila_0_3/mad_bc_pcie_ila_0_3.xci",
+        "inst_hier_path": "ila_pciecore_cc",
+        "parameters": {
+          "C_MONITOR_TYPE": {
+            "value": "Native"
+          },
+          "C_NUM_OF_PROBES": {
+            "value": "18"
+          },
+          "C_PROBE10_WIDTH": {
+            "value": "4"
+          },
+          "C_PROBE11_WIDTH": {
+            "value": "33"
+          },
+          "C_PROBE14_WIDTH": {
+            "value": "5"
+          },
+          "C_PROBE17_WIDTH": {
+            "value": "32"
+          },
+          "C_PROBE6_WIDTH": {
+            "value": "16"
+          },
+          "C_PROBE7_WIDTH": {
+            "value": "8"
+          },
+          "C_PROBE8_WIDTH": {
+            "value": "13"
+          },
+          "C_PROBE9_WIDTH": {
+            "value": "128"
+          }
+        }
+      },
+      "ila_pciecore_rq": {
+        "vlnv": "xilinx.com:ip:ila:6.2",
+        "ip_revision": "14",
+        "xci_name": "mad_bc_pcie_ila_0_4",
+        "xci_path": "ip/mad_bc_pcie_ila_0_4/mad_bc_pcie_ila_0_4.xci",
+        "inst_hier_path": "ila_pciecore_rq",
+        "parameters": {
+          "C_MONITOR_TYPE": {
+            "value": "Native"
+          },
+          "C_NUM_OF_PROBES": {
+            "value": "8"
+          },
+          "C_PROBE3_WIDTH": {
+            "value": "4"
+          },
+          "C_PROBE4_WIDTH": {
+            "value": "128"
+          },
+          "C_PROBE5_WIDTH": {
+            "value": "62"
+          },
+          "C_PROBE6_WIDTH": {
+            "value": "8"
+          }
+        }
+      }
+    },
+    "interface_nets": {
+      "device_wrapper_s_axis_cc": {
+        "interface_ports": [
+          "pcie4_uscale_plus_0/s_axis_cc",
+          "device_wrapper/s_axis_cc"
+        ]
+      }
+    },
+    "nets": {
+      "const_zero_wr_busy_dout": {
+        "ports": [
+          "const_zero_wr_busy/dout",
+          "device_wrapper/wr_busy"
+        ]
+      },
+      "dbg_clk_buf_IBUF_OUT": {
+        "ports": [
+          "dbg_clk_buf/IBUF_OUT",
+          "dbg_clk_wiz/clk_in1"
+        ]
+      },
+      "dbg_clk_n_2": {
+        "ports": [
+          "dbg_clk_n",
+          "dbg_clk_buf/IBUF_DS_N"
+        ]
+      },
+      "dbg_clk_p_2": {
+        "ports": [
+          "dbg_clk_p",
+          "dbg_clk_buf/IBUF_DS_P"
+        ]
+      },
+      "dbg_clk_wiz_clk_out1": {
+        "ports": [
+          "dbg_clk_wiz/clk_out1"
+        ]
+      },
+      "device_wrapper_compl_done": {
+        "ports": [
+          "device_wrapper/compl_done",
+          "ila_pciecore_cc/probe3"
+        ]
+      },
+      "device_wrapper_dbg_axiw_pending": {
+        "ports": [
+          "device_wrapper/dbg_axiw_pending",
+          "ila_devregs/probe17"
+        ]
+      },
+      "device_wrapper_dbg_bufrd_go_pulse": {
+        "ports": [
+          "device_wrapper/dbg_bufrd_go_pulse",
+          "ila_devregs/probe13"
+        ]
+      },
+      "device_wrapper_dbg_bufrd_input_start": {
+        "ports": [
+          "device_wrapper/dbg_bufrd_start",
+          "ila_pciecore_rq/probe7"
+        ]
+      },
+      "device_wrapper_dbg_live_wr_en": {
+        "ports": [
+          "device_wrapper/dbg_live_wr_en",
+          "ila_devregs/probe18"
+        ]
+      },
+      "device_wrapper_dbg_regs_araddr": {
+        "ports": [
+          "device_wrapper/dbg_regs_araddr",
+          "ila_devregs/probe15"
+        ]
+      },
+      "device_wrapper_dbg_regs_arready": {
+        "ports": [
+          "device_wrapper/dbg_regs_arready",
+          "ila_pciecore_cc/probe15"
+        ]
+      },
+      "device_wrapper_dbg_regs_arvalid": {
+        "ports": [
+          "device_wrapper/dbg_regs_arvalid",
+          "ila_pciecore_cc/probe12"
+        ]
+      },
+      "device_wrapper_dbg_regs_awaddr": {
+        "ports": [
+          "device_wrapper/dbg_regs_awaddr",
+          "ila_devregs/probe14"
+        ]
+      },
+      "device_wrapper_dbg_regs_awready": {
+        "ports": [
+          "device_wrapper/dbg_regs_awready",
+          "ila_devregs/probe9"
+        ]
+      },
+      "device_wrapper_dbg_regs_awvalid": {
+        "ports": [
+          "device_wrapper/dbg_regs_awvalid",
+          "ila_devregs/probe8"
+        ]
+      },
+      "device_wrapper_dbg_regs_rdata": {
+        "ports": [
+          "device_wrapper/dbg_regs_rdata",
+          "ila_pciecore_cc/probe17"
+        ]
+      },
+      "device_wrapper_dbg_regs_rvalid": {
+        "ports": [
+          "device_wrapper/dbg_regs_rvalid",
+          "ila_pciecore_cc/probe16"
+        ]
+      },
+      "device_wrapper_dbg_regs_wdata": {
+        "ports": [
+          "device_wrapper/dbg_regs_wdata",
+          "ila_devregs/probe16"
+        ]
+      },
+      "device_wrapper_dbg_regs_wready": {
+        "ports": [
+          "device_wrapper/dbg_regs_wready",
+          "ila_devregs/probe11"
+        ]
+      },
+      "device_wrapper_dbg_regs_wstrb": {
+        "ports": [
+          "device_wrapper/dbg_regs_wstrb",
+          "ila_devregs/probe12"
+        ]
+      },
+      "device_wrapper_dbg_regs_wvalid": {
+        "ports": [
+          "device_wrapper/dbg_regs_wvalid",
+          "ila_devregs/probe10"
+        ]
+      },
+      "device_wrapper_dbg_rq_state": {
+        "ports": [
+          "device_wrapper/dbg_rq_state",
+          "ila_pciecore_rq/probe6"
+        ]
+      },
+      "device_wrapper_dbg_rx_state": {
+        "ports": [
+          "device_wrapper/dbg_rx_state",
+          "ila_devregs/probe19"
+        ]
+      },
+      "device_wrapper_dbg_tx_rd_addr": {
+        "ports": [
+          "device_wrapper/dbg_tx_rd_addr",
+          "ila_pciecore_cc/probe14"
+        ]
+      },
+      "device_wrapper_dbg_tx_rd_en": {
+        "ports": [
+          "device_wrapper/dbg_tx_rd_en",
+          "ila_pciecore_cc/probe13"
+        ]
+      },
+      "device_wrapper_m_axis_rc_tready": {
+        "ports": [
+          "device_wrapper/m_axis_rc_tready",
+          "pcie4_uscale_plus_0/m_axis_rc_tready"
+        ]
+      },
+      "device_wrapper_req_addr": {
+        "ports": [
+          "device_wrapper/req_addr",
+          "ila_devregs/probe5",
+          "ila_pciecore_cc/probe8"
+        ]
+      },
+      "device_wrapper_req_be": {
+        "ports": [
+          "device_wrapper/req_be",
+          "ila_devregs/probe4"
+        ]
+      },
+      "device_wrapper_req_compl": {
+        "ports": [
+          "device_wrapper/req_compl",
+          "ila_pciecore_cc/probe4"
+        ]
+      },
+      "device_wrapper_req_compl_wd": {
+        "ports": [
+          "device_wrapper/req_compl_wd",
+          "ila_pciecore_cc/probe5"
+        ]
+      },
+      "device_wrapper_req_rid": {
+        "ports": [
+          "device_wrapper/req_rid",
+          "ila_pciecore_cc/probe6"
+        ]
+      },
+      "device_wrapper_req_tag": {
+        "ports": [
+          "device_wrapper/req_tag",
+          "ila_pciecore_cc/probe7"
+        ]
+      },
+      "device_wrapper_s_axis_cc_tdata": {
+        "ports": [
+          "device_wrapper/s_axis_cc_tdata",
+          "pcie4_uscale_plus_0/s_axis_cc_tdata",
+          "ila_pciecore_cc/probe9"
+        ]
+      },
+      "device_wrapper_s_axis_cc_tkeep": {
+        "ports": [
+          "device_wrapper/s_axis_cc_tkeep",
+          "pcie4_uscale_plus_0/s_axis_cc_tkeep",
+          "ila_pciecore_cc/probe10"
+        ]
+      },
+      "device_wrapper_s_axis_cc_tlast": {
+        "ports": [
+          "device_wrapper/s_axis_cc_tlast",
+          "pcie4_uscale_plus_0/s_axis_cc_tlast",
+          "ila_pciecore_cc/probe2"
+        ]
+      },
+      "device_wrapper_s_axis_cc_tuser": {
+        "ports": [
+          "device_wrapper/s_axis_cc_tuser",
+          "pcie4_uscale_plus_0/s_axis_cc_tuser",
+          "ila_pciecore_cc/probe11"
+        ]
+      },
+      "device_wrapper_s_axis_cc_tvalid": {
+        "ports": [
+          "device_wrapper/s_axis_cc_tvalid",
+          "pcie4_uscale_plus_0/s_axis_cc_tvalid",
+          "ila_pciecore_cc/probe0"
+        ]
+      },
+      "device_wrapper_s_axis_rq_tdata": {
+        "ports": [
+          "device_wrapper/s_axis_rq_tdata",
+          "pcie4_uscale_plus_0/s_axis_rq_tdata",
+          "ila_pciecore_rq/probe4"
+        ]
+      },
+      "device_wrapper_s_axis_rq_tkeep": {
+        "ports": [
+          "device_wrapper/s_axis_rq_tkeep",
+          "pcie4_uscale_plus_0/s_axis_rq_tkeep",
+          "ila_pciecore_rq/probe3"
+        ]
+      },
+      "device_wrapper_s_axis_rq_tlast": {
+        "ports": [
+          "device_wrapper/s_axis_rq_tlast",
+          "pcie4_uscale_plus_0/s_axis_rq_tlast",
+          "ila_pciecore_rq/probe2"
+        ]
+      },
+      "device_wrapper_s_axis_rq_tuser": {
+        "ports": [
+          "device_wrapper/s_axis_rq_tuser",
+          "pcie4_uscale_plus_0/s_axis_rq_tuser",
+          "ila_pciecore_rq/probe5"
+        ]
+      },
+      "device_wrapper_s_axis_rq_tvalid": {
+        "ports": [
+          "device_wrapper/s_axis_rq_tvalid",
+          "pcie4_uscale_plus_0/s_axis_rq_tvalid",
+          "ila_pciecore_rq/probe0"
+        ]
+      },
+      "device_wrapper_wr_addr": {
+        "ports": [
+          "device_wrapper/wr_addr",
+          "ila_devregs/probe2"
+        ]
+      },
+      "device_wrapper_wr_be": {
+        "ports": [
+          "device_wrapper/wr_be",
+          "ila_devregs/probe1"
+        ]
+      },
+      "device_wrapper_wr_data": {
+        "ports": [
+          "device_wrapper/wr_data",
+          "ila_devregs/probe3"
+        ]
+      },
+      "device_wrapper_wr_data_be": {
+        "ports": [
+          "device_wrapper/wr_data_be",
+          "ila_devregs/probe6"
+        ]
+      },
+      "device_wrapper_wr_en": {
+        "ports": [
+          "device_wrapper/wr_en",
+          "ila_devregs/probe7"
+        ]
+      },
+      "pci_exp_rxn_0_2": {
+        "ports": [
+          "pci_exp_rxn",
+          "pcie4_uscale_plus_0/pci_exp_rxn"
+        ]
+      },
+      "pci_exp_rxp_0_2": {
+        "ports": [
+          "pci_exp_rxp",
+          "pcie4_uscale_plus_0/pci_exp_rxp"
+        ]
+      },
+      "pcie4_uscale_plus_0_cfg_bus_number": {
+        "ports": [
+          "pcie4_uscale_plus_0/cfg_bus_number",
+          "ila_pciecore_cq/probe6"
+        ]
+      },
+      "pcie4_uscale_plus_0_cfg_msg_received": {
+        "ports": [
+          "pcie4_uscale_plus_0/cfg_msg_received",
+          "device_wrapper/cfg_msg_received"
+        ]
+      },
+      "pcie4_uscale_plus_0_cfg_msg_received_data": {
+        "ports": [
+          "pcie4_uscale_plus_0/cfg_msg_received_data",
+          "device_wrapper/cfg_msg_received_data"
+        ]
+      },
+      "pcie4_uscale_plus_0_cfg_msg_received_type": {
+        "ports": [
+          "pcie4_uscale_plus_0/cfg_msg_received_type",
+          "device_wrapper/cfg_msg_received_type"
+        ]
+      },
+      "pcie4_uscale_plus_0_m_axis_cq_tdata": {
+        "ports": [
+          "pcie4_uscale_plus_0/m_axis_cq_tdata",
+          "ila_pciecore_cq/probe3",
+          "device_wrapper/m_axis_cq_tdata"
+        ]
+      },
+      "pcie4_uscale_plus_0_m_axis_cq_tkeep": {
+        "ports": [
+          "pcie4_uscale_plus_0/m_axis_cq_tkeep",
+          "ila_pciecore_cq/probe0",
+          "device_wrapper/m_axis_cq_tkeep"
+        ]
+      },
+      "pcie4_uscale_plus_0_m_axis_cq_tlast": {
+        "ports": [
+          "pcie4_uscale_plus_0/m_axis_cq_tlast",
+          "ila_pciecore_cq/probe5",
+          "device_wrapper/m_axis_cq_tlast"
+        ]
+      },
+      "pcie4_uscale_plus_0_m_axis_cq_tuser": {
+        "ports": [
+          "pcie4_uscale_plus_0/m_axis_cq_tuser",
+          "ila_pciecore_cq/probe4",
+          "device_wrapper/m_axis_cq_tuser"
+        ]
+      },
+      "pcie4_uscale_plus_0_m_axis_cq_tvalid": {
+        "ports": [
+          "pcie4_uscale_plus_0/m_axis_cq_tvalid",
+          "ila_pciecore_cq/probe1",
+          "ila_devregs/probe0",
+          "device_wrapper/m_axis_cq_tvalid"
+        ]
+      },
+      "pcie4_uscale_plus_0_m_axis_rc_tdata": {
+        "ports": [
+          "pcie4_uscale_plus_0/m_axis_rc_tdata",
+          "device_wrapper/m_axis_rc_tdata"
+        ]
+      },
+      "pcie4_uscale_plus_0_m_axis_rc_tkeep": {
+        "ports": [
+          "pcie4_uscale_plus_0/m_axis_rc_tkeep",
+          "device_wrapper/m_axis_rc_tkeep"
+        ]
+      },
+      "pcie4_uscale_plus_0_m_axis_rc_tlast": {
+        "ports": [
+          "pcie4_uscale_plus_0/m_axis_rc_tlast",
+          "device_wrapper/m_axis_rc_tlast"
+        ]
+      },
+      "pcie4_uscale_plus_0_m_axis_rc_tuser": {
+        "ports": [
+          "pcie4_uscale_plus_0/m_axis_rc_tuser",
+          "device_wrapper/m_axis_rc_tuser"
+        ]
+      },
+      "pcie4_uscale_plus_0_m_axis_rc_tvalid": {
+        "ports": [
+          "pcie4_uscale_plus_0/m_axis_rc_tvalid",
+          "device_wrapper/m_axis_rc_tvalid"
+        ]
+      },
+      "pcie4_uscale_plus_0_pci_exp_txn1": {
+        "ports": [
+          "pcie4_uscale_plus_0/pci_exp_txn",
+          "pci_exp_txn"
+        ]
+      },
+      "pcie4_uscale_plus_0_pci_exp_txp1": {
+        "ports": [
+          "pcie4_uscale_plus_0/pci_exp_txp",
+          "pci_exp_txp"
+        ]
+      },
+      "pcie4_uscale_plus_0_pcie_cq_np_req_count": {
+        "ports": [
+          "pcie4_uscale_plus_0/pcie_cq_np_req_count",
+          "ila_pciecore_cq/probe8",
+          "device_wrapper/pcie_cq_np_req_count"
+        ]
+      },
+      "pcie4_uscale_plus_0_s_axis_cc_tready": {
+        "ports": [
+          "pcie4_uscale_plus_0/s_axis_cc_tready",
+          "ila_pciecore_cc/probe1",
+          "device_wrapper/s_axis_cc_tready"
+        ]
+      },
+      "pcie4_uscale_plus_0_s_axis_rq_tready": {
+        "ports": [
+          "pcie4_uscale_plus_0/s_axis_rq_tready",
+          "ila_pciecore_rq/probe1",
+          "device_wrapper/s_axis_rq_tready"
+        ]
+      },
+      "pcie4_uscale_plus_0_user_clk": {
+        "ports": [
+          "pcie4_uscale_plus_0/user_clk",
+          "ila_pciecore_cq/clk",
+          "ila_devregs/clk",
+          "ila_pciecore_cc/clk",
+          "ila_pciecore_rq/clk",
+          "device_wrapper/user_clk"
+        ]
+      },
+      "pcie4_uscale_plus_0_user_lnk_up": {
+        "ports": [
+          "pcie4_uscale_plus_0/user_lnk_up",
+          "device_wrapper/user_lnk_up"
+        ]
+      },
+      "pcie4_uscale_plus_0_user_reset": {
+        "ports": [
+          "pcie4_uscale_plus_0/user_reset",
+          "util_vector_logic_0/Op1",
+          "device_wrapper/user_reset"
+        ]
+      },
+      "pcie_device_wrapper_0_m_axis_cq_tready": {
+        "ports": [
+          "device_wrapper/m_axis_cq_tready",
+          "pcie4_uscale_plus_0/m_axis_cq_tready",
+          "ila_pciecore_cq/probe2"
+        ]
+      },
+      "pcie_device_wrapper_0_pcie_cq_np_req1": {
+        "ports": [
+          "device_wrapper/pcie_cq_np_req",
+          "pcie4_uscale_plus_0/pcie_cq_np_req",
+          "ila_pciecore_cq/probe7"
+        ]
+      },
+      "pcie_perstn_1": {
+        "ports": [
+          "pcie_perstn",
+          "pcie4_uscale_plus_0/sys_reset"
+        ]
+      },
+      "pcie_refclk_buf_0_sys_clk": {
+        "ports": [
+          "pcie_refclk_buf_0/sys_clk",
+          "pcie4_uscale_plus_0/sys_clk"
+        ]
+      },
+      "pcie_refclk_buf_0_sys_clk_gt": {
+        "ports": [
+          "pcie_refclk_buf_0/sys_clk_gt",
+          "pcie4_uscale_plus_0/sys_clk_gt"
+        ]
+      },
+      "pcie_refclk_clk_n_1": {
+        "ports": [
+          "pcie_refclk_clk_n",
+          "pcie_refclk_buf_0/pcie_refclk_n"
+        ]
+      },
+      "pcie_refclk_clk_p_1": {
+        "ports": [
+          "pcie_refclk_clk_p",
+          "pcie_refclk_buf_0/pcie_refclk_p"
+        ]
+      },
+      "xlconstant_0_dout": {
+        "ports": [
+          "xlconstant_0/dout"
+        ]
+      }
+    }
+  }
+}
