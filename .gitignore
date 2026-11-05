@@ -1,7 +1,6 @@
 # ============================================================
 # Vivado generated files/directories
 # ============================================================
-
 *.runs/
 *.sim/
 *.cache/
@@ -22,9 +21,47 @@ vivado_*.backup.log
 *.dcp
 
 # ============================================================
+# Additional Vivado and simulator temporary files
+# ============================================================
+*.str
+*.pb
+xelab.log
+xsim.log
+xsim.jou
+xvlog.log
+
+# Vivado source editing snapshots
+*.v.adw
+*.v.adw.tx
+*.v.splitok
+*.v.pre*
+*.v.0
+*.v.vr
+*.v.vr0
+*.v.vw
+*.v.vw0
+
+# Constraint editing snapshots
+*.xdc.0
+
+# Retired project backup
+/mad_real_hardware_old/
+
+# Archived Vivado project snapshots
+/Mad_Hardware_Device/*.tar.gz
+
+# Generated reports in the Vivado project root
+/Mad_Hardware_Device/*.rpt
+
+# Vivado testbench editing snapshots
+*.vr
+*.vr0
+*.vw
+*.vw0
+
+# ============================================================
 # Linux kernel module build products
 # ============================================================
-
 *.o
 *.ko
 *.mod
@@ -41,7 +78,6 @@ Module.symvers
 # ============================================================
 # General temporary/editor files
 # ============================================================
-
 *~
 *.bak
 *.swp
@@ -51,3 +87,8 @@ Module.symvers
 __pycache__/
 *.pyc
 *.pyo
+# Retired hardware project backup
+/mad_real_hardware_old/
+
+# Vivado reports and archived project snapshots
+/Mad_Hardware_Device/*.rpt
