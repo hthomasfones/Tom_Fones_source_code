@@ -48,10 +48,10 @@ xvlog.log
 /mad_real_hardware_old/
 
 # Archived Vivado project snapshots
-/Mad_Hardware_Device/*.tar.gz
+/Mad_Simulation_and_Firmware_Dev/Mad_Hardware_Device/*.tar.gz
 
 # Generated reports in the Vivado project root
-/Mad_Hardware_Device/*.rpt
+/Mad_Simulation_and_Firmware_Dev/Mad_Hardware_Device/*.rpt
 
 # Vivado testbench editing snapshots
 *.vr
@@ -91,4 +91,7 @@ __pycache__/
 /mad_real_hardware_old/
 
 # Vivado reports and archived project snapshots
-/Mad_Hardware_Device/*.rpt
+
+# MAD simulation kernel build artifacts
+/Mad_Simulation_and_Firmware_Dev/madsim_embedded/meta-custom-mods/meta-madsimko/recipes-kernel/files/.maddevcmain.o.d
+/Mad_Simulation_and_Firmware_Dev/madsim_embedded/meta-custom-mods/meta-madsimko/recipes-kernel/files/build.log
