@@ -95,3 +95,6 @@ __pycache__/
 # MAD simulation kernel build artifacts
 /Mad_Simulation_and_Firmware_Dev/madsim_embedded/meta-custom-mods/meta-madsimko/recipes-kernel/files/.maddevcmain.o.d
 /Mad_Simulation_and_Firmware_Dev/madsim_embedded/meta-custom-mods/meta-madsimko/recipes-kernel/files/build.log
+
+# Obsolete QEMU/KVM simulation implementation
+/madsim_v11/
